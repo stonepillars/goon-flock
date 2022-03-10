@@ -300,12 +300,17 @@
 /datum/targetable/flockmindAbility/controlPanel/cast(atom/target)
 	if(..())
 		return 1
-	var/client/user = holder.owner.client
+	boutput(usr, "flockpanel ability cast")
+	// var/client/user = holder.owner.client
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	var/chui/window/flockpanel/panel = F.flock.panel
-	if(isnull(user) || isnull(F) || isnull(panel))
-		return 1
-	panel.Subscribe(user)
+	// if (!F.flock.flockpanel)
+	F.flock.flockpanel = new(F, F, "FlockPanel")
+	F.flock.flockpanel.open()
+	F.flock.flockpanel = tgui_process.try_update_ui(F, F, F.flock.flockpanel)
+	// var/chui/window/flockpanel/panel = F.flock.panel
+	// if(isnull(user) || isnull(F) || isnull(panel))
+		// return 1
+	// panel.Subscribe(user)
 
 ////////////////////////////////
 

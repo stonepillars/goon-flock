@@ -19,6 +19,7 @@
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
 	var/chui/window/flockpanel/panel
+	var/datum/tgui/flockpanel
 
 /datum/flock/New()
 	..()
