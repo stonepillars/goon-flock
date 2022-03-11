@@ -64,7 +64,6 @@
 				var/mob/loopmob = null
 				var/list/hit = list()
 				var/mob/mobtohit = null
-				//for(loopmob in mobs) IN_RANGE() -- this cannot be more efficient - Amylizzle
 				for(loopmob in range(5,src.loc))
 					if(!isflock(loopmob) && src.flock?.isEnemy(loopmob) && isturf(loopmob.loc) && isalive(loopmob) && !isintangible(loopmob))
 						mobtohit = loopmob
