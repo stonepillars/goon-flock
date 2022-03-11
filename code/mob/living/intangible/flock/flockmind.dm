@@ -11,6 +11,52 @@
 	var/started = 0
 	var/last_time // when i say per second I MEAN PER SECOND DAMMIT
 
+/mob/living/intangible/flock/flockmind/ui_data(mob/user)
+	return flock.describe_state()
+
+/mob/living/intangible/flock/flockmind/ui_act(action, list/params)
+	switch(action)
+		// if("update")
+		// 	src.PushUpdate(src.associated.describe_state())
+		if("jump_to")
+			var/atom/movable/origin = locate(params["origin"])
+			if(origin)
+				var/turf/T = get_turf(origin)
+				if(T.z != 1)
+					// make sure they're not trying to spoof data and jump into a z-level they ought not to go
+					boutput(src, "<span class='alert'>They seem to be beyond your capacity to reach.</span>")
+				else
+					src.set_loc(T)
+		if("rally")
+			var/mob/living/critter/flock/C = locate(params["origin"])
+			if(C && C.flock == src.flock) // no ordering other flocks' drones around
+				C.rally(get_turf(src))
+		if("remove_enemy")
+			var/mob/living/E = locate(params["origin"])
+			if(E)
+				src.flock.removeEnemy(E)
+		if("eject_trace")
+			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
+			if(T)
+				var/mob/living/critter/flock/drone/host = T.loc
+				if(istype(host))
+					// kick them out of the drone
+					boutput(host, "<span class='flocksay'><b>\[SYSTEM: The flockmind has removed you from your previous corporeal shell.\]</b></span>")
+					host.release_control()
+		if("delete_trace")
+			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
+			if(T)
+				if(alert(src, "This will destroy the flocktrace. Are you ABSOLUTELY SURE you want to do this?", "Confirmation", "Yes", "No") == "Yes")
+					// if they're in a drone, kick them out
+					var/mob/living/critter/flock/drone/host = T.loc
+					if(istype(host))
+						host.release_control()
+					// DELETE
+					flock_speak(null, "Partition [T.real_name] has been reintegrated into flock background processes.", src.flock)
+					boutput(T, "<span class='flocksay'><b>\[SYSTEM: Your higher cognition has been forcibly reintegrated into the collective will of the flock.\]</b></span>")
+					T.death()
+
+
 /mob/living/intangible/flock/flockmind/New()
 	..()
 

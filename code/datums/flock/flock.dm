@@ -15,6 +15,7 @@
 	var/list/enemies = list()
 	var/list/annotation_viewers = list()
 	var/list/annotations = list() // key is atom ref, value is image
+	var/list/obj/flock_structure/structures = list()
 	var/mob/living/intangible/flock/flockmind/flockmind
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
@@ -35,14 +36,20 @@
 	// DESCRIBE TRACES
 	var/list/tracelist = list()
 	for(var/mob/living/intangible/flock/trace/T in src.traces)
-		tracelist[++tracelist.len] = T.describe_state()
+		tracelist += list(T.describe_state())
 	state["partitions"] = tracelist
 
 	// DESCRIBE DRONES
 	var/list/dronelist = list()
 	for(var/mob/living/critter/flock/drone/F in src.units)
-		dronelist[++dronelist.len] = F.describe_state()
+		dronelist += list(F.describe_state())
 	state["drones"] = dronelist
+
+	// DESCRIBE STRUCTURES
+	var/list/structureList = list()
+	for(var/obj/flock_structure/structure in src.structures)
+		structureList += list(structure.describe_state())
+	state["structures"] = structureList
 
 	// DESCRIBE ENEMIES
 	var/list/enemylist = list()
@@ -54,7 +61,7 @@
 			enemy["name"] = M.name
 			enemy["area"] = enemy_stats["last_seen"]
 			enemy["ref"] = "\ref[M]"
-			enemylist[++enemylist.len] = enemy
+			enemylist += list(enemy)
 		else
 			// enemy no longer exists, let's do something about that
 			src.enemies -= name
