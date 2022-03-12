@@ -27,9 +27,6 @@
 	flocks[src.name] = src
 	processing_items |= src
 
-// /datum/player_panel/ui_state(mob/user)
-// 	return src.ui_status(user)
-
 /datum/flock/ui_status(mob/user)
 	// only flockminds and admins allowed
 	return istype(user, /mob/living/intangible/flock/flockmind) || tgui_admin_state.can_use_topic(src, user)
