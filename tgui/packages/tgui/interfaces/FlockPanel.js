@@ -128,8 +128,10 @@ const FlockDrones = (props, context) => {
                 <Stack.Item grow={1}>
                   <Section height="100%">
                     <Stack align="center">
-                      <Stack.Item width="50px" align="center">
-                        {taskIcon(drone.task)}
+                      <Stack.Item width="50px">
+                        <Box align="center">
+                          {taskIcon(drone.task)}
+                        </Box>
                       </Stack.Item>
                       <Stack.Item>
                         <b>{drone.area}</b> <br /> {capitalizeString(drone.task)}
