@@ -171,14 +171,11 @@ butcher
 		// if there's a priority tile we can go for, do it
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
-			for(var/turf/simulated/PT in priority_turfs)
-				// if we can get a valid path to the target, include it for consideration
-				. += PT
+			. += priority_turfs
 
 	// else just go for one nearby
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
-		if(istype(T, /turf/simulated/floor) && !istype(T, /turf/simulated/floor/feather) || \
-			istype(T, /turf/simulated/wall) && !istype(T, /turf/simulated/wall/auto/feather))
+		if(!isfeathertile(T))
 			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
 				continue // this tile's been claimed by someone else
 			// if we can get a valid path to the target, include it for consideration
@@ -249,15 +246,14 @@ butcher
 		// if there's a priority tile we can go for, do it
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
-			for(var/turf/simulated/PT in priority_turfs)
-				// if we can get a valid path to the target, include it for consideration
-				. += PT
+			. += priority_turfs
 
 	//as drone, we want to prioritise converting doors and walls and containers
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
-		if(istype(T, /turf/simulated/wall) && !istype(T, /turf/simulated/wall/auto/feather) || \
-			istype(T, /turf/simulated/floor) && !istype(T, /turf/simulated/floor/feather)  && (locate(/obj/machinery/door/airlock) in T) || \
-			istype(T, /turf/simulated/floor) && !istype(T, /turf/simulated/floor/feather)  && (locate(/obj/storage) in T))
+		if(!isfeathertile(T) && (
+			istype(T, /turf/simulated/wall) || \
+			locate(/obj/machinery/door/airlock) in T || \
+			locate(/obj/storage) in T))
 			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
 				continue // this tile's been claimed by someone else
 			// if we can get a valid path to the target, include it for consideration
@@ -266,8 +262,7 @@ butcher
 	// if there are absolutely no walls/doors/closets in view, and no reserved tiles, then fine, you can have a floor tile
 	if(length(.) == 0)
 		for(var/turf/simulated/T in view(max_dist, holder.owner))
-			if(istype(T, /turf/simulated/floor) && !istype(T, /turf/simulated/floor/feather) || \
-				istype(T, /turf/simulated/wall) && !istype(T, /turf/simulated/wall/auto/feather))
+			if(!isfeathertile(T))
 				if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
 					continue // this tile's been claimed by someone else
 				// if we can get a valid path to the target, include it for consideration
