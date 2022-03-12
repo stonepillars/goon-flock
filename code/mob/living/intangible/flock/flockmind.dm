@@ -26,14 +26,14 @@
 			var/atom/movable/origin = locate(params["origin"])
 			if(origin)
 				var/turf/T = get_turf(origin)
-				if(T.z != 1)
+				if(T.z != Z_LEVEL_STATION)
 					// make sure they're not trying to spoof data and jump into a z-level they ought not to go
 					boutput(src, "<span class='alert'>They seem to be beyond your capacity to reach.</span>")
 				else
 					src.set_loc(T)
 		if("rally")
 			var/mob/living/critter/flock/C = locate(params["origin"])
-			if(C && C.flock == src.flock) // no ordering other flocks' drones around
+			if(C?.flock == src.flock) // no ordering other flocks' drones around
 				C.rally(get_turf(src))
 		if("remove_enemy")
 			var/mob/living/E = locate(params["origin"])
