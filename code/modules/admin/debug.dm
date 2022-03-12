@@ -1228,8 +1228,9 @@ var/datum/flock/testflock
 	if(isnull(testflock))
 		testflock = new()
 
-	var/chui/window/flockpanel/panel = testflock.panel
-	panel.Subscribe(usr.client)
+	testflock.flockpanel = tgui_process.try_update_ui(usr,usr, testflock.flockpanel)
+	if (!testflock.flockpanel)
+		testflock.flockpanel = new(usr,usr, "FlockPanel")
 
 /client/proc/clear_string_cache()
 	set name = "Clear String Cache"

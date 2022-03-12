@@ -19,7 +19,6 @@
 	var/mob/living/intangible/flock/flockmind/flockmind
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
-	var/chui/window/flockpanel/panel
 	var/datum/tgui/flockpanel
 
 /datum/flock/New()
@@ -27,11 +26,6 @@
 	src.name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	flocks[src.name] = src
 	processing_items |= src
-	panel = new(src)
-
-/datum/flock/proc/update_ui()
-	if (flockpanel)
-		tgui_process.try_update_ui(usr, src, flockpanel)
 
 /datum/flock/proc/describe_state()
 	var/list/state = list()
@@ -111,26 +105,10 @@
 		return
 	src.traces |= T
 
-	// update the flock control panel
-	var/list/update = T.describe_state()
-	update["update"] = "add"
-	update["key"] = "partitions"
-	// ref is already provided
-	// panel.PushUpdate(update)
-	update_ui()
-
 /datum/flock/proc/removeTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces -= T
-
-	// update the flock control panel
-	var/list/update = list()
-	update["update"] = "remove"
-	update["key"] = "partitions"
-	update["ref"] = "\ref[T]"
-	// panel.PushUpdate(update)
-	update_ui()
 
 // ANNOTATIONS
 
@@ -230,29 +208,9 @@
 	if(isflock(D) || isflockstructure(D))
 		src.units |= D
 
-		if(src.panel && istype(D, /mob/living/critter/flock/drone))
-			var/mob/living/critter/flock/drone/drone = D
-
-			// update the flock control panel
-			var/list/update = drone.describe_state()
-			update["update"] = "add"
-			update["key"] = "drones"
-			// ref is already provided
-			// panel.PushUpdate(update)
-			update_ui()
-
 /datum/flock/proc/removeDrone(var/atom/movable/D)
 	if(isflock(D) || isflockstructure(D))
 		src.units -= D
-
-		if(src.panel && istype(D, /mob/living/critter/flock/drone))
-			// update the flock control panel
-			var/list/update = list()
-			update["update"] = "remove"
-			update["key"] = "drones"
-			update["ref"] = "\ref[D]"
-			// panel.PushUpdate(update)
-			update_ui()
 
 		if(D:real_name && busy_tiles[D:real_name])
 			src.busy_tiles[D:real_name] = null
@@ -277,16 +235,6 @@
 		enemy_deets["mob"] = M
 		enemy_deets["last_seen"] = enemy_area
 		src.enemies[enemy_name] = enemy_deets
-
-		// update the flock control panel
-		var/list/update = list()
-		update["update"] = "add"
-		update["key"] = "enemies"
-		update["ref"] = "\ref[M]"
-		update["name"] = M.name
-		update["area"] = enemy_area
-		// panel.PushUpdate(update)
-		update_ui()
 	else
 		enemy_deets = src.enemies[enemy_name]
 		enemy_deets["last_seen"] = get_area(M)
@@ -299,13 +247,6 @@
 		var/list/enemy_stats = src.enemies[name]
 		if(enemy_stats["mob"] == M)
 			src.enemies -= name
-			// update the flock control panel
-			var/list/update = list()
-			update["update"] = "remove"
-			update["key"] = "enemies"
-			update["ref"] = "\ref[M]"
-			// panel.PushUpdate(update)
-			update_ui()
 	src.updateAnnotations()
 
 /datum/flock/proc/isEnemy(var/mob/living/M)
