@@ -27,6 +27,65 @@
 	flocks[src.name] = src
 	processing_items |= src
 
+// /datum/player_panel/ui_state(mob/user)
+// 	return src.ui_status(user)
+
+/datum/flock/ui_status(mob/user)
+	// only flockminds and admins allowed
+	return istype(user, /mob/living/intangible/flock/flockmind) || tgui_admin_state.can_use_topic(src, user)
+
+/datum/flock/ui_data(mob/user)
+	return describe_state()
+
+/datum/flock/ui_interact(mob/user, datum/tgui/ui)
+	ui = tgui_process.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "FlockPanel")
+		ui.open()
+
+/datum/flock/ui_act(action, list/params, datum/tgui/ui)
+	var/mob/user = ui.user;
+	if (!istype(user, /mob/living/intangible/flock/flockmind)) //no humans allowed
+		return
+	switch(action)
+		if("jump_to")
+			var/atom/movable/origin = locate(params["origin"])
+			if(origin)
+				var/turf/T = get_turf(origin)
+				if(T.z != Z_LEVEL_STATION)
+					// make sure they're not trying to spoof data and jump into a z-level they ought not to go
+					boutput(user, "<span class='alert'>They seem to be beyond your capacity to reach.</span>")
+				else
+					user.set_loc(T)
+		if("rally")
+			var/mob/living/critter/flock/C = locate(params["origin"])
+			if(C?.flock == src) // no ordering other flocks' drones around
+				C.rally(get_turf(user))
+		if("remove_enemy")
+			var/mob/living/E = locate(params["origin"])
+			if(E)
+				src.removeEnemy(E)
+		if("eject_trace")
+			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
+			if(T)
+				var/mob/living/critter/flock/drone/host = T.loc
+				if(istype(host))
+					// kick them out of the drone
+					boutput(host, "<span class='flocksay'><b>\[SYSTEM: The flockmind has removed you from your previous corporeal shell.\]</b></span>")
+					host.release_control()
+		if("delete_trace")
+			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
+			if(T)
+				if(alert(user, "This will destroy the flocktrace. Are you ABSOLUTELY SURE you want to do this?", "Confirmation", "Yes", "No") == "Yes")
+					// if they're in a drone, kick them out
+					var/mob/living/critter/flock/drone/host = T.loc
+					if(istype(host))
+						host.release_control()
+					// DELETE
+					flock_speak(null, "Partition [T.real_name] has been reintegrated into flock background processes.", src)
+					boutput(T, "<span class='flocksay'><b>\[SYSTEM: Your higher cognition has been forcibly reintegrated into the collective will of the flock.\]</b></span>")
+					T.death()
+
 /datum/flock/proc/describe_state()
 	var/list/state = list()
 	state["update"] = "flock"

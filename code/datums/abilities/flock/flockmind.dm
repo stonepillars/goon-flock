@@ -301,10 +301,7 @@
 	if(..())
 		return TRUE
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	F.flock.flockpanel = tgui_process.try_update_ui(F, F, F.flock.flockpanel)
-	if (!F.flock.flockpanel)
-		F.flock.flockpanel = new(F, F, "FlockPanel")
-		F.flock.flockpanel.open()
+	F.flock.ui_interact(F, F.flock.flockpanel)
 
 ////////////////////////////////
 
