@@ -592,6 +592,8 @@
 		src.flock?.registerUnit(B)
 		SPAWN(0.2 SECONDS)
 			B.set_loc(pick(candidate_turfs))
+	var/obj/item/flockcache/cache = new(T)
+	cache.resources = src.resources
 	SPAWN(0.1 SECONDS) // make sure the animation finishes
 		// finally, away with us
 		src.ghostize()
