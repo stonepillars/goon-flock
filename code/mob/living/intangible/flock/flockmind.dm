@@ -35,6 +35,7 @@
 			var/mob/living/E = locate(params["origin"])
 			if(E)
 				src.flock.removeEnemy(E)
+				src.flock.update_ui()
 		if("eject_trace")
 			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
 			if(T)

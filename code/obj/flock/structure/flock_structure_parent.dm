@@ -52,7 +52,7 @@
 /obj/flock_structure/proc/describe_state()
 	var/list/state = list()
 	state["ref"] = "\ref[src]"
-	state["name"] = src.name
+	state["name"] = src.flock_id
 	state["health"] = src.health
 	var/area/myArea = get_area(src)
 	if(isarea(myArea))

@@ -29,6 +29,10 @@
 	processing_items |= src
 	panel = new(src)
 
+/datum/flock/proc/update_ui()
+	if (flockpanel)
+		tgui_process.try_update_ui(usr, src, flockpanel)
+
 /datum/flock/proc/describe_state()
 	var/list/state = list()
 	state["update"] = "flock"
@@ -67,11 +71,9 @@
 			src.enemies -= name
 	state["enemies"] = enemylist
 
-	// DESCRIBE VITALS (do this last so we can report list lengths)
+	// DESCRIBE VITALS
 	var/list/vitals = list()
 	vitals["name"] = src.name
-	vitals["drones"] = length(dronelist)
-	vitals["partitions"] = length(tracelist)
 	state["vitals"] = vitals
 
 	return state
@@ -114,7 +116,8 @@
 	update["update"] = "add"
 	update["key"] = "partitions"
 	// ref is already provided
-	panel.PushUpdate(update)
+	// panel.PushUpdate(update)
+	update_ui()
 
 /datum/flock/proc/removeTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
@@ -126,7 +129,8 @@
 	update["update"] = "remove"
 	update["key"] = "partitions"
 	update["ref"] = "\ref[T]"
-	panel.PushUpdate(update)
+	// panel.PushUpdate(update)
+	update_ui()
 
 // ANNOTATIONS
 
@@ -234,7 +238,8 @@
 			update["update"] = "add"
 			update["key"] = "drones"
 			// ref is already provided
-			panel.PushUpdate(update)
+			// panel.PushUpdate(update)
+			update_ui()
 
 /datum/flock/proc/removeDrone(var/atom/movable/D)
 	if(isflock(D) || isflockstructure(D))
@@ -246,7 +251,8 @@
 			update["update"] = "remove"
 			update["key"] = "drones"
 			update["ref"] = "\ref[D]"
-			panel.PushUpdate(update)
+			// panel.PushUpdate(update)
+			update_ui()
 
 		if(D:real_name && busy_tiles[D:real_name])
 			src.busy_tiles[D:real_name] = null
@@ -279,7 +285,8 @@
 		update["ref"] = "\ref[M]"
 		update["name"] = M.name
 		update["area"] = enemy_area
-		panel.PushUpdate(update)
+		// panel.PushUpdate(update)
+		update_ui()
 	else
 		enemy_deets = src.enemies[enemy_name]
 		enemy_deets["last_seen"] = get_area(M)
@@ -297,7 +304,8 @@
 			update["update"] = "remove"
 			update["key"] = "enemies"
 			update["ref"] = "\ref[M]"
-			panel.PushUpdate(update)
+			// panel.PushUpdate(update)
+			update_ui()
 	src.updateAnnotations()
 
 /datum/flock/proc/isEnemy(var/mob/living/M)
