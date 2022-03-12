@@ -87,6 +87,7 @@ const iconLookup = {
   "harvesting": "cogs",
   "controlled": "wifi",
   "replicating": "egg",
+  "rallying": "map-marker",
 };
 const taskIcon = function (task) {
   let iconString = iconLookup[task];
