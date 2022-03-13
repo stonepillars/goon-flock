@@ -22,7 +22,7 @@
 	..() //linter machine go ANGRY
 
 /datum/flock_tile_group/proc/process()
-	..()
+	. = 0
 
 /datum/flock_tile_group/proc/addtile(var/turf/simulated/floor/feather/f)
 	members |= f

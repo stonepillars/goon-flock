@@ -147,44 +147,43 @@
 		return 0
 
 /datum/flock/proc/total_resources()
-	var/res = 0
+	. = 0
 	for(var/mob/living/critter/flock/F in src.units)
-		res += F.resources
-	return res
+		. += F.resources
+
 
 /datum/flock/proc/total_compute()
-	var/res = 0
-	var/tmp = 0
+	. = 0
+	var/comp_provided = 0
 	for(var/mob/living/critter/flock/F in src.units)
-		tmp = F.compute_provided()
-		if(tmp>0)
-			res += tmp
+		comp_provided = F.compute_provided()
+		if(comp_provided>0)
+			. += comp_provided
 
 	for(var/obj/flock_structure/S in src.structures)
-		tmp = S.compute_provided()
-		if(tmp>0)
-			res += tmp
-	return res
+		comp_provided = S.compute_provided()
+		if(comp_provided>0)
+			. += comp_provided
+
 
 /datum/flock/proc/used_compute()
-	var/res = 0
-	var/tmp = 0
+	. = 0
+	var/comp_provided = 0
 	for(var/mob/living/critter/flock/F in src.units)
-		tmp = F.compute_provided()
-		if(tmp<0)
-			res += abs(tmp)
+		comp_provided = F.compute_provided()
+		if(comp_provided<0)
+			. += abs(comp_provided)
 
 	for(var/obj/flock_structure/S in src.structures)
-		tmp = S.compute_provided()
-		if(tmp<0)
-			res += abs(tmp)
+		comp_provided = S.compute_provided()
+		if(comp_provided<0)
+			. += abs(comp_provided)
 
 	//not strictly necissary, but maybe future traces can provide compute in some way or cost more when doing stuff?
 	for(var/mob/living/intangible/flock/trace/T in src.traces)
-		tmp = T.compute_provided()
-		if(tmp<0)
-			res += abs(tmp)
-	return res
+		comp_provided = T.compute_provided()
+		if(comp_provided<0)
+			. += abs(comp_provided)
 
 /datum/flock/proc/can_afford_compute(var/cost)
 	return (cost <= src.total_compute() - src.used_compute())
@@ -318,15 +317,15 @@
 		aH.updateCompute()
 // STRUCTURES
 
-/datum/flock/proc/registerStructure(var/atom/movable/D)
-	if(isflockstructure(D))
-		src.structures |= D
+/datum/flock/proc/registerStructure(var/atom/movable/S)
+	if(isflockstructure(S))
+		src.structures |= S
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 
-/datum/flock/proc/removeStructure(var/atom/movable/D)
-	if(isflockstructure(D))
-		src.structures -= D
+/datum/flock/proc/removeStructure(var/atom/movable/S)
+	if(isflockstructure(S))
+		src.structures -= S
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 

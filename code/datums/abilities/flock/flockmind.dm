@@ -6,7 +6,7 @@
 	tabName = "Flockmind"
 	usesPoints = 1
 	points = 0 //total compute - used compute
-	var/tC = 0 //total compute
+	var/totalCompute = 0
 	regenRate = 0
 	topBarRendered = 1
 	rendered = 1
@@ -16,14 +16,14 @@
 	var/mob/living/intangible/flock/flockmind/F = owner
 	if(!F?.flock)
 		return //someone made a flockmind without a flock, or gave this ability holder to something else.
-	src.tC = F.flock.total_compute()
-	var/uC = F.flock.used_compute()
-	src.points = src.tC - uC
+	src.totalCompute = F.flock.total_compute()
+	var/usedCompute = F.flock.used_compute()
+	src.points = src.totalCompute - usedCompute
 
 /datum/abilityHolder/flockmind/onAbilityStat()
 	..()
 	.= list()
-	.["Compute:"] = "[round(src.points)]/[round(src.tC)]"
+	.["Compute:"] = "[round(src.points)]/[round(src.totalCompute)]"
 	//.["Total Compute:"] = round(F.flock?.total_compute())
 	return
 
