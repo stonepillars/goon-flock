@@ -179,7 +179,7 @@
 		if(comp_provided<0)
 			. += abs(comp_provided)
 
-	//not strictly necissary, but maybe future traces can provide compute in some way or cost more when doing stuff?
+	//not strictly necessary, but maybe future traces can provide compute in some way or cost more when doing stuff?
 	for(var/mob/living/intangible/flock/trace/T in src.traces)
 		comp_provided = T.compute_provided()
 		if(comp_provided<0)
