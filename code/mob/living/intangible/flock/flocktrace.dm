@@ -9,6 +9,7 @@
 	desc = "The representation of a partition of the will of the flockmind."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flocktrace"
+	compute = -100 //it is expensive to run more threads
 
 /mob/living/intangible/flock/trace/New(atom/loc, datum/flock/F)
 	..()
@@ -65,7 +66,9 @@
 /mob/living/intangible/flock/trace/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return 1
-	if (src.flock && src.flock.units && src.flock.units.len <= 0)
+	var/datum/abilityHolder/flockmind/aH = src.abilityHolder
+	aH.updateCompute()
+	if (src.flock && src.flock.total_compute() <= 0)
 		boutput(src, "<span class='alert'>There are no more drones left in the flock to compute your consciousness!</span>")
 		src.death() // get rekt
 

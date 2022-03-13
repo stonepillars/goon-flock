@@ -22,6 +22,8 @@
 
 	usesgroups = TRUE
 
+	compute = -20 //targetting consumes compute
+
 	// debug amount scale up if needed.
 	poweruse = 20
 

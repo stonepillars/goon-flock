@@ -21,6 +21,7 @@
 	var/snooping = 0 //are both sides of communication currently accessible?
 	var/datum/tgui/flockpanel
 
+
 /datum/flock/New()
 	..()
 	src.name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
@@ -151,6 +152,41 @@
 		res += F.resources
 	return res
 
+/datum/flock/proc/total_compute()
+	var/res = 0
+	var/tmp = 0
+	for(var/mob/living/critter/flock/F in src.units)
+		tmp = F.compute_provided()
+		if(tmp>0)
+			res += tmp
+
+	for(var/obj/flock_structure/S in src.structures)
+		tmp = S.compute_provided()
+		if(tmp>0)
+			res += tmp
+	return res
+
+/datum/flock/proc/used_compute()
+	var/res = 0
+	var/tmp = 0
+	for(var/mob/living/critter/flock/F in src.units)
+		tmp = F.compute_provided()
+		if(tmp<0)
+			res += abs(tmp)
+
+	for(var/obj/flock_structure/S in src.structures)
+		tmp = S.compute_provided()
+		if(tmp<0)
+			res += abs(tmp)
+
+	//not strictly necissary, but maybe future traces can provide compute in some way or cost more when doing stuff?
+	for(var/mob/living/intangible/flock/trace/T in src.traces)
+		tmp = T.compute_provided()
+		if(tmp<0)
+			res += abs(tmp)
+	return res
+
+
 /datum/flock/proc/registerFlockmind(var/mob/living/intangible/flock/flockmind/F)
 	if(!F)
 		return
@@ -160,11 +196,15 @@
 	if(!T)
 		return
 	src.traces |= T
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH.updateCompute()
 
 /datum/flock/proc/removeTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces -= T
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH.updateCompute()
 
 // ANNOTATIONS
 
@@ -261,15 +301,32 @@
 // UNITS
 
 /datum/flock/proc/registerUnit(var/atom/movable/D)
-	if(isflock(D) || isflockstructure(D))
+	if(isflock(D))
 		src.units |= D
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH.updateCompute()
 
 /datum/flock/proc/removeDrone(var/atom/movable/D)
-	if(isflock(D) || isflockstructure(D))
+	if(isflock(D))
 		src.units -= D
 
 		if(D:real_name && busy_tiles[D:real_name])
 			src.busy_tiles[D:real_name] = null
+		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+		aH.updateCompute()
+// STRUCTURES
+
+/datum/flock/proc/registerStructure(var/atom/movable/D)
+	if(isflockstructure(D))
+		src.structures |= D
+		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+		aH.updateCompute()
+
+/datum/flock/proc/removeStructure(var/atom/movable/D)
+	if(isflockstructure(D))
+		src.structures -= D
+		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+		aH.updateCompute()
 
 /datum/flock/proc/getComplexDroneCount()
 	var/count = 0
