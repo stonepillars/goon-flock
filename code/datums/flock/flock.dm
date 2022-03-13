@@ -186,6 +186,8 @@
 			res += abs(tmp)
 	return res
 
+/datum/flock/proc/can_afford_compute(var/cost)
+	return (cost <= src.total_compute() - src.used_compute())
 
 /datum/flock/proc/registerFlockmind(var/mob/living/intangible/flock/flockmind/F)
 	if(!F)

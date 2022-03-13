@@ -20,8 +20,6 @@
 	var/compute = 0
 	/// can flockdrones pass through this akin to a grille? need to set USE_CANPASS to make this work however
 	var/passthrough = FALSE
-	/// does this use(/how much) power? (negatives mean it makes power)
-	var/poweruse = 0
 	/// not everything needs a group so dont check for everysingle god damn structure
 	var/usesgroups = FALSE
 	/// what group are we connected to?
