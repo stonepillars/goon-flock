@@ -46,3 +46,22 @@
 	if(src.building)
 		new building(get_turf(src), src.flock)
 	qdel(src)
+
+/obj/flock_structure/ghost/proc/cancelBuild()
+	if (currentmats > 0)
+		var/obj/item/flockcache/cache = new(get_turf(src))
+		cache.resources = currentmats
+	flock_speak(null, "Tealprint derealizing", flock)
+	playsound(src, 'sound/misc/flockmind/flockdrone_door_deny.ogg', 50, 1)
+	qdel(src)
+
+/obj/flock_structure/ghost/verb/cancel()
+	set src in view()
+	set category = "Local"
+	set name = "Cancel"
+	if (!istype(usr, /mob/living/intangible/flock/flockmind))
+		var/mob/living/critter/flock/drone/drone = usr
+		if (istype(drone) && istype(drone.controller, /mob/living/intangible/flock/flockmind))
+			cancelBuild()
+		return
+	cancelBuild()
