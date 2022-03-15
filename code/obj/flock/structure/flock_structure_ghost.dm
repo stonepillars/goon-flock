@@ -28,10 +28,6 @@
 		flock_speak(null, "ERROR: No Structure Tealprint Assigned, Deleting", flock)
 		qdel(src) //no exist if building null
 
-/obj/flock_structure/ghost/attack_hand(mob/user)
-	. = ..()
-	boutput(user, "attackhand called")
-
 /obj/flock_structure/ghost/Click(location, control, params)
 	if ("alt" in params2list(params) || !istype(usr, /mob/living/intangible/flock/flockmind))
 		return ..()
