@@ -99,9 +99,9 @@
 /datum/targetable/flockmindAbility/designateEnemy/cast(atom/target)
 	if(..())
 		return 1
-	var/mob/living/M = target
+	var/mob/M = target
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(isliving(M))
+	if(isliving(M) && !isflock(M))
 		if(F)
 			var/datum/flock/flock = F.flock
 			if(flock)
