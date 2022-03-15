@@ -7,6 +7,8 @@
 		. = ..()
 		if (istype(owner,/mob/living/critter/flock/drone))
 			flockdrone = owner
+		else
+			throw EXCEPTION("Flockdrone abilityHolder initialized on non-flockdrone [src]")
 
 	onAbilityStat()
 		..()
