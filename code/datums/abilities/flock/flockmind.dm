@@ -139,11 +139,15 @@
 		return 1
 	if(!istype(target))
 		return 1
-	playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
-	boutput(holder.owner, "<span class='notice'>You focus the flock's efforts on fixing [target.real_name]</span>")
-	sleep(1.5 SECONDS)
-	target.HealDamage("All", 200, 200)
-	target.visible_message("<span class='notice'><b>[target]</b> suddenly reforms its broken parts into a solid whole!</span>", "<span class='notice'>The flockmind has restored you to full health!</span>")
+	if (target.get_health_percentage() < 1)
+		playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
+		boutput(holder.owner, "<span class='notice'>You focus the flock's efforts on fixing [target.real_name]</span>")
+		sleep(1.5 SECONDS)
+		target.HealDamage("All", 200, 200)
+		target.visible_message("<span class='notice'><b>[target]</b> suddenly reforms its broken parts into a solid whole!</span>", "<span class='notice'>The flockmind has restored you to full health!</span>")
+	else
+		boutput(holder.owner, "<span class='notice'>[target.real_name] has no damage!</span>")
+		return 1
 
 /////////////////////////////////////////
 
