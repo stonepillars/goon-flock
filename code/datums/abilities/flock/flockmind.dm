@@ -99,16 +99,19 @@
 /datum/targetable/flockmindAbility/designateEnemy/cast(atom/target)
 	if(..())
 		return 1
+
 	var/mob/M = target
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(isliving(M) && !isflock(M))
-		if(F)
-			var/datum/flock/flock = F.flock
-			if(flock)
-				flock.updateEnemy(M)
-	else
-		boutput(holder.owner, "<span class='alert'>That isn't a valid target.</span>")
+
+	if (!isliving(M) || isflock(M))
+		if (F)
+			boutput(F, "<span class='alert'>That isn't a valid target.</span>")
 		return 1
+
+	if(F)
+		var/datum/flock/flock = F.flock
+		if(flock)
+			flock.updateEnemy(M)
 
 /////////////////////////////////////////
 
