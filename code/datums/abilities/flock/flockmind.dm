@@ -351,7 +351,7 @@
 		return 1
 	for (var/atom/O in T.contents)
 		if (O.density && !isflock(O))
-			boutput(holder.owner, "<span class='alert'>A tealprint cannot be scheduled with [O] on the same tile!</span>")
+			boutput(holder.owner, "<span class='alert'>That tile has something that blocks tealprint creation!</span>")
 			return 1
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
 	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", list("Collector", "Sentinel"))
