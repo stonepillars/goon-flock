@@ -103,7 +103,7 @@
 	var/mob/M = target
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
 
-	if (!isliving(M) || isflock(M))
+	if (!isliving(M) || isflock(M) || isintangible(M))
 		if (F)
 			boutput(F, "<span class='alert'>That isn't a valid target.</span>")
 		return 1
