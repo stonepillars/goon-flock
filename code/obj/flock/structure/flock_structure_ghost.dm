@@ -29,7 +29,7 @@
 		qdel(src) //no exist if building null
 
 /obj/flock_structure/ghost/Click(location, control, params)
-	if ("alt" in params2list(params) || !istype(usr, /mob/living/intangible/flock/flockmind))
+	if (("alt" in params2list(params)) || !istype(usr, /mob/living/intangible/flock/flockmind))
 		return ..()
 	if (tgui_alert(usr, "Cancel tealprint construction?", "Tealprint", list("Yes", "No")) == "Yes")
 		cancelBuild()
