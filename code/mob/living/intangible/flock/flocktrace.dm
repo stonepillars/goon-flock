@@ -9,6 +9,7 @@
 	desc = "The representation of a partition of the will of the flockmind."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flocktrace"
+	layer = NOLIGHT_EFFECTS_LAYER_BASE
 
 /mob/living/intangible/flock/trace/New(atom/loc, datum/flock/F)
 	..()
