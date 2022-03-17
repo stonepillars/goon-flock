@@ -119,17 +119,17 @@
 
 /datum/targetable/flockmindAbility/designateEnemy/cast(atom/target)
 	if(..())
-		return 1
-	var/mob/living/M = target
+		return TRUE
+
+	var/mob/M = target
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(isliving(M))
-		if(F)
-			var/datum/flock/flock = F.flock
-			if(flock)
-				flock.updateEnemy(M)
-	else
-		boutput(holder.owner, "<span class='alert'>That isn't a valid target.</span>")
-		return 1
+
+	if (!isliving(M) || isflock(M) || isintangible(M))
+		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
+		return TRUE
+
+	var/datum/flock/flock = F.flock
+	flock?.updateEnemy(M)
 
 /////////////////////////////////////////
 
@@ -345,14 +345,23 @@
 	if(!istype(T, /turf/simulated/floor/feather))
 		boutput(holder.owner, "<span class='alert'>You aren't above a flocktile.</span>")//todo maybe make this flock themed?
 		return 1
+	if(locate(/obj/flock_structure/ghost) in T)
+		boutput(holder.owner, "<span class='alert'>A tealprint has already been scheduled here!</span>")
+		return 1
 	if(locate(/obj/flock_structure) in T)
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
 		return 1
+
+	for (var/atom/O in T.contents)
+		if (O.density && !isflock(O))
+			boutput(holder.owner, "<span class='alert'>That tile has something that blocks tealprint creation!</span>")
+			return 1
 
 	var/list/friendlyNames = list()
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
 	for(var/obj/flock_structure/S as anything in F.flock.unlockedStructures)
 		friendlyNames += initial(S.flock_id) //flock_id is the friendly name for the structure
+
 
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
 	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
