@@ -455,7 +455,7 @@
 	if(floors_no_longer_existing.len > 0)
 		src.all_owned_tiles -= floors_no_longer_existing
 
-	if(src.total_compute() >= 10)
+	if(src.total_compute() >= 1000)
 		src.unlockStructure(/obj/flock_structure/relay)
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
