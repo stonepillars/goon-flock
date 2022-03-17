@@ -15,3 +15,6 @@
 			var/image/overlay = image('icons/misc/featherzone.dmi', "compute_screen[id]")
 			src.UpdateOverlays(overlay, "display")
 			sleep(5 SECONDS)
+
+/obj/flock_structure/compute/building_specific_info()
+	return {"<span class='bold'>Compute generation:</span> Currently generating [src.compute_provided()]."}
