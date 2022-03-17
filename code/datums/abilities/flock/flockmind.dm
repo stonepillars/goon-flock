@@ -372,6 +372,7 @@
 	for(var/obj/flock_structure/S as anything in F.flock.unlockedStructures)
 		if(initial(S.flock_id) == structurewanted)
 			structurewantedtype = S
+			break
 
 	if(structurewantedtype)
 		F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
