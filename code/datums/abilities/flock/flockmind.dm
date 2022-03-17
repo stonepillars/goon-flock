@@ -341,8 +341,6 @@
 	targeted = 0
 
 /datum/targetable/flockmindAbility/createStructure/cast()
-	var/resourcecost = null
-	var/structurewantedtype = null
 	var/turf/T = get_turf(holder.owner)
 	if(!istype(T, /turf/simulated/floor/feather))
 		boutput(holder.owner, "<span class='alert'>You aren't above a flocktile.</span>")//todo maybe make this flock themed?
@@ -350,17 +348,23 @@
 	if(locate(/obj/flock_structure) in T)
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
 		return 1
+
+	var/list/friendlyNames = list()
+	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	for(var/obj/flock_structure/S as anything in F.flock.unlockedStructures)
+		friendlyNames += initial(S.flock_id) //flock_id is the friendly name for the structure
+
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
-	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", list("Collector", "Sentinel"))
+	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
+
 	if (!structurewanted)
 		return TRUE
-	switch(structurewanted)
-		if("Collector")
-			structurewantedtype = /obj/flock_structure/collector
-			resourcecost = 200
-		if("Sentinel")
-			structurewantedtype = /obj/flock_structure/sentinel
-			resourcecost = 300
+	var/obj/flock_structure/structurewantedtype = null
+	for(var/obj/flock_structure/S as anything in F.flock.unlockedStructures)
+		if(initial(S.flock_id) == structurewanted)
+			structurewantedtype = S
+
 	if(structurewantedtype)
-		var/mob/living/intangible/flock/F = holder.owner
-		F.createstructure(structurewantedtype, resourcecost)
+		F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
+
+

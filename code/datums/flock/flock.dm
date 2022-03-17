@@ -16,6 +16,7 @@
 	var/list/annotation_viewers = list()
 	var/list/annotations = list() // key is atom ref, value is image
 	var/list/obj/flock_structure/structures = list()
+	var/list/obj/flock_structure/unlockedStructures = list(/obj/flock_structure/collector, /obj/flock_structure/sentinel) //list of flock_structure type paths
 	var/mob/living/intangible/flock/flockmind/flockmind
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
@@ -317,6 +318,16 @@
 		aH.updateCompute()
 // STRUCTURES
 
+/** This function expects a type path, which must be a subclass of /obj/flock_structure */
+/datum/flock/proc/unlockStructure(var/type_path)
+	var/obj/flock_structure/S = type_path
+	if(!S)
+		return //not a flock_structure
+	if(S in src.unlockedStructures)
+		return //already unlocked
+	src.unlockedStructures |= S //could use +=, but |= is safer
+	flock_speak(null, "New structure devised: [initial(S.flock_id)]", src)
+
 /datum/flock/proc/registerStructure(var/atom/movable/S)
 	if(isflockstructure(S))
 		src.structures |= S
@@ -440,18 +451,12 @@
 			// tile got killed, remove it
 			floors_no_longer_existing |= T
 			continue
-		// check adjacent tiles to see if we've been surrounded and can start generating, or if we're no longer surrounded and can't generate
-		// var/validNeighbors = 0
-		// var/list/neighbors = getNeighbors(T, cardinal)
-		// for(var/turf/simulated/floor/feather/F in neighbors)
-		// 	validNeighbors += 1
-		// if(validNeighbors < 4 && T.generating)
-		// 	T.off()
-		// else if(validNeighbors >= 4 && !T.generating)
-		// 	T.on()
 
 	if(floors_no_longer_existing.len > 0)
 		src.all_owned_tiles -= floors_no_longer_existing
+
+	if(src.total_compute() >= 10)
+		src.unlockStructure(/obj/flock_structure/relay)
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
