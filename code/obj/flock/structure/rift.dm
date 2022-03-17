@@ -4,7 +4,6 @@
 /obj/flock_structure/rift
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "rift"
-	anchored = TRUE
 	density = 0
 	name = "glowing portal thingymabob"
 	desc = "Oh god is that a fucking light grenade?!"
