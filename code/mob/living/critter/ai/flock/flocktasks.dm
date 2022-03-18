@@ -4,6 +4,10 @@
 //task priorities and preconditions at a glance:
 /*
 replicate
+	-weight 7
+	-precondition: can_afford(100)
+
+nest
 	-weight 6
 	-precondition: can_afford(100)
 
@@ -11,7 +15,7 @@ building
 	-weight 5
 	-precondition: can_afford(20)
 
-building-drone
+building/drone
 	-weight 1
 	-precondition: can_afford(20)
 
@@ -20,7 +24,7 @@ repair
 	-precondition: can_afford(10)
 
 deposit
-	-weight 7
+	-weight 8
 	-procondition: can_afford(10)
 
 open_container
@@ -73,14 +77,13 @@ butcher
 	max_dist = 0
 // most of the functionality here is already in the base goalbased task, we only want movement
 
-
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // REPLICATION GOAL
 // targets: valid nesting sites
 // precondition: 100 resources
 /datum/aiTask/sequence/goalbased/replicate
 	name = "replicating"
-	weight = 6
+	weight = 7
 	can_be_adjacent_to_target = 0
 
 /datum/aiTask/sequence/goalbased/replicate/New(parentHolder, transTask)
@@ -100,7 +103,7 @@ butcher
 		if(isnull(locate(/obj/flock_structure/egg) in F))
 			// if we can get a valid path to the target, include it for consideration
 			. += F
-	. = get_path_to(holder.owner, ., 40, 0)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -131,6 +134,45 @@ butcher
 /datum/aiTask/succeedable/replicate/on_reset()
 	has_started = 0
 
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// NEST + REPLICATION GOAL
+// targets: valid nesting sites
+// precondition: 120 resources, no flocktiles in view
+/datum/aiTask/sequence/goalbased/nest
+	name = "nesting"
+	weight = 6
+	can_be_adjacent_to_target = 1
+	max_dist = 2
+
+/datum/aiTask/sequence/goalbased/nest/New(parentHolder, transTask)
+	..(parentHolder, transTask)
+	add_task(holder.get_instance(/datum/aiTask/succeedable/build, list(holder)))
+	//add_task(holder.get_instance(/datum/aiTask/succeedable/replicate, list(holder)))
+
+/datum/aiTask/sequence/goalbased/nest/precondition()
+	. = 0
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(F?.can_afford(120))
+		. = 1 //we can afford
+		for(var/turf/simulated/floor/feather/T in view(max_dist, holder.owner))
+			. = 0 //but there's a flocktile in view
+
+
+/datum/aiTask/sequence/goalbased/nest/get_targets()
+	. = list()
+	var/mob/living/critter/flock/F = holder.owner
+	// grab a nearby unconverted tile
+	for(var/turf/simulated/floor/T in view(max_dist, holder.owner))
+		if(!isfeathertile(T))
+			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
+				continue // this tile's been claimed by someone else
+			// if we can get a valid path to the target, include it for consideration
+			. += T
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
+
+////////
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BUILDING GOAL
 // targets: priority tiles, fetched from holder.owner.flock (with casting)
@@ -159,20 +201,27 @@ butcher
 			F.flock.reserveTurf(T, F.real_name)
 
 /datum/aiTask/sequence/goalbased/build/get_targets()
-	. = list()
 	var/mob/living/critter/flock/F = holder.owner
 
 	if(F?.flock)
 		// if we can go for a tile we already have reserved, go for it
 		var/turf/simulated/reserved = F.flock.busy_tiles[F.real_name]
-		if(istype(reserved) && !isfeathertile(reserved) && get_path_to(holder.owner, reserved, 20, 1))
-			. += reserved
-			return
+		if(istype(reserved) && !isfeathertile(reserved))
+			. = get_path_to(holder.owner, reserved, max_dist*2, 1)
+			if(length(.))
+				return
+			else
+				//unreserve the turf if we can't get at it
+				F.flock.busy_tiles[F.real_name] = null
+
 		// if there's a priority tile we can go for, do it
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
-			. += priority_turfs
+			. = get_path_to(holder.owner, priority_turfs, max_dist*2, 1)
+			if(length(.))
+				return
 
+	. = list()
 	// else just go for one nearby
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
 		if(!isfeathertile(T))
@@ -180,7 +229,7 @@ butcher
 				continue // this tile's been claimed by someone else
 			// if we can get a valid path to the target, include it for consideration
 			. += T
-	. = get_path_to(holder.owner, ., 60, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -234,20 +283,27 @@ butcher
 
 
 /datum/aiTask/sequence/goalbased/build/drone/get_targets()
-	. = list()
 	var/mob/living/critter/flock/F = holder.owner
 
 	if(F?.flock)
 		// if we can go for a tile we already have reserved, go for it
 		var/turf/simulated/reserved = F.flock.busy_tiles[F.real_name]
-		if(istype(reserved) && !isfeathertile(reserved) && get_path_to(holder.owner, reserved, 20, 1))
-			. += reserved
-			return
+		if(istype(reserved) && !isfeathertile(reserved))
+			. = get_path_to(holder.owner, reserved, max_dist*2, 1)
+			if(length(.))
+				return
+			else
+				//unreserve the turf if we can't get at it
+				F.flock.busy_tiles[F.real_name] = null
+
 		// if there's a priority tile we can go for, do it
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
-			. += priority_turfs
+			. = get_path_to(holder.owner, priority_turfs, max_dist*2, 1)
+			if(length(.))
+				return
 
+	. = list()
 	//as drone, we want to prioritise converting doors and walls and containers
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
 		if(!isfeathertile(T) && (
@@ -267,7 +323,7 @@ butcher
 					continue // this tile's been claimed by someone else
 				// if we can get a valid path to the target, include it for consideration
 				. += T
-	. = get_path_to(holder.owner, ., 60, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -305,7 +361,7 @@ butcher
 		if(F.get_health_percentage() < 0.66 && !isdead(F))//yeesh dont try to repair something which is dead
 			// if we can get a valid path to the target, include it for consideration
 			. += F
-	. = get_path_to(holder.owner, ., 40, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -343,7 +399,7 @@ butcher
 // precondition: 10 resources
 /datum/aiTask/sequence/goalbased/deposit
 	name = "depositing"
-	weight = 7
+	weight = 8
 
 /datum/aiTask/sequence/goalbased/deposit/New(parentHolder, transTask)
 	..(parentHolder, transTask)
@@ -370,7 +426,7 @@ butcher
 		if(S.flock == F.flock && S.goal > S.currentmats)
 			// if we can get a valid path to the target, include it for consideration
 			. += S
-	. = get_path_to(holder.owner, ., 40, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -426,7 +482,7 @@ butcher
 		if(!S.open && !S.welded && !S.locked)
 			// if we can get a valid path to the target, include it for consideration
 			. += S
-	. = get_path_to(holder.owner, ., 10, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -482,7 +538,7 @@ butcher
 		if(length(I.contents) && I.loc != holder.owner && I.does_not_open_in_pocket)
 			// if we can get a valid path to the target, include it for consideration
 			. += I
-	. = get_path_to(holder.owner, ., 10, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -581,7 +637,7 @@ butcher
 					continue // do not try to fetch paper out of an empty paper bin forever
 			// if we can get a valid path to the target, include it for consideration
 			. += I
-	. = get_path_to(holder.owner, ., 40, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
@@ -738,7 +794,7 @@ butcher
 				if(!istype(M.loc.type, /obj/icecube/flockdrone))
 					// if we can get a valid path to the target, include it for consideration
 					. += M
-	. = get_path_to(holder.owner, ., 40, 1)
+	. = get_path_to(holder.owner, ., target_range*2, 1)
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////
@@ -769,7 +825,7 @@ butcher
 			continue
 		if(isdead(F))
 			. += F
-	. = get_path_to(holder.owner, ., 40, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
 
