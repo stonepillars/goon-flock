@@ -1,5 +1,5 @@
 /obj/flock_structure/compute
-	name = "Some weird lookin' thinking thing"
+	name = "weird lookin' thinking thing"
 	desc = "It almost looks like a terminal of some kind."
 	flock_id = "Compute node"
 	health = 60
@@ -14,13 +14,13 @@
 	var/image/screen = image('icons/misc/featherzone.dmi', "compute_screen", EFFECTS_LAYER_BASE)
 	screen.pixel_y = 14
 	src.UpdateOverlays(screen, "screen")
-	SPAWN(0)
-		while(src)
-			var/id = rand(1, src.display_count)
-			var/image/overlay = image('icons/misc/featherzone.dmi', "compute_display[id]", EFFECTS_LAYER_BASE)
-			overlay.pixel_y = 16
-			src.UpdateOverlays(overlay, "display")
-			sleep(3 SECONDS)
+
+/obj/flock_structure/compute/process()
+	if (!(ticker.round_elapsed_ticks % (3 SECONDS)))
+		var/id = rand(1, src.display_count)
+		var/image/overlay = image('icons/misc/featherzone.dmi', "compute_display[id]", EFFECTS_LAYER_BASE)
+		overlay.pixel_y = 16
+		src.UpdateOverlays(overlay, "display")
 
 /obj/flock_structure/compute/disposing()
 	src.remove_simple_light("compute_light")
