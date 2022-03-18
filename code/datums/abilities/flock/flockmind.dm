@@ -78,10 +78,39 @@
 
 /datum/targetable/flockmindAbility/spawnEgg/cast(atom/target)
 	if(..())
-		return 1
+		return TRUE
+
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(F)
-		F.spawnEgg()
+
+	var/turf/T = get_turf(F)
+
+	if (istype(T, /turf/space/) || istype(T.loc, /area/station/solar) || istype(T.loc, /area/station/mining/magnet))
+		boutput(F, "<span class='alert'>Space and exposed areas are unsuitable for rift placement!</span>")
+		return TRUE
+
+	if (!isadmin(F))
+		if(IS_ARRIVALS(T.loc))
+			boutput(F, "<spawn class='alert'>Your rift can't be placed inside arrivals!</span>")
+			return TRUE
+
+		if (!istype(T.loc, /area/station/))
+			boutput(F, "<spawn class='alert'>Your rift needs to be placed on the [station_or_ship()]!</span>")
+			return TRUE
+
+		if (istype(T, /turf/unsimulated/))
+			boutput(F, "<span class='alert'>This kind of tile cannot support rift placement.</span>")
+			return TRUE
+
+		if (T.density)
+			boutput(F, "<span class='alert'>Your rift cannot be placed inside a wall!</span>")
+			return TRUE
+
+		for (var/atom/O in T.contents)
+			if (O.density)
+				boutput(F, "<span class='alert'>That tile is blocked by [O].</span>")
+				return TRUE
+
+	F.spawnEgg()
 
 /////////////////////////////////////////
 
@@ -347,9 +376,16 @@
 	if(!istype(T, /turf/simulated/floor/feather))
 		boutput(holder.owner, "<span class='alert'>You aren't above a flocktile.</span>")//todo maybe make this flock themed?
 		return 1
+	if(locate(/obj/flock_structure/ghost) in T)
+		boutput(holder.owner, "<span class='alert'>A tealprint has already been scheduled here!</span>")
+		return 1
 	if(locate(/obj/flock_structure) in T)
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
 		return 1
+	for (var/atom/O in T.contents)
+		if (O.density && !isflock(O))
+			boutput(holder.owner, "<span class='alert'>That tile has something that blocks tealprint creation!</span>")
+			return 1
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
 	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", list("Collector", "Sentinel"))
 	if (!structurewanted)
