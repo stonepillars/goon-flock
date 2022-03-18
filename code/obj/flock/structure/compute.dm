@@ -16,11 +16,10 @@
 	src.UpdateOverlays(screen, "screen")
 
 /obj/flock_structure/compute/process()
-	if (!(ticker.round_elapsed_ticks % (3 SECONDS)))
-		var/id = rand(1, src.display_count)
-		var/image/overlay = image('icons/misc/featherzone.dmi', "compute_display[id]", EFFECTS_LAYER_BASE)
-		overlay.pixel_y = 16
-		src.UpdateOverlays(overlay, "display")
+	var/id = rand(1, src.display_count)
+	var/image/overlay = image('icons/misc/featherzone.dmi', "compute_display[id]", EFFECTS_LAYER_BASE)
+	overlay.pixel_y = 16
+	src.UpdateOverlays(overlay, "display")
 
 /obj/flock_structure/compute/disposing()
 	src.remove_simple_light("compute_light")
