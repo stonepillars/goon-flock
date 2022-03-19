@@ -980,23 +980,34 @@
 //#define FLOCK_SPEAKER_FLOCKTRACE 4
 //#define FLOCK_SPEAKER_NPC 5
 
-/proc/flock_speak(var/mob/speaker, var/message as text, var/datum/flock/flock, var/speak_as_admin=0)
+// for what_is_speaking, pass:
+// -null to give a general system message
+// -mob to make a mob speak
+// -flock_structure for a structure message
+/proc/flock_speak(var/what_is_speaking, var/message as text, var/datum/flock/flock, var/speak_as_admin=0)
+	var/mob/mob_speaking = null
+	var/obj/flock_structure/structure_speaking = null
+
+	if (ismob(what_is_speaking))
+		mob_speaking = what_is_speaking
+	else
+		structure_speaking = what_is_speaking
 
 	var/client/C = null
-	if(speaker)
-		C = speaker.client
+	if(mob_speaking)
+		C = mob_speaking.client
 
 	var/name = ""
 	var/is_npc = 0
-	var/is_flockmind = istype(speaker, /mob/living/intangible/flock/flockmind)
+	var/is_flockmind = istype(mob_speaking, /mob/living/intangible/flock/flockmind)
 	if(!speak_as_admin)
-		if(speaker)
-			message = speaker.say_quote(message)
+		if(mob_speaking)
+			message = mob_speaking.say_quote(message)
 		else // system message
 			message = gradientText("#3cb5a3", "#124e43", "\"[message]\"")
 			message = "alerts, [message]"
-		if(istype(speaker, /mob/living/critter/flock/drone))
-			var/mob/living/critter/flock/drone/F = speaker
+		if(istype(mob_speaking, /mob/living/critter/flock/drone))
+			var/mob/living/critter/flock/drone/F = mob_speaking
 			if(F.is_npc)
 				name = "Drone [F.real_name]"
 				is_npc = 1
@@ -1004,8 +1015,8 @@
 				name = "[F.controller.real_name]"
 				if(istype(F.controller, /mob/living/intangible/flock/flockmind))
 					is_flockmind = 1
-		else if(speaker) // not set yet
-			name = speaker.real_name // final catch
+		else if(mob_speaking) // not set yet
+			name = mob_speaking.real_name // final catch
 
 	var/rendered = ""
 	var/flockmindRendered = ""
@@ -1015,7 +1026,7 @@
 		class = "flocksay flockmindsay"
 	if(is_npc)
 		class = "flocksay flocknpc"
-	if(isnull(speaker))
+	if(isnull(mob_speaking))
 		class = "flocksay bold italics"
 		name = "\[SYSTEM\]"
 
@@ -1027,9 +1038,9 @@
 		rendered = "<span class='game [class]'><span class='bold'></span><span class='name'>ADMIN([show_other_key ? C.fakekey : C.key])</span> informs, <span class='message'>\"[message]\"</span></span>"
 		flockmindRendered = rendered // no need for URLs
 	else
-		rendered = "<span class='game [class]'><span class='bold'>\[[flock ? flock.name : "--.--"]\] </span><span class='name' [speaker ? "data-ctx='\ref[speaker.mind]'" : ""]>[name]</span> <span class='message'>[message]</span></span>"
-		flockmindRendered = "<span class='game [class]'><span class='bold'>\[[flock ? flock.name : "--.--"]\] </span><span class='name'>[flock ? "<a href='?src=\ref[flock.flockmind];origin=\ref[speaker]'>[name]</a>" : "[name]"]</span> <span class='message'>[message]</span></span>"
-		siliconrendered = "<span class='game [class]'><span class='bold'>\[[flock ? flockBasedGarbleText(flock.name, -30, flock) : "--.--"]\] </span><span class='name' [speaker ? "data-ctx='\ref[speaker.mind]'" : ""]>[flockBasedGarbleText(name, -20, flock)]</span> <span class='message'>[flockBasedGarbleText(message, 0, flock)]</span></span>"
+		rendered = "<span class='game [class]'><span class='bold'>\[[flock ? flock.name : "--.--"]\] </span><span class='name' [mob_speaking ? "data-ctx='\ref[mob_speaking.mind]'" : ""]>[name]</span> <span class='message'>[message]</span></span>"
+		flockmindRendered = "<span class='game [class]'><span class='bold'>\[[flock ? flock.name : "--.--"]\] </span><span class='name'>[flock && what_is_speaking ? "<a href='?src=\ref[flock.flockmind];origin=\ref[structure_speaking ? structure_speaking.loc : mob_speaking]'>[name]</a>" : "[name]"]</span> <span class='message'>[message]</span></span>"
+		siliconrendered = "<span class='game [class]'><span class='bold'>\[[flock ? flockBasedGarbleText(flock.name, -30, flock) : "--.--"]\] </span><span class='name' [mob_speaking ? "data-ctx='\ref[mob_speaking.mind]'" : ""]>[flockBasedGarbleText(name, -20, flock)]</span> <span class='message'>[flockBasedGarbleText(message, 0, flock)]</span></span>"
 
 	for (var/client/CC)
 		if (!CC.mob) continue
@@ -1043,9 +1054,9 @@
 			thisR = rendered
 		if(flock?.snooping && M.client && M.robot_talk_understand)
 			thisR = siliconrendered
-		if(istype(M, /mob/living/intangible/flock/flockmind) && !(istype(speaker, /mob/living/intangible/flock/flockmind)) && M:flock == flock)
+		if(istype(M, /mob/living/intangible/flock/flockmind) && !(istype(mob_speaking, /mob/living/intangible/flock/flockmind)) && M:flock == flock)
 			thisR = flockmindRendered
-		if ((istype(M, /mob/dead/observer)||M.client.holder) && speaker?.mind)
+		if ((istype(M, /mob/dead/observer)||M.client.holder) && mob_speaking?.mind)
 			thisR = "<span class='adminHearing' data-ctx='[M.client.chatOutput.getContextFlags()]'>[thisR]</span>"
 		if(thisR != "")
 			M.show_message(thisR, 2)
