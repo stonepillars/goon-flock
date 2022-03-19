@@ -789,7 +789,7 @@
 					else
 						actions.start(new/datum/action/bar/flock_repair(F), user)
 			if(/obj/flock_structure/ghost)
-				if (user.resources == 0)
+				if (user.resources <= 0)
 					boutput(user, "<span class='alert'>No resources available for construction.</span>")
 				else
 					actions.start(new /datum/action/bar/flock_deposit(target), user)
