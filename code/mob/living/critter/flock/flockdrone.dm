@@ -896,9 +896,6 @@
 	return ..()
 
 /datum/equipmentHolder/flockAbsorption/on_equip()
-	if(!isobj(item))
-		boutput(holder, "<span class='alert'>You can't possibly absorb that!</span>")
-		drop()
 	holder.visible_message("<span class='alert'>[holder] absorbs [item]!</span>", "<span class='notice'>You place [item] into [src.name] and begin breaking it down.</span>")
 	animate_flockdrone_item_absorb(item)
 
