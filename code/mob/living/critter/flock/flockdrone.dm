@@ -370,10 +370,11 @@
 		src.antigrab_counter = 0
 	if(keys & KEY_RUN)
 		if(!src.floorrunning && isfeathertile(src.loc))
-			var/turf/simulated/floor/feather/floor = src.loc
-			if(!floor.on)
-				floor.on()
-		src.start_floorrunning()
+			if(istype(src.loc, /turf/simulated/floor/feather))
+				var/turf/simulated/floor/feather/floor = src.loc
+				if(!floor.on)
+					floor.on()
+			src.start_floorrunning()
 	else if(keys && src.floorrunning)
 		src.end_floorrunning()
 	. = ..()
@@ -689,19 +690,6 @@
 		return
 	..()
 
-
-/*
-/datum/limb/flock_grip/help(mob/target, var/mob/living/critter/flock/drone/user)
-	if (user.floorrunning)
-		return FALSE
-	..()
-
-/datum/limb/flock_grip/disarm(mob/target, var/mob/living/critter/flock/drone/user)
-	if (user.floorrunning)
-		return FALSE
-	..()
-*/
-
 /datum/limb/flock_grip/grab(mob/target, var/mob/living/critter/flock/drone/user)
 	if (!user || !target)
 		return 0
@@ -913,7 +901,7 @@
 	if(!isobj(item))
 		boutput(holder, "<span class='alert'>You can't possibly absorb that!</span>")
 		drop()
-	if(isgrab(item))
+	if(istype(item, /obj/item/grab))
 		// STOP TRYING TO EAT GRABS
 		drop()
 	holder.visible_message("<span class='alert'>[holder] absorbs [item]!</span>", "<span class='notice'>You place [item] into [src.name] and begin breaking it down.</span>")
