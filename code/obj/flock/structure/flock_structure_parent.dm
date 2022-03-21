@@ -148,8 +148,11 @@
 
 /obj/flock_structure/attack_hand(var/mob/user)
 	if(user.a_intent == INTENT_HARM)
-		if(isflock(user))
-			boutput(user, "<span class='alert'>You find you can't bring yourself to harm [src]!</span>")
+		if(istype(user, /mob/living/critter/flock/drone))
+			if (istype(src, /obj/flock_structure/ghost))
+				boutput(user, "<span class='alert'>The grip tool refuses to damage a tealprint, jamming briefly.</span>")
+			else
+				boutput(user, "<span class='alert'>The grip tool refuses to damage a flockstructure, jamming briefly.</span>")
 		else
 			user.visible_message("<span class='alert'><b>[user]</b> punches [src]! It's very ineffective!</span>")
 			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
@@ -166,6 +169,12 @@
 		src.visible_message("<span class='alert'><b>[user]</b> [action] [src], but nothing happens.</span>")
 
 /obj/flock_structure/attackby(obj/item/W as obj, mob/user as mob)
+	if (istype(user, /mob/living/critter/flock/drone))
+		if (istype(src, /obj/flock_structure/ghost))
+			boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a tealprint, jamming briefly.</span>")
+		else
+			boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a flockstructure, jamming briefly.</span>")
+		return
 	src.visible_message("<span class='alert'><b>[user]</b> attacks [src] with [W]!</span>")
 	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
 

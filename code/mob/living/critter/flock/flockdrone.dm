@@ -457,6 +457,9 @@
 			src.harmedBy(P.mob_shooter)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
+	if (istype(M, /mob/living/critter/flock/drone))
+		boutput(M, "<span class='alert'>The grip tool refuses to allow harm of another flockdrone, jamming briefly.</span>")
+		return
 	// check whatever reagents are about to get dumped on us
 	var/has_harmful_chemicals = 0
 	if(istype(I, /obj/item/reagent_containers/glass))
@@ -704,6 +707,8 @@
 	var/mob/living/critter/flock/drone/F = target
 	if(istype(F, /mob/living/critter/flock/drone))
 		boutput(user, "<span class='alert'>The grip tool refuses to harm another flockdrone, jamming briefly.</span>")
+	else if(istype(F, /mob/living/critter/flock/bit))
+		boutput(user, "<span class='alert'>The grip tool refuses to harm a flockbit, jamming briefly.</span>")
 	else
 		if (!target.melee_attack_test(user))
 			return

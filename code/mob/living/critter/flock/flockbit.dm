@@ -46,6 +46,12 @@
 	else
 		..()
 
+/mob/living/critter/flock/bit/attackby(var/obj/item/I, var/mob/M)
+	if (istype(M, /mob/living/critter/flock/drone))
+		boutput(M, "<span class='alert'>The grip tool refuses to allow harm of a flockbit, jamming briefly.</span>")
+		return
+	..()
+
 /mob/living/critter/flock/bit/setup_hands()
 	..()
 	var/datum/handHolder/HH = hands[1]
