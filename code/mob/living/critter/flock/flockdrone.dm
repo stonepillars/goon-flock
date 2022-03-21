@@ -683,6 +683,11 @@
 		list("clobbers", "with a flurry of blunt instruments"),\
 		)
 
+/datum/limb/flock_grip/attack_hand(atom/target, var/mob/living/critter/flock/drone/user, var/reach, params, location, control)
+	if (istype(target, /obj/grille/flock))
+		boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a barricade, jamming briefly.</span>")
+		return
+	..()
 /datum/limb/flock_grip/grab(mob/target, var/mob/living/critter/flock/drone/user)
 	if (!user || !target)
 		return 0

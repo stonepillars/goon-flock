@@ -113,6 +113,9 @@
 	setMaterial("gnesis")
 
 /obj/storage/closet/flock/attackby(obj/item/W as obj, mob/user as mob)
+	if (istype(user, /mob/living/critter/flock/drone) && !src.open)
+		boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a flockstorage, jamming briefly.</span>")
+		return
 	// handle tools
 	if (istype(W, /obj/item/cargotele))
 		boutput(user, "<span class='alert'>For some reason, it refuses to budge.</span>")
@@ -196,6 +199,12 @@
 	else
 		..()
 
+/obj/machinery/light/flock/attackby(obj/item/W as obj, mob/user as mob)
+	if (istype(user, /mob/living/critter/flock/drone))
+		boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a flocklight, jamming briefly.</span>")
+		return
+	..()
+
 /obj/item/furniture_parts/flock_chair/special_desc(dist, mob/user)
   if(isflock(user))
     return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
@@ -229,9 +238,12 @@
 			playsound(src.loc, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
 			T.add_fingerprint(user)
 			qdel(src)
-	if (isweldingtool(C) && C:try_weld(user,0,-1,0,0))
-		boutput(user, "<span class='notice'>The fibres burn away in the same way glass doesn't. Huh.</span>")
-		qdel(src)
+	if (isweldingtool(C))
+		if (istype(user, /mob/living/critter/flock/drone))
+			boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a fibrenet, jamming briefly.</span>")
+		else if (C:try_weld(user,0,-1,0,0))
+			boutput(user, "<span class='notice'>The fibres burn away in the same way glass doesn't. Huh.</span>")
+			qdel(src)
 
 /obj/lattice/flock/special_desc(dist, mob/user)
 	if(isflock(user))
@@ -298,3 +310,9 @@
 		<br><span class='bold'>###=-</span></span>"}
 	else
 		return null // give the standard description
+
+/obj/grille/flock/attackby(obj/item/W as obj, mob/user as mob)
+	if (istype(user, /mob/living/critter/flock/drone))
+		boutput(user, "<span class='alert'>The grip tool refuses to allow damage to a barricade, jamming briefly.</span>")
+		return
+	..()
