@@ -90,7 +90,7 @@
 	..()
 	if(!istype(F) || !oldloc)
 		return
-	if(F.client && F.client.check_key(KEY_RUN) && !broken && !F.floorrunning)
+	if(F.client && F.client.check_key(KEY_RUN) && !broken && !F.floorrunning && F.can_floorrun)
 		F.start_floorrunning()
 	if(F.floorrunning && !broken)
 		if(!on)
