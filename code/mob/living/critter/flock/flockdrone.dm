@@ -403,6 +403,9 @@
 	src.floorrunning = 1
 	src.set_density(0)
 	src.set_pulling(null)
+	if (src.pulled_by)
+		var/mob/M = src.pulled_by
+		M.set_pulling(null)
 	var/obj/item/grab/g = src.find_type_in_hand(/obj/item/grab)
 	if(g)
 		if (g.state == GRAB_PIN)
@@ -413,6 +416,7 @@
 		for(var/obj/item/grab/grab_grabbed_by in src.grabbed_by)
 			if (!istype(grab_grabbed_by, /obj/item/grab/block))
 				qdel(grab_grabbed_by)
+	if (src.pulled_by)
 	animate_flock_floorrun_start(src)
 
 /mob/living/critter/flock/drone/proc/end_floorrunning()
