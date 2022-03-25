@@ -998,17 +998,24 @@
 	var/is_npc = FALSE
 	var/is_flockmind = istype(mob_speaking, /mob/living/intangible/flock/flockmind)
 
-	if(istype(mob_speaking, /mob/living/critter/flock/drone))
-		var/mob/living/critter/flock/drone/F = mob_speaking
-		if(F.is_npc)
-			name = "Drone [F.real_name]"
-			is_npc = TRUE
-		else if(F.controller)
-			name = "[F.controller.real_name]"
-			if(istype(F.controller, /mob/living/intangible/flock/flockmind))
-				is_flockmind = TRUE
-	else if(mob_speaking)
-		name = mob_speaking.real_name
+	if (!speak_as_admin)
+		if(mob_speaking)
+			message = mob_speaking.say_quote(message)
+		else // system message
+			message = gradientText("#3cb5a3", "#124e43", "\"[message]\"")
+			message = "alerts, [message]"
+
+		if(istype(mob_speaking, /mob/living/critter/flock/drone))
+			var/mob/living/critter/flock/drone/F = mob_speaking
+			if(F.is_npc)
+				name = "Drone [F.real_name]"
+				is_npc = TRUE
+			else if(F.controller)
+				name = "[F.controller.real_name]"
+				if(istype(F.controller, /mob/living/intangible/flock/flockmind))
+					is_flockmind = TRUE
+		else if(mob_speaking)
+			name = mob_speaking.real_name
 
 	if(is_flockmind)
 		class = "flocksay flockmindsay"
@@ -1017,12 +1024,6 @@
 	else if(isnull(mob_speaking))
 		class = "flocksay bold italics"
 		name = "\[SYSTEM\]"
-
-	if(mob_speaking)
-		message = mob_speaking.say_quote(message)
-	else // system message
-		message = gradientText("#3cb5a3", "#124e43", "\"[message]\"")
-		message = "alerts, [message]"
 
 	var/rendered = ""
 	var/flockmindRendered = ""
