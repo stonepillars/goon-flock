@@ -155,6 +155,7 @@
 		else
 			user.visible_message("<span class='alert'><b>[user]</b> punches [src]! It's very ineffective!</span>")
 			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+			src.takeDamage("brute", 1)
 			src.report_attack()
 	else
 		var/action = ""
