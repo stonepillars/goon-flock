@@ -43,5 +43,3 @@
 		if (!flockdrone.flock.isEnemy(attacker))
 			flock_speak(flockdrone, "Damage sighted on [source], [pick_string("flockmind.txt", "flockdrone_enemy")] [attacker]", flockdrone.flock)
 			flockdrone.flock.updateEnemy(attacker)
-
-			return
