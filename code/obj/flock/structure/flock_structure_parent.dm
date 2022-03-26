@@ -27,6 +27,8 @@
 	/// the tile which its "connected to" and handles the group
 	var/turf/simulated/floor/feather/grouptile = null
 
+	var/attack_message_on_cd = FALSE
+
 /obj/flock_structure/New(var/atom/location, var/datum/flock/F=null)
 	..()
 	health_max = health
@@ -153,7 +155,7 @@
 		else
 			user.visible_message("<span class='alert'><b>[user]</b> punches [src]! It's very ineffective!</span>")
 			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
-			src.takeDamage("brute", 1)
+			src.report_attack()
 	else
 		var/action = ""
 		switch(user.a_intent)
@@ -168,12 +170,26 @@
 /obj/flock_structure/attackby(obj/item/W as obj, mob/user as mob)
 	src.visible_message("<span class='alert'><b>[user]</b> attacks [src] with [W]!</span>")
 	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+	src.report_attack()
 
 	var/damtype = "brute"
 	if (W.hit_type == DAMAGE_BURN)
 		damtype = "fire"
 
 	takeDamage(damtype, W.force)
+
+/obj/flock_structure/proc/report_attack()
+	var/nearby_flockdrones = 0
+	for (var/mob/living/critter/flock/drone/flockdrone in view(7, src))
+		if (!isdead(flockdrone) && flockdrone.is_npc && flockdrone.flock && flockdrone.flock == src.flock)
+			nearby_flockdrones++
+
+	if (!nearby_flockdrones)
+		if (!attack_message_on_cd)
+			attack_message_on_cd = TRUE
+			SPAWN(30 SECONDS) attack_message_on_cd = FALSE
+
+			flock_speak(src, "ALERT: Under attack", flock)
 
 /obj/flock_structure/ex_act(severity)
 	var/damage = 0
@@ -190,7 +206,11 @@
 			damage_mult = 2
 	src.takeDamage("mixed", damage * damage_mult)
 
+	src.report_attack()
+
 /obj/flock_structure/bullet_act(var/obj/projectile/P)
+	src.report_attack()
+
 	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0) // stuns will do nothing
 	var/damage_mult = 1
 	var/damtype = "brute"
@@ -224,6 +244,7 @@
 
 	takeDamage("mixed", damage)
 	src.visible_message("<span class='alert'>[src] is hit by the blob!/span>")
+	src.report_attack()
 
 /obj/flock_structure/Cross(atom/movable/mover)
 	. = ..()
