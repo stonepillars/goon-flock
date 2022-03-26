@@ -3,9 +3,6 @@
 	var/report_hand_attack
 	var/report_obj_attack
 
-	var/attack_message_on_cd = FALSE
-	var/attack_message_cd = 20 SECONDS
-
 /datum/component/flock_protection/Initialize(flockdrones_can_hit, report_hand_attack, report_obj_attack)
 	src.flockdrones_can_hit = flockdrones_can_hit
 	src.report_hand_attack = report_hand_attack
@@ -44,17 +41,7 @@
 		var/mob/living/critter/flock/drone/flockdrone = pick(nearby_flockdrones)
 
 		if (!flockdrone.flock.isEnemy(attacker))
-			if (!attack_message_on_cd)
-				attack_message_on_cd = TRUE
-				SPAWN(attack_message_cd) attack_message_on_cd = FALSE
-
 			flock_speak(flockdrone, "Damage sighted on [source], [pick_string("flockmind.txt", "flockdrone_enemy")] [attacker]", flockdrone.flock)
 			flockdrone.flock.updateEnemy(attacker)
 
 			return
-
-		if (!attack_message_on_cd)
-			attack_message_on_cd = TRUE
-			SPAWN(attack_message_cd) attack_message_on_cd = FALSE
-
-			flock_speak(flockdrone, "[source] being attacked", flockdrone.flock)
