@@ -436,7 +436,7 @@
 	else
 		return ..()
 
-/mob/living/critter/flock/drone/Move(var/turf/NewLoc, direct)
+/mob/living/critter/flock/drone/Move(turf/NewLoc, direct)
 	if(!canmove) return
 
 	if(floorrunning)
