@@ -381,8 +381,7 @@
 					if (!(g.state == GRAB_PASSIVE || g.state == GRAB_PIN)) // in the rare case you do pin a flockdrone
 						src.can_floorrun = FALSE
 						return ..()
-			else if (!src.can_floorrun)
-				src.can_floorrun = TRUE
+			src.can_floorrun = TRUE
 
 			if (istype(src.loc, /turf/simulated/floor/feather))
 				var/turf/simulated/floor/feather/floor = src.loc
