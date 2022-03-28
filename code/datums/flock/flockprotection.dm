@@ -17,7 +17,7 @@
 		return
 
 	if (istype(user, /mob/living/critter/flock/drone) && !flockdrones_can_hit)
-		if (istype(source, /obj/storage/closet/flock))
+		if (istype(source, /obj/storage/closet/flock) || istype(source, /turf/simulated/floor/feather) || istype(source, /obj/machinery/door/feather))
 			return
 		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
 		return TRUE
@@ -36,6 +36,11 @@
 			if (!flockcloset.open)
 				boutput(user, "<span class='alert'>The grip tool refuses to allow damage to this, jamming briefly.</span>")
 				return TRUE
+		else if (istype(source, /obj/machinery/door/feather))
+			var/mob/living/critter/flock/drone/flockdrone = user
+			if (flockdrone.find_type_in_hand(/obj/item))
+				boutput(user, "<span class='alert'>The grip tool refuses to allow damage to this, jamming briefly.</span>")
+				return TRUE
 		else
 			boutput(user, "<span class='alert'>The grip tool refuses to allow damage to this, jamming briefly.</span>")
 			return TRUE
@@ -51,6 +56,9 @@
 					return
 				else
 					src.attempt_report_attack(source, user)
+		else if (istype(source, /obj/machinery/door/feather))
+			if (user.equipped())
+				src.attempt_report_attack(source, user)
 		else
 			src.attempt_report_attack(source, user)
 
