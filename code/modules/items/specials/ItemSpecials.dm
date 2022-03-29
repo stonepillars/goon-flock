@@ -1772,14 +1772,17 @@ ABSTRACT_TYPE(/datum/item_special/spark)
 			if (!hit)
 				if (istype(turf,/turf/simulated/floor))
 					var/turf/simulated/floor/F = turf
-					var/obj/item/tile = F.pry_tile(master, user, params)
-					if (tile)
-						hit = 1
-						user.visible_message("<span class='alert'><b>[user] flings a tile from [turf] into the air!</b></span>")
-						logTheThing("combat", user, null, "fling throws a floor tile ([F]) from [turf].")
+					if (istype(F, /turf/simulated/floor/feather))
+						boutput(user, "<span class='alert'><b>The tile stays stuck to the floor!</b></span>")
+					else
+						var/obj/item/tile = F.pry_tile(master, user, params)
+						if (tile)
+							hit = 1
+							user.visible_message("<span class='alert'><b>[user] flings a tile from [turf] into the air!</b></span>")
+							logTheThing("combat", user, null, "fling throws a floor tile ([F]) from [turf].")
 
-						user.lastattacked = user //apply combat click delay
-						tile.throw_at(target, tile.throw_range, tile.throw_speed, params)
+							user.lastattacked = user //apply combat click delay
+							tile.throw_at(target, tile.throw_range, tile.throw_speed, params)
 
 			if (!hit)
 				playsound(master, 'sound/effects/swoosh.ogg', 50, 0)
@@ -1929,7 +1932,7 @@ ABSTRACT_TYPE(/datum/item_special/spark)
 		density = 1
 		del_self = 0
 		clash_time = -1
-	
+
 
 		//mouse_opacity = 1
 		var/bump_count = 0
