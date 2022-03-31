@@ -16,7 +16,9 @@
 	var/list/annotation_viewers = list()
 	var/list/annotations = list() // key is atom ref, value is image
 	var/list/obj/flock_structure/structures = list()
-	var/list/obj/flock_structure/unlockedStructures = list(/obj/flock_structure/collector, /obj/flock_structure/sentinel) //list of flock_structure type paths
+	var/list/datum/unlockable_flock_structure/unlockableStructures = list()
+	///list of strings that lets flock record achievements for structure unlocks
+	var/list/achievements = list()
 	var/mob/living/intangible/flock/flockmind/flockmind
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
@@ -28,6 +30,8 @@
 	src.name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	flocks[src.name] = src
 	processing_items |= src
+	for(var/DT in childrentypesof(/datum/unlockable_flock_structure))
+		src.unlockableStructures += new DT(src)
 
 /datum/flock/ui_status(mob/user)
 	// only flockminds and admins allowed
@@ -322,15 +326,19 @@
 		aH.updateCompute()
 // STRUCTURES
 
-/** This function expects a type path, which must be a subclass of /obj/flock_structure */
-/datum/flock/proc/unlockStructure(var/type_path)
-	var/obj/flock_structure/S = type_path
+///This function only notifies the flock of the unlock, actual unlock logic is handled in the datum
+/datum/flock/proc/notifyUnlockStructure(var/datum/unlockable_flock_structure/SD)
+	var/obj/flock_structure/S = SD.structType
 	if(!S)
 		return //not a flock_structure
-	if(S in src.unlockedStructures)
-		return //already unlocked
-	src.unlockedStructures |= S //could use +=, but |= is safer
 	flock_speak(null, "New structure devised: [initial(S.flock_id)]", src)
+
+///This function only notifies the flock of the relock, actual unlock logic is handled in the datum
+/datum/flock/proc/notifyRelockStructure(var/datum/unlockable_flock_structure/SD)
+	var/obj/flock_structure/S = SD.structType
+	if(!S)
+		return //not a flock_structure
+	flock_speak(null, "Alert, structure tealprint disabled: [initial(S.flock_id)]", src)
 
 /datum/flock/proc/registerStructure(var/atom/movable/S)
 	if(isflockstructure(S))
@@ -462,8 +470,8 @@
 	if(floors_no_longer_existing.len > 0)
 		src.all_owned_tiles -= floors_no_longer_existing
 
-	if(src.total_compute() >= 1000)
-		src.unlockStructure(/obj/flock_structure/relay)
+	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
+		ufs.process()
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)

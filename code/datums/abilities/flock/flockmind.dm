@@ -396,19 +396,22 @@
 
 	var/list/friendlyNames = list()
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	for(var/obj/flock_structure/S as anything in F.flock.unlockedStructures)
-		friendlyNames += initial(S.flock_id) //flock_id is the friendly name for the structure
+	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
+		if(ufs.check_unlocked())
+			var/obj/flock_structure/sT = ufs.structType //this is a gross hack, but needed for resolving flock_id
+			friendlyNames += initial(sT.flock_id) //flock_id is the friendly name for the structure
 
 
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
 	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
 
 	if (!structurewanted)
-		return TRUE
+		return 1
 	var/obj/flock_structure/structurewantedtype = null
-	for(var/obj/flock_structure/S as anything in F.flock.unlockedStructures)
-		if(initial(S.flock_id) == structurewanted)
-			structurewantedtype = S
+	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
+		var/obj/flock_structure/sT = ufs.structType //this is a gross hack, but needed for resolving flock_id
+		if(initial(sT.flock_id) == structurewanted)
+			structurewantedtype = ufs.structType
 			break
 
 	if(structurewantedtype)
