@@ -36,6 +36,7 @@
 			occupant = iced
 		processing_items |= src
 		src.setMaterial(getMaterial("gnesis"))
+		src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 	proc/getHumanPiece(var/mob/living/carbon/human/H)
 		// prefer inventory items before limbs, and limbs before organs
@@ -162,7 +163,6 @@
 		occupant?.removeOverlayComposition(/datum/overlayComposition/flockmindcircuit)
 		..()
 
-
 /obj/icecube/flockdrone/special_desc(dist, mob/user)
 	if(isflock(user))
 		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
@@ -173,4 +173,7 @@
 	else
 		return null // give the standard description
 
-
+/obj/icecube/flockdrone/attack_hand(mob/user as mob)
+	if (user.a_intent == INTENT_HARM)
+		user.visible_message("<span class='combat'><b>[user]</b> kicks [src]!</span>", "<span class='combat'>You kick [src]!</span>")
+		takeDamage(2)
