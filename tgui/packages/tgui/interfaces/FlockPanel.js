@@ -82,7 +82,7 @@ const iconLookup = {
   "thinking": "brain",
   "shooting": "bolt",
   "rummaging": "dumpster",
-  "wandering": "question",
+  "wandering": "route",
   "building": "hammer",
   "harvesting": "cogs",
   "controlled": "wifi",
@@ -92,7 +92,7 @@ const iconLookup = {
   "butchering": "recycle",
   "repairing": "tools",
   "capturing": "bars",
-  "deposit": "puzzle-piece",
+  "depositing": "border-style",
 };
 const taskIcon = function (task) {
   let iconString = iconLookup[task];
@@ -140,7 +140,7 @@ const FlockDrones = (props, context) => {
                         </Box>
                       </Stack.Item>
                       <Stack.Item>
-                        <b>{drone.area}</b> <br /> {capitalizeString(drone.task)}
+                        <b>{drone.area}</b> <br /> {drone.task && capitalizeString(drone.task)}
                       </Stack.Item>
                     </Stack>
                   </Section>
@@ -190,12 +190,17 @@ const FlockStructures = (props, context) => {
           <Stack.Item key={structure.ref}>
             <Stack>
               {/* name and health */}
-              <Stack.Item grow={1}>
+              <Stack.Item width="30%">
                 <Section>
                   <Stack vertical align="center">
                     <Stack.Item >{structure.name}</Stack.Item>
                     <Stack.Item >{structure.health}<Icon name="heart" /></Stack.Item>
                   </Stack>
+                </Section>
+              </Stack.Item>
+              <Stack.Item grow={1}>
+                <Section height="100%">
+                  {structure.compute > 0 && ("Compute provided: " + structure.compute)}
                 </Section>
               </Stack.Item>
               {/* buttons */}

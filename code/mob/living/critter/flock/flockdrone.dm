@@ -49,6 +49,7 @@
 
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+	src.update_name_tag()
 
 	if(src.dormant) // we'be been flagged as dormant in the map editor or something
 		src.dormantize()
@@ -117,6 +118,7 @@
 	pilot.set_loc(src)
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
+	src.hud?.update_intent()
 	boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
 /mob/living/critter/flock/drone/proc/release_control()
@@ -452,8 +454,9 @@
 		src.visible_message("<span class='notice'>[src] harmlessly absorbs the [P].</span>")
 	else
 		..()
-		if(P.mob_shooter)
-			src.harmedBy(P.mob_shooter)
+		var/mob/attacker = P.shooter
+		if(istype(attacker))
+			src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
 	// check whatever reagents are about to get dumped on us
@@ -789,7 +792,10 @@
 					else
 						actions.start(new/datum/action/bar/flock_repair(F), user)
 			if(/obj/flock_structure/ghost)
-				actions.start(new /datum/action/bar/flock_deposit(target), user)
+				if (user.resources <= 0)
+					boutput(user, "<span class='alert'>No resources available for construction.</span>")
+				else
+					actions.start(new /datum/action/bar/flock_deposit(target), user)
 
 /datum/limb/flock_converter/help(mob/target, var/mob/living/critter/flock/drone/user)
 	if(!target || !user)
@@ -889,13 +895,12 @@
 	icon = 'icons/mob/flock_ui.dmi'
 	icon_state = "absorber"
 
+/datum/equipmentHolder/flockAbsorption/can_equip(var/obj/item/I)
+	if (istype(I, /obj/item/grab))
+		return FALSE
+	return ..()
+
 /datum/equipmentHolder/flockAbsorption/on_equip()
-	if(!isobj(item))
-		boutput(holder, "<span class='alert'>You can't possibly absorb that!</span>")
-		drop()
-	if(istype(item, /obj/item/grab))
-		// STOP TRYING TO EAT GRABS
-		drop()
 	holder.visible_message("<span class='alert'>[holder] absorbs [item]!</span>", "<span class='notice'>You place [item] into [src.name] and begin breaking it down.</span>")
 	animate_flockdrone_item_absorb(item)
 

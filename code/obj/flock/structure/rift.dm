@@ -4,7 +4,6 @@
 /obj/flock_structure/rift
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "rift"
-	anchored = 0
 	density = 0
 	name = "glowing portal thingymabob"
 	desc = "Oh god is that a fucking light grenade?!"
@@ -47,7 +46,7 @@
 					candidate_turfs -= S
 					continue
 				if(prob(25))
-					flock_convert_turf(S)
+					src.flock.claimTurf(flock_convert_turf(S))
 					candidate_turfs -= S
 					break
 		flockdronegibs(src.loc, null, eject)//here they are actually ejected

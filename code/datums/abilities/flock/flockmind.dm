@@ -78,10 +78,39 @@
 
 /datum/targetable/flockmindAbility/spawnEgg/cast(atom/target)
 	if(..())
-		return 1
+		return TRUE
+
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(F)
-		F.spawnEgg()
+
+	var/turf/T = get_turf(F)
+
+	if (istype(T, /turf/space/) || istype(T.loc, /area/station/solar) || istype(T.loc, /area/station/mining/magnet))
+		boutput(F, "<span class='alert'>Space and exposed areas are unsuitable for rift placement!</span>")
+		return TRUE
+
+	if (!isadmin(F))
+		if(IS_ARRIVALS(T.loc))
+			boutput(F, "<spawn class='alert'>Your rift can't be placed inside arrivals!</span>")
+			return TRUE
+
+		if (!istype(T.loc, /area/station/))
+			boutput(F, "<spawn class='alert'>Your rift needs to be placed on the [station_or_ship()]!</span>")
+			return TRUE
+
+		if (istype(T, /turf/unsimulated/))
+			boutput(F, "<span class='alert'>This kind of tile cannot support rift placement.</span>")
+			return TRUE
+
+		if (T.density)
+			boutput(F, "<span class='alert'>Your rift cannot be placed inside a wall!</span>")
+			return TRUE
+
+		for (var/atom/O in T.contents)
+			if (O.density)
+				boutput(F, "<span class='alert'>That tile is blocked by [O].</span>")
+				return TRUE
+
+	F.spawnEgg()
 
 /////////////////////////////////////////
 
@@ -96,8 +125,8 @@
 	if(..())
 		return 1
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	var/turf/simulated/T = get_turf(target)
-	if(!istype(T))
+	var/turf/T = get_turf(target)
+	if(!(istype(T, /turf/simulated) || istype(T, /turf/space)))
 		boutput(holder.owner, "<span class='alert'>The flock can't convert this.</span>")
 		return 1
 	if(isfeathertile(T))
@@ -112,7 +141,7 @@
 
 /datum/targetable/flockmindAbility/designateEnemy
 	name = "Designate Enemy"
-	desc = "Mark someone as an enemy."
+	desc = "Mark or unmark someone as an enemy."
 	icon_state = "designate_enemy"
 	cooldown = 0
 	//sticky = 1
@@ -129,7 +158,15 @@
 		return TRUE
 
 	var/datum/flock/flock = F.flock
-	flock?.updateEnemy(M)
+
+	if (!flock)
+		return TRUE
+
+	if (flock.isEnemy(M))
+		flock.removeEnemy(M)
+		return
+
+	flock.updateEnemy(M)
 
 /////////////////////////////////////////
 
