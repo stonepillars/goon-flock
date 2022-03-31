@@ -478,6 +478,13 @@
 	src.claimTurf(flock_convert_turf(T))
 	playsound(T, "sound/items/Deconstruct.ogg", 70, 1)
 
+///Unlock an achievement (string) if it isn't already unlocked
+/datum/flock/proc/achieve(var/str)
+	src.achievements |= str
+
+///Unlock an achievement (string) if it isn't already unlocked
+/datum/flock/proc/hasAchieved(var/str)
+	return (str in src.achievements)
 ////////////////////
 // GLOBAL PROCS!!
 ////////////////////

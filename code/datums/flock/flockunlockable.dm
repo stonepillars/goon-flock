@@ -30,17 +30,23 @@ ABSTRACT_TYPE(/datum/unlockable_flock_structure)
 /datum/unlockable_flock_structure/relay
 	structType = /obj/flock_structure/relay
 
-	check_unlocked(F)
+	check_unlocked()
 		return src.my_flock.total_compute() > 1000
 
 /datum/unlockable_flock_structure/collector
 	structType = /obj/flock_structure/collector
 
-	check_unlocked(F)
+	check_unlocked()
 		return TRUE
 
 /datum/unlockable_flock_structure/sentinel
 	structType = /obj/flock_structure/sentinel
 
-	check_unlocked(F)
+	check_unlocked()
 		return TRUE
+
+/datum/unlockable_flock_structure/compute
+	structType = /obj/flock_structure/compute
+
+	check_unlocked()
+		return src.my_flock.hasAchieved("cheatmode")
