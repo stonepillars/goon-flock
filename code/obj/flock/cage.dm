@@ -175,5 +175,4 @@
 
 /obj/icecube/flockdrone/attack_hand(mob/user as mob)
 	if (user.a_intent == INTENT_HARM)
-		user.visible_message("<span class='combat'><b>[user]</b> kicks [src]!</span>", "<span class='combat'>You kick [src]!</span>")
-		takeDamage(2)
+		..()
