@@ -8,6 +8,7 @@
 	desc = "I don't like the looks of that whatever-it-is."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "floor"
+	flags = USEDELAY
 	mat_appearances_to_ignore = list("steel","gnesis")
 	mat_changename = 0
 	mat_changedesc = 0
@@ -49,6 +50,7 @@
 	// do not call parent, this is not an ordinary floor
 	if(!C || !user)
 		return
+	user.lastattacked = src
 	if(ispryingtool(C) && src.broken)
 		playsound(src, "sound/items/Crowbar.ogg", 80, 1)
 		src.break_tile_to_plating()
