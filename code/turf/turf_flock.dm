@@ -252,6 +252,7 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	icon_state = "0"
 	health = 10
 	var/max_health = 10
+	flags = USEDELAY
 	mat_appearances_to_ignore = list("steel", "gnesis")
 	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather)
 
@@ -281,10 +282,12 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 				user.visible_message("<span class='alert'><b>[user]</b> punches the [initial(src.name)], shattering it!</span>")
 			else
 				user.visible_message("<span class='alert'><b>[user]</b> punches [src]! Ouch!</span>")
+	user.lastattacked = src
 
 /turf/simulated/wall/auto/feather/attackby(obj/item/C as obj, mob/user as mob)
 	if(!C || !user)
 		return
+	user.lastattacked = src
 	if(ispryingtool(C) && src.broken)
 		playsound(src, "sound/items/Crowbar.ogg", 80, 1)
 		src.destroy()
