@@ -8,6 +8,7 @@
 	desc = "You can see the person inside being rapidly taken apart by fibrous mechanisms. You ought to do something about that."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "cage"
+	flags = USEDELAY
 	steam_on_death = 0
 	health = 30
 	alpha = 192
@@ -173,4 +174,10 @@
 	else
 		return null // give the standard description
 
+/obj/icecube/flockdrone/attack_hand(mob/user as mob)
+	..()
+	user.lastattacked = src
 
+/obj/icecube/flockdrone/attackby(obj/item/W as obj, mob/user as mob)
+	..()
+	user.lastattacked = src
