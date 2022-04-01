@@ -17,8 +17,8 @@
 	var/fluid_shot_amt = 20
 	var/target = null
 	var/range = 8
-	var/shot_type =  /datum/projectile/syringe
-	var/datum/projectile/current_projectile = null
+	var/spread = 1
+	var/datum/projectile/syringe/current_projectile = null
 
 	var/powered = FALSE
 	// flockdrones can pass through this
@@ -31,7 +31,8 @@
 	New(var/atom/location, var/datum/flock/F=null)
 		..(location, F)
 		ensure_reagent_holder()
-		src.current_projectile = new shot_type()
+		src.current_projectile = new /datum/projectile/syringe()
+		src.current_projectile.cost = src.fluid_shot_amt
 
 	disposing()
 		..()
@@ -66,47 +67,45 @@
 				src.reagents.add_reagent(fluid_gen_type, fluid_gen_amt)
 
 		if(src.reagents.total_volume >= fluid_shot_amt)
-			if(src.current_projectile.reagents && src.current_projectile.reagents.total_volume < fluid_shot_amt)
-				src.reagents.trans_to(src.current_projectile, fluid_shot_amt)
 			//shamelessly stolen from deployable_turret.dm
 			if(!src.target && !src.seek_target()) //attempt to set the target if no target
 				return
 			if(!src.target_valid(src.target)) //check valid target
-				src.icon_state = "[src.icon_tag]_idle"
+				src.icon_state = "gnturret_idle"
 				src.target = null
 				return
 			else //GUN THEM DOWN
 				if(src.target)
 					SPAWN(0)
 						for(var/i in 1 to src.current_projectile.shot_number) //loop animation until finished
-							flick("[src.icon_tag]_fire",src)
+							flick("gnturret_fire",src)
 							muzzle_flash_any(src, 0, "muzzle_flash")
 							sleep(src.current_projectile.shot_delay)
 					shoot_projectile_ST_pixel_spread(src, current_projectile, target, 0, 0 , spread)
 
 	proc/seek_target()
-		src.target_list = list()
+		var/list/target_list = list()
 		for (var/mob/living/C in mobs)
 			if(!src)
 				break
 
 			if (!isnull(C) && src.target_valid(C))
-				src.target_list += C
+				target_list += C
 				var/distance = get_dist(C.loc,src.loc)
-				src.target_list[C] = distance
+				target_list[C] = distance
 
 			else
 				continue
 
-		if (src.target_list.len>0)
+		if (length(target_list)>0)
 			var/min_dist = 99999
 
-			for (var/mob/living/T in src.target_list)
-				if (src.target_list[T] < min_dist)
+			for (var/mob/living/T in target_list)
+				if (target_list[T] < min_dist)
 					src.target = T
-					min_dist = src.target_list[T]
+					min_dist = target_list[T]
 
-			src.icon_state = "[src.icon_tag]_active"
+			src.icon_state = "gnturret_active"
 
 			playsound(src.loc, "sound/vox/woofsound.ogg", 40, 1)
 
@@ -132,27 +131,4 @@
 		if (isflock(C))
 			return 0
 
-		var/angle = get_angle(get_turf(src),get_turf(C))
-
-		var/anglemod = (-(angle < 180 ? angle : angle - 360) + 90) //Blatant Code Theft from showLine(), checks to see if there's something in the way of us and the target
-		var/crossed_turfs = list()
-		crossed_turfs = castRay(src,anglemod,distance)
-		for (var/turf/T in crossed_turfs)
-			if (T.opacity == 1)
-				return 0
-			if (T.density == 1)
-				return 0
-
-		angle = angle < 0 ? angle+360 : angle // make angles positive
-		angle = angle - src.external_angle
-
-		if (angle > 180) // rotate angle and convert into absolute terms from 0, where 0 is the seek-arc midpoint
-			angle = abs(360-angle)
-		else if (angle < -180)
-			angle = abs(360+angle)
-		else
-			angle = abs(angle)
-
-		if (angle <= (angle_arc_size/2)) //are we in the seeking arc?
-			return 1
-		return 0
+		return 1
