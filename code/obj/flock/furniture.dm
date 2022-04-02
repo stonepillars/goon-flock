@@ -119,7 +119,7 @@
 	if (!src.open)
 		if (istype(W, /obj/item/cargotele))
 			boutput(user, "<span class='alert'>For some reason, it refuses to budge.</span>")
-		else if (isweldingtool(W) && W:try_weld(user,0,-1,0,0))
+		else if (isweldingtool(W) && W:try_weld(user, 0, -1, 0, 0))
 			boutput(user, "<span class='alert'>It doesn't matter what you try, it doesn't seem to keep welded shut.</span>")
 		else if (isitem(W))
 			var/force = W.force
@@ -128,7 +128,7 @@
 			playsound(src.loc, src.hitsound, 50, 1, pitch = 1.6)
 			src.take_damage(force, user)
 	else
-		if (istype(W, /obj/item/satchel/) && length(W.contents))
+		if (istype(W, /obj/item/satchel) && length(W.contents))
 			..()
 		else if (!issilicon(user))
 			if (istype(user, /mob/living/critter/flock/drone))
