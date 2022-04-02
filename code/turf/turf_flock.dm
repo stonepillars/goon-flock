@@ -258,6 +258,11 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 
 	var/broken = FALSE
 
+	update_icon()
+		..()
+		if (src.broken)
+			icon_state = icon_state + "b"
+
 /turf/simulated/wall/auto/feather/New()
 	..()
 	setMaterial(getMaterial("gnesis"))
@@ -360,8 +365,8 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	if (!src.broken && src.health <= 0)
 		src.name = "weird broken wall"
 		src.desc = "It's broken. You could probably use a crowbar to break the pieces apart."
-		icon_state = icon_state + "b"
-		broken = TRUE
+		src.broken = TRUE
+		src.UpdateIcon()
 		if (playAttackSound)
 			playsound(src, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
 
@@ -379,9 +384,10 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 
 	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
 
-	if (map_settings?.auto_walls)
-		for (var/turf/simulated/wall/auto/feather/W in orange(1))
-			W.UpdateIcon()
+	SPAWN(0)
+		if (map_settings?.auto_walls)
+			for (var/turf/simulated/wall/auto/feather/W in orange(1))
+				W.UpdateIcon()
 
 /turf/simulated/wall/auto/feather/Entered(var/mob/living/critter/flock/drone/F, atom/oldloc)
 	..()
