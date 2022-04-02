@@ -287,12 +287,12 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 				user.visible_message("<span class='alert'><b>[user]</b> punches the [initial(src.name)], shattering it!</span>")
 			else
 				user.visible_message("<span class='alert'><b>[user]</b> punches [src]! Ouch!</span>")
-	user.lastattacked = src
+			user.lastattacked = src
+			attack_particle(user, src)
 
 /turf/simulated/wall/auto/feather/attackby(obj/item/C as obj, mob/user as mob)
 	if(!C || !user)
 		return
-	user.lastattacked = src
 	if(ispryingtool(C) && src.broken)
 		playsound(src, "sound/items/Crowbar.ogg", 80, 1)
 		src.destroy()
@@ -306,6 +306,8 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks the [initial(src.name)] with [C], shattering it!</span>")
 	else
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C]!</span>")
+	user.lastattacked = src
+	attack_particle(user, src)
 
 ///turf/simulated/wall/auto/feather/take_hit(var/obj/item/I)
 
