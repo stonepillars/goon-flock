@@ -3,16 +3,14 @@
 /////////////////////////////////////////////////////////////////////////////////
 // it's just an ice cube, but stronger and it looks different
 // and eats people, i guess, too
-/obj/icecube/flockdrone
+/obj/flock_structure/flockdrone
 	name = "weird energy cage"
 	desc = "You can see the person inside being rapidly taken apart by fibrous mechanisms. You ought to do something about that."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "cage"
-	steam_on_death = 0
 	health = 30
 	alpha = 192
-	var/datum/flock/flock
-	var/mob/living/occupant = null // todo: make this work with more than just humans (borgs, critters, probably not cubes)
+	var/atom/occupant = null
 	var/obj/target = null
 	var/eating_occupant = 0
 	var/initial_volume = 200
@@ -25,14 +23,30 @@
 	mat_changeappearance = 0
 
 
-	New(loc, mob/living/iced as mob, datum/flock/F=null)
-		..()
+	New(loc, var/atom/iced, datum/flock/F=null)
+		..(loc,F)
+		if(iced && !isAI(iced) && !isblob(iced) && !iswraith(iced))
+			if(istype(iced.loc, /obj/flock_structure/flockdrone)) //Already in a cube?
+				qdel(src)
+				return
+
+			if(!(ismob(iced) || iscritter(iced)))
+				qdel(src)
+				return
+			iced:set_loc(src)
+
+			src.underlays += iced
+			boutput(iced, "<span class='alert'>You are trapped within [src]!</span>") // since this is used in at least two places to trap people in things other than ice cubes
+
+		processing_items.Add(src)
 		src.flock = F
 		var/datum/reagents/R = new /datum/reagents(initial_volume)
 		src.reagents = R
 		R.my_atom = src //grumble
 		if(iced)
-			iced.addOverlayComposition(/datum/overlayComposition/flockmindcircuit)
+			if(istype(iced,/mob/living))
+				var/mob/living/M = iced
+				M.addOverlayComposition(/datum/overlayComposition/flockmindcircuit)
 			occupant = iced
 		processing_items |= src
 		src.setMaterial(getMaterial("gnesis"))
@@ -127,8 +141,13 @@
 			else if(occupant && ishuman(occupant))
 				var/mob/living/carbon/human/H = occupant
 				getHumanPiece(H)
-			else if(occupant)
-				occupant.gib() // sorry buddy but if you're some freaky-deaky cube thing or some other weird living thing we can't be doing with this now
+			else if(isliving(occupant))
+				var/mob/living/M = occupant
+				M.gib()
+			else if(iscritter(occupant))
+				var/obj/critter/C = occupant
+				C.CritterDeath()
+
 			if(target)
 				target.set_loc(src)
 		else
@@ -159,18 +178,89 @@
 	disposing()
 		playsound(src, "sound/impact_sounds/Energy_Hit_2.ogg", 80, 1)
 		processing_items -= src
-		occupant?.removeOverlayComposition(/datum/overlayComposition/flockmindcircuit)
+		if(istype(occupant,/mob/living))
+			var/mob/living/M = occupant
+			M?.removeOverlayComposition(/datum/overlayComposition/flockmindcircuit)
+
+		processing_items.Remove(src)
+		for(var/atom/movable/AM in src)
+			if(ismob(AM))
+				var/mob/M = AM
+				M.visible_message("<span class='alert'><b>[M]</b> breaks out of [src]!</span>","<span class='alert'>You break out of [src]!</span>")
+			AM.set_loc(src.loc)
+
+		..()
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////area
+
+
+
+
+	relaymove(mob/user as mob)
+		if (user.stat)
+			return
+
+		if(prob(25))
+			takeDamage(1)
+		return
+
+	takeDamage(var/damage)
+		src.health -= damage
+		if(src.health <= 0)
+			qdel(src)
+			return
+		else
+			var/wiggle = 3
+			while(wiggle > 0)
+				wiggle--
+				src.pixel_x = rand(-2,2)
+				src.pixel_y = rand(-2,2)
+				sleep(0.5)
+			src.pixel_x = 0
+			src.pixel_y = 0
+
+	attack_hand(mob/user as mob)
+		user.visible_message("<span class='combat'><b>[user]</b> kicks [src]!</span>", "<span class='notice'>You kick [src].</span>")
+		takeDamage(2)
+
+	bullet_act(var/obj/projectile/P)
+		var/damage = 0
+		damage = round(((P.power/2)*P.proj_data.ks_ratio), 1.0)
+		if (damage < 1)
+			return
+
+		switch(P.proj_data.damage_type)
+			if(D_KINETIC)
+				takeDamage(damage*2)
+			if(D_PIERCING)
+				takeDamage(damage/2)
+			if(D_ENERGY)
+				takeDamage(damage/4)
+
+	attackby(obj/item/W as obj, mob/user as mob)
+		takeDamage(W.force)
+
+	mob_flip_inside(var/mob/user)
+		..(user)
+		user.show_text("<span class='alert'>[src] [pick("cracks","bends","shakes","groans")].</span>")
+		src.takeDamage(6)
+
+	ex_act(severity)
+		for(var/atom/A in src)
+			A.ex_act(severity)
+		SPAWN(0)
+			takeDamage(20 / severity)
 		..()
 
 
-/obj/icecube/flockdrone/special_desc(dist, mob/user)
-	if(isflock(user))
-		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-		<br><span class='bold'>ID:</span> Matter Reprocessor
-		<br><span class='bold'>Volume:</span> [src.reagents.get_reagent_amount(src.target_fluid)]
-		<br><span class='bold'>Needed volume:</span> [src.create_egg_at_fluid]
-		<br><span class='bold'>###=-</span></span>"}
-	else
-		return null // give the standard description
+	special_desc(dist, mob/user)
+		if(isflock(user))
+			return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+			<br><span class='bold'>ID:</span> Matter Reprocessor
+			<br><span class='bold'>Volume:</span> [src.reagents.get_reagent_amount(src.target_fluid)]
+			<br><span class='bold'>Needed volume:</span> [src.create_egg_at_fluid]
+			<br><span class='bold'>###=-</span></span>"}
+		else
+			return null // give the standard description
 
 

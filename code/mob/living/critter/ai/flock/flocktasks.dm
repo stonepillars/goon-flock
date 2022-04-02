@@ -645,13 +645,19 @@ butcher
 	if(!holder.target)
 		holder.target = get_best_target(get_targets())
 	if(holder.target)
-		var/mob/living/M = holder.target
-		if(!M || istype(M.loc, /obj/icecube/flockdrone) || is_incapacitated(M))
-			// target is down or in a cage, we don't care about this target now
-			// fetch a new one if we can
+		var/atom/T = holder.target
+		// if target is down or in a cage, we don't care about this target now
+		// fetch a new one if we can
+		if(istype(T,/mob/living))
+			var/mob/living/M = T
+			if(is_incapacitated(M))
+				holder.target = get_best_target(get_targets())
+		if(istype(T.loc, /obj/flock_structure/flockdrone))
 			holder.target = get_best_target(get_targets())
-			if(!holder.target)
-				return // try again next tick
+
+		if(!holder.target)
+			return // try again next tick
+
 		var/dist = get_dist(owncritter, holder.target)
 		if(dist > target_range)
 			holder.target = get_best_target(get_targets())
@@ -675,13 +681,20 @@ butcher
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
-		for(var/mob/living/M in view(target_range, holder.owner))
-			if(!istype(M.loc?.type, /obj/icecube/flockdrone) && !(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
-				// mob isn't already stunned, check if they're in our target list
-				if(F.flock.isEnemy(M))
-					. += M
-					// also, while we're here, update the last time this mob was seen
-					F.flock.updateEnemy(M)
+		for(var/atom/T in view(target_range, holder.owner))
+			if(!F.flock.isEnemy(T))
+				continue
+			if(istype(T,/mob/living))
+				var/mob/living/M = T
+				if((M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
+					continue
+
+					// mob is a valid target, check if they're not already in a cage
+			if(!istype(T.loc.type, /obj/flock_structure/flockdrone))
+				// if we can get a valid path to the target, include it for consideration
+				. += T
+			F.flock.updateEnemy(T)
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE-SPECIFIC CAPTURE TASK
@@ -708,13 +721,15 @@ butcher
 	if(!holder.target)
 		holder.target = get_best_target(get_targets())
 	if(holder.target)
-		var/mob/living/M = holder.target
-		if(!(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
-			// target is up, abort
-			// fetch a new one if we can
-			holder.target = get_best_target(get_targets())
-			if(!holder.target)
-				return // try again next tick
+		var/T = holder.target
+		if(istype(T,/mob/living))
+			var/mob/living/M = T
+			if(!(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
+				// target is up, abort
+				// fetch a new one if we can
+				holder.target = get_best_target(get_targets())
+				if(!holder.target)
+					return // try again next tick
 		var/dist = get_dist(owncritter, holder.target)
 		if(dist > target_range)
 			holder.target = get_best_target(get_targets())
@@ -732,12 +747,19 @@ butcher
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
-		for(var/mob/living/M in view(target_range, holder.owner))
-			if(F.flock.isEnemy(M) && (M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
-				// mob is a valid target, check if they're not already in a cage
-				if(!istype(M.loc.type, /obj/icecube/flockdrone))
-					// if we can get a valid path to the target, include it for consideration
-					. += M
+		for(var/atom/T in view(target_range, holder.owner))
+			if(!F.flock.isEnemy(T))
+				continue
+			if(istype(T,/mob/living))
+				var/mob/living/M = T
+				if(!(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
+					continue
+
+					// mob is a valid target, check if they're not already in a cage
+			if(!istype(T.loc.type, /obj/flock_structure/flockdrone))
+				// if we can get a valid path to the target, include it for consideration
+				. += T
+			F.flock.updateEnemy(T)
 	. = get_path_to(holder.owner, ., 40, 1)
 
 

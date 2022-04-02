@@ -394,10 +394,10 @@
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 60
 
-	var/mob/living/target
+	var/atom/target
 	var/obj/decal/decal
 
-	New(var/mob/living/ntarg, var/duration_i)
+	New(var/atom/ntarg, var/duration_i)
 		..()
 		if (ntarg)
 			target = ntarg
@@ -420,7 +420,9 @@
 					F, "<span class='notice'>You begin imprisoning [target]. You will both need to stay still for this to work.</span>",
 					target, "<span class='alert'>[F] is forming a structure around you!</span>",
 					"You hear strange building noises.")
-				target.was_harmed(F, null, "flock", INTENT_DISARM)
+				if(istype(target,/mob/living))
+					var/mob/living/M = target
+					M.was_harmed(F, null, "flock", INTENT_DISARM)
 				// do effect
 				src.decal = new /obj/decal/flock_build_wall
 				if(src.decal)
@@ -439,7 +441,7 @@
 			qdel(src.decal)
 		var/mob/living/critter/flock/F = owner
 		if(F && target && in_interact_range(owner, target))
-			var/obj/icecube/flockdrone/cage = new /obj/icecube/flockdrone(target.loc, target, F.flock)
+			var/obj/flock_structure/flockdrone/cage = new /obj/flock_structure/flockdrone(target.loc, target, F.flock)
 			cage.visible_message("<span class='alert'>[cage] forms around [target], entombing them completely!</span>")
 			F.pay_resources(15)
 			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 70, 1)

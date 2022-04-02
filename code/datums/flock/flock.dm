@@ -114,8 +114,8 @@
 	var/list/enemylist = list()
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
-		var/mob/living/M = enemy_stats["mob"]
-		if(istype(M)) // fix runtime: Cannot read null.name
+		var/atom/M = enemy_stats["mob"]
+		if(M) // fix runtime: Cannot read null.name
 			var/list/enemy = list()
 			enemy["name"] = M.name
 			enemy["area"] = enemy_stats["last_seen"]
@@ -271,7 +271,7 @@
 		valid_keys |= T
 	// highlight enemies
 	for(var/name in src.enemies)
-		var/mob/B = src.enemies[name]["mob"]
+		var/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
 			// create a new image
 			I = image('icons/misc/featherzone.dmi', B, "hazard")
@@ -341,8 +341,10 @@
 
 // ENEMIES
 
-/datum/flock/proc/updateEnemy(var/mob/living/M)
+/datum/flock/proc/updateEnemy(var/atom/M)
 	if(!M)
+		return
+	if(!istype(M,/mob/living) && !istype(M,/obj/critter))
 		return
 	var/enemy_name = lowertext(M.name)
 	var/list/enemy_deets
@@ -359,8 +361,10 @@
 	// update annotations indicating enemies for flockmind and co
 	src.updateAnnotations()
 
-/datum/flock/proc/removeEnemy(var/mob/living/M)
+/datum/flock/proc/removeEnemy(var/M)
 	// call off all drones attacking this guy
+	if(!istype(M,/mob/living) && !istype(M,/obj/critter))
+		return
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
 		if(enemy_stats["mob"] == M)
