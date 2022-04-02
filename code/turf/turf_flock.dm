@@ -358,7 +358,7 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 			var/half = round(amount/2)
 			amount = half * bruteVuln + (amount - half) * fireVuln
 	*/
-	src.health -= amount
+	src.health = max(src.health - amount, 0)
 	if (src.health > 0 && playAttackSound)
 		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
 
