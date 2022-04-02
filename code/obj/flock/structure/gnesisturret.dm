@@ -9,9 +9,8 @@
 	flock_id = "Gnesis turret"
 	//resourcecost = 300
 	health = 80
-
 	var/fluid_level_max = 250
-	var/fluid_gen_amt = 10
+	var/fluid_gen_amt = 3
 	var/fluid_gen_type = "flockdrone_fluid"
 	var/fluid_shot_amt = 20
 	var/target = null
@@ -87,17 +86,11 @@
 
 	proc/seek_target()
 		var/list/target_list = list()
-		for (var/mob/living/C in mobs)
-			if(!src)
-				break
-
+		for (var/mob/living/C in range(src.range,src.loc))
 			if (!isnull(C) && src.target_valid(C))
 				target_list += C
 				var/distance = get_dist(C.loc,src.loc)
 				target_list[C] = distance
-
-			else
-				continue
 
 		if (length(target_list)>0)
 			var/min_dist = 99999
@@ -124,9 +117,13 @@
 			return 0
 		if (C.stat == 2)
 			return 0
+		if (!src.flock.isEnemy(C))
+			return 0
 		if (istype(C,/mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
 			if (H.hasStatus(list("resting", "weakened", "stunned", "paralysis"))) // stops it from uselessly firing at people who are already suppressed. It's meant to be a suppression weapon!
+				return 0
+			if (H.reagents.has_reagent(fluid_gen_type,100)) //don't keep shooting at people who are already 1/3 flock
 				return 0
 		if (isflock(C))
 			return 0
@@ -138,6 +135,7 @@
 	name = "nanite spike"
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "stunbolt"
+	cost = 10 //how much gnesis you get per-shot
 	var/obj/flock_structure/gnesisturret/parentTurret = null
 
 	New(var/obj/flock_structure/gnesisturret/gt)
