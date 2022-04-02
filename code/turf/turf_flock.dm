@@ -386,10 +386,9 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 
 	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
 
-	SPAWN(0)
-		if (map_settings?.auto_walls)
-			for (var/turf/simulated/wall/auto/feather/W in orange(1))
-				W.UpdateIcon()
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1))
+			W.UpdateIcon()
 
 /turf/simulated/wall/auto/feather/Entered(var/mob/living/critter/flock/drone/F, atom/oldloc)
 	..()
