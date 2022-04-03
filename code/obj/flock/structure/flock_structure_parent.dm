@@ -180,17 +180,11 @@
 	takeDamage(damtype, W.force)
 
 /obj/flock_structure/proc/report_attack()
-	var/nearby_flockdrones = 0
-	for (var/mob/living/critter/flock/drone/flockdrone in view(7, src))
-		if (!isdead(flockdrone) && flockdrone.is_npc && flockdrone.flock && flockdrone.flock == src.flock)
-			nearby_flockdrones++
+	if (!attack_message_on_cd)
+		attack_message_on_cd = TRUE
+		SPAWN(30 SECONDS) attack_message_on_cd = FALSE
 
-	if (!nearby_flockdrones)
-		if (!attack_message_on_cd)
-			attack_message_on_cd = TRUE
-			SPAWN(30 SECONDS) attack_message_on_cd = FALSE
-
-			flock_speak(src, "ALERT: Under attack", flock)
+		flock_speak(src, "ALERT: Under attack", flock)
 
 /obj/flock_structure/ex_act(severity)
 	var/damage = 0
