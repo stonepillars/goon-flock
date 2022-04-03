@@ -50,7 +50,6 @@
 	// do not call parent, this is not an ordinary floor
 	if(!C || !user)
 		return
-	user.lastattacked = src
 	if(ispryingtool(C) && src.broken)
 		playsound(src, "sound/items/Crowbar.ogg", 80, 1)
 		src.break_tile_to_plating()
@@ -68,6 +67,7 @@
 	else
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C]!</span>")
 		playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
+	user.lastattacked = src
 
 /turf/simulated/floor/feather/break_tile_to_plating()
 	// if the turf's on, turn it off
