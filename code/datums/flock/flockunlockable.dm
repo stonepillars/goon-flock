@@ -8,11 +8,14 @@ ABSTRACT_TYPE(/datum/unlockable_flock_structure)
 	var/structType = null
 	var/datum/flock/my_flock = null
 	var/unlocked = FALSE
+	var/friendly_name
 
 	New(var/datum/flock/F)
 		..()
 		if(F)
 			src.my_flock = F
+		var/obj/flock_structure/sT = src.structType //this is a gross hack, but needed for resolving flock_id
+		friendly_name = initial(sT.flock_id)
 
 	proc/process()
 		if(src.check_unlocked())

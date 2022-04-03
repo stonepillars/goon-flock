@@ -328,17 +328,15 @@
 
 ///This function only notifies the flock of the unlock, actual unlock logic is handled in the datum
 /datum/flock/proc/notifyUnlockStructure(var/datum/unlockable_flock_structure/SD)
-	var/obj/flock_structure/S = SD.structType
 	if(!S)
 		return //not a flock_structure
-	flock_speak(null, "New structure devised: [initial(S.flock_id)]", src)
+	flock_speak(null, "New structure devised: [SD.friendly_name]", src)
 
 ///This function only notifies the flock of the relock, actual unlock logic is handled in the datum
 /datum/flock/proc/notifyRelockStructure(var/datum/unlockable_flock_structure/SD)
-	var/obj/flock_structure/S = SD.structType
 	if(!S)
 		return //not a flock_structure
-	flock_speak(null, "Alert, structure tealprint disabled: [initial(S.flock_id)]", src)
+	flock_speak(null, "Alert, structure tealprint disabled: [SD.friendly_name]", src)
 
 /datum/flock/proc/registerStructure(var/atom/movable/S)
 	if(isflockstructure(S))
