@@ -405,7 +405,7 @@
 	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
 
 	if (!structurewanted)
-		return 1
+		return TRUE
 	var/obj/flock_structure/structurewantedtype = null
 	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
 		if(ufs.friendly_name == structurewanted)
