@@ -8,7 +8,7 @@
 	desc = "You can see the person inside being rapidly taken apart by fibrous mechanisms. You ought to do something about that."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "cage"
-	flock_id = "matter processing cube"
+	flock_id = "matter reprocessor"
 	health = 30
 	alpha = 192
 	var/atom/occupant = null
@@ -47,12 +47,14 @@
 				M.addOverlayComposition(/datum/overlayComposition/flockmindcircuit)
 			occupant = iced
 		setMaterial(getMaterial("gnesis"))
+		UpdateIcon()
 
 	update_icon()
 		. = ..()
+		src.underlays = list()
 		for(var/atom/O in src.contents)
-			UpdateOverlays(O, "content_layer")
-		UpdateOverlays(image(src.icon,src.icon_state),"icecube_layer")
+			src.underlays += O.appearance
+		UpdateOverlays(image(src.icon,src.icon_state,layer = EFFECTS_LAYER_UNDER_4),"icecube_layer")
 
 
 	proc/getHumanPiece(var/mob/living/carbon/human/H)
@@ -195,9 +197,11 @@
 				var/mob/living/silicon/robot/H = occupant
 				getRobotPiece(H) //cut off a robot part and add it to contents, set it to target
 			else if(isliving(occupant))
+				eating_occupant = 1
 				var/mob/living/M = occupant
 				target = M //set target to the mob
 			else if(iscritter(occupant))
+				eating_occupant = 1
 				var/obj/critter/C = occupant
 				C.CritterDeath() //kill obj/critters immediately because their behaviour is jank and awful
 				target = C //set target to the critter
