@@ -10,6 +10,7 @@
 	icon_state = "cage"
 	flock_id = "matter reprocessor"
 	health = 30
+	var/health_max = 30
 	alpha = 192
 	var/atom/occupant = null
 	var/obj/target = null
@@ -46,6 +47,7 @@
 				var/mob/living/M = iced
 				M.addOverlayComposition(/datum/overlayComposition/flockmindcircuit)
 			occupant = iced
+
 		setMaterial(getMaterial("gnesis"))
 		UpdateIcon()
 
@@ -290,13 +292,15 @@
 		src.takeDamage(6)
 
 	special_desc(dist, mob/user)
-		if(isflock(user))
-			return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-			<br><span class='bold'>ID:</span> Matter Reprocessor
-			<br><span class='bold'>Volume:</span> [src.reagents.get_reagent_amount(src.target_fluid)]
-			<br><span class='bold'>Needed volume:</span> [src.create_egg_at_fluid]
-			<br><span class='bold'>###=-</span></span>"}
-		else
-			return null // give the standard description
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Matter Reprocessor
+		<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
+		<br><span class='bold'>Volume:</span> [src.reagents.get_reagent_amount(src.target_fluid)]
+		<br><span class='bold'>Needed volume:</span> [src.create_egg_at_fluid]
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null // give the standard description
+
 
 
