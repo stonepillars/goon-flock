@@ -197,19 +197,24 @@
 		return
 	src.flockmind = F
 
+//since flocktraces need to be given their flock in New this is useful for debug
+/datum/flock/proc/spawnTrace()
+	var/mob/living/intangible/flock/trace/T = new(usr.loc, src)
+	return T
+
 /datum/flock/proc/addTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces |= T
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
-	aH.updateCompute()
+	aH?.updateCompute()
 
 /datum/flock/proc/removeTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces -= T
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
-	aH.updateCompute()
+	aH?.updateCompute()
 
 // ANNOTATIONS
 

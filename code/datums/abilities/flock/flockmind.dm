@@ -151,7 +151,7 @@
 		return TRUE
 
 	var/mob/M = target
-	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	var/mob/living/intangible/flock/F = holder.owner
 
 	if (!isliving(M) || isflock(M) || isintangible(M))
 		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
@@ -407,3 +407,22 @@
 	if(structurewantedtype)
 		var/mob/living/intangible/flock/F = holder.owner
 		F.createstructure(structurewantedtype, resourcecost)
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/ping
+	name = "Ping"
+	desc = "Request attention from other elements of the flock."
+	icon_state = "designate_tile"
+	cooldown = 5
+
+/datum/targetable/flockmindAbility/ping/cast(atom/target)
+	if(..())
+		return TRUE
+	var/mob/living/intangible/flock/F = holder.owner
+	if (!isturf(target.loc) && !isturf(target))
+		return TRUE
+	if(F)
+		var/datum/flock/flock = F.flock
+		if(flock)
+			flock_speak(holder.owner, "Attention requested at [target].", flock)
