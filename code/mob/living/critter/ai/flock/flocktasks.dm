@@ -656,7 +656,7 @@ butcher
 			var/mob/living/M = T
 			if(is_incapacitated(M))
 				holder.target = get_best_target(get_targets())
-		if(istype(T.loc, /obj/flock_structure/flockdrone))
+		if(istype(T.loc, /obj/flock_structure/cage))
 			holder.target = get_best_target(get_targets())
 
 		if(!holder.target)
@@ -694,7 +694,7 @@ butcher
 					continue
 
 					// mob is a valid target, check if they're not already in a cage
-			if(!istype(T.loc.type, /obj/flock_structure/flockdrone))
+			if(!istype(T.loc.type, /obj/flock_structure/cage))
 				// if we can get a valid path to the target, include it for consideration
 				. += T
 			F.flock.updateEnemy(T)
@@ -760,7 +760,7 @@ butcher
 					continue
 
 					// mob is a valid target, check if they're not already in a cage
-			if(!istype(T.loc.type, /obj/flock_structure/flockdrone))
+			if(!istype(T.loc.type, /obj/flock_structure/cage))
 				// if we can get a valid path to the target, include it for consideration
 				. += T
 			F.flock.updateEnemy(T)

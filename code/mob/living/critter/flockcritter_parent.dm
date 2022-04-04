@@ -442,7 +442,7 @@
 			qdel(src.decal)
 		var/mob/living/critter/flock/F = owner
 		if(F && target && in_interact_range(owner, target))
-			var/obj/flock_structure/flockdrone/cage = new /obj/flock_structure/flockdrone(target.loc, target, F.flock)
+			var/obj/flock_structure/cage/cage = new /obj/flock_structure/cage(target.loc, target, F.flock)
 			cage.visible_message("<span class='alert'>[cage] forms around [target], entombing them completely!</span>")
 			F.pay_resources(15)
 			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 70, 1)

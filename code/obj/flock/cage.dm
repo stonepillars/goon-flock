@@ -3,7 +3,7 @@
 /////////////////////////////////////////////////////////////////////////////////
 // it's just an ice cube, but stronger and it looks different
 // and eats people, i guess, too
-/obj/flock_structure/flockdrone
+/obj/flock_structure/cage
 	name = "weird energy cage"
 	desc = "You can see the person inside being rapidly taken apart by fibrous mechanisms. You ought to do something about that."
 	icon = 'icons/misc/featherzone.dmi'
@@ -28,7 +28,7 @@
 	New(loc, var/atom/iced, datum/flock/F=null)
 		..(loc,F)
 		if(iced && !isAI(iced) && !isblob(iced) && !iswraith(iced))
-			if(istype(iced.loc, /obj/flock_structure/flockdrone)) //Already in a cube?
+			if(istype(iced.loc, /obj/flock_structure/cage)) //Already in a cube?
 				qdel(src)
 				return
 
