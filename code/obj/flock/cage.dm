@@ -271,20 +271,21 @@
 			takeDamage(1)
 		return
 
-	takeDamage(var/damage)
-		src.health -= damage
+	takeDamage(var/damageType, var/amount)
+		src.health -= amount
 		if(src.health <= 0)
 			qdel(src)
 			return
 		else
 			var/wiggle = 3
-			while(wiggle > 0)
-				wiggle--
-				src.pixel_x = rand(-2,2)
-				src.pixel_y = rand(-2,2)
-				sleep(0.5)
-			src.pixel_x = 0
-			src.pixel_y = 0
+			SPAWN(0)
+				while(wiggle > 0)
+					wiggle--
+					src.pixel_x = rand(-2,2)
+					src.pixel_y = rand(-2,2)
+					sleep(0.5)
+				src.pixel_x = 0
+				src.pixel_y = 0
 
 	mob_flip_inside(var/mob/user)
 		..(user)
