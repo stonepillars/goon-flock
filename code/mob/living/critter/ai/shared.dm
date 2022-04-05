@@ -146,7 +146,21 @@
 	src.move_target = null
 
 /datum/aiTask/succeedable/move/on_tick()
-	walk(holder.owner, 0)
+	if(!src.move_target)
+		fails++
+		return
+
+	if(src.move_target && src.move_target.z == holder.owner.z)
+		var/dist = get_dist(holder.owner, src.move_target)
+		if (dist >= 1)
+			if (prob(80))
+				holder.move_to(src.move_target,0)
+			else
+				holder.move_circ(src.move_target)
+		else
+			holder.stop_move()
+
+/*	walk(holder.owner, 0)
 	if(src.found_path)
 		if(src.found_path.len > 0)
 			// follow the path
@@ -165,11 +179,12 @@
 				get_path()
 	else
 		// get a path
-		get_path()
+		get_path() */
 
 /datum/aiTask/succeedable/move/succeeded()
 	if(move_target)
-		return ((get_dist(get_turf(holder.owner), get_turf(move_target)) == 0) || (src.found_path && src.found_path.len <= 0))
+		. = (get_dist(holder.owner, src.move_target) == 0)
+		return
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WAIT TASK
