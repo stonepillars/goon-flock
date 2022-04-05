@@ -49,7 +49,7 @@
 			occupant = iced
 
 		setMaterial(getMaterial("gnesis"))
-    src.health = src.health_max
+		src.health = src.health_max
 		UpdateIcon()
 
 	update_icon()
