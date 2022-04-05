@@ -177,18 +177,14 @@
 		return null // give the standard description
 
 /obj/icecube/flockdrone/attack_hand(mob/user as mob)
-<<<<<<< HEAD
 	if (user.a_intent == INTENT_HARM)
-		..()
-=======
-	user.visible_message("<span class='alert'><b>[user]</b> kicks [src]!</span>", "<span class='alert'>You kick [src]!</span>")
-	attack_particle(user, src)
-	takeDamage(2)
-	playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
+		user.visible_message("<span class='alert'><b>[user]</b> kicks [src]!</span>", "<span class='alert'>You kick [src]!</span>")
+		attack_particle(user, src)
+		takeDamage(2)
+		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
 
 /obj/icecube/flockdrone/attackby(obj/item/W as obj, mob/user as mob)
 	user.visible_message("<span class='alert'><b>[user]</b> hits [src] with [W]!</span>", "<span class='alert'>You hit [src] with [W]!</span>")
 	attack_particle(user, src)
 	takeDamage(W.force)
 	playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
->>>>>>> originflockmind/master
