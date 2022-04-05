@@ -180,8 +180,8 @@ butcher
 // precondition: 20 resources
 /datum/aiTask/sequence/goalbased/build
 	name = "building"
-	weight = 5
-	max_dist = 2
+	weight = 10
+	max_dist = 5
 
 /datum/aiTask/sequence/goalbased/build/New(parentHolder, transTask)
 	..(parentHolder, transTask)
@@ -207,8 +207,8 @@ butcher
 		// if we can go for a tile we already have reserved, go for it
 		var/turf/simulated/reserved = F.flock.busy_tiles[F.real_name]
 		if(istype(reserved) && !isfeathertile(reserved))
-			. = get_path_to(holder.owner, reserved, max_dist*2, 1)
-			if(length(.))
+			. = get_path_to(holder.owner, reserved, max_dist, 1)
+			if(length(.) > 0)
 				return
 			else
 				//unreserve the turf if we can't get at it
@@ -217,8 +217,8 @@ butcher
 		// if there's a priority tile we can go for, do it
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
-			. = get_path_to(holder.owner, priority_turfs, max_dist*2, 1)
-			if(length(.))
+			. = get_path_to(holder.owner, priority_turfs, max_dist, 1)
+			if(length(.) > 0)
 				return
 
 	. = list()
@@ -275,7 +275,7 @@ butcher
 /datum/aiTask/sequence/goalbased/build/drone
 	name = "building"
 	weight = 1
-	max_dist = 4 //max dist is higher so we can find walls in bigger rooms
+	max_dist = 4
 
 /datum/aiTask/sequence/goalbased/build/drone/precondition()
 	var/mob/living/critter/flock/F = holder.owner
@@ -289,7 +289,7 @@ butcher
 		// if we can go for a tile we already have reserved, go for it
 		var/turf/simulated/reserved = F.flock.busy_tiles[F.real_name]
 		if(istype(reserved) && !isfeathertile(reserved))
-			. = get_path_to(holder.owner, reserved, max_dist*2, 1)
+			. = get_path_to(holder.owner, reserved, max_dist, 1)
 			if(length(.))
 				return
 			else
@@ -299,7 +299,7 @@ butcher
 		// if there's a priority tile we can go for, do it
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
-			. = get_path_to(holder.owner, priority_turfs, max_dist*2, 1)
+			. = get_path_to(holder.owner, priority_turfs, max_dist, 1)
 			if(length(.))
 				return
 

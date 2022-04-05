@@ -39,7 +39,7 @@
 /datum/aiTask/sequence/goalbased/proc/score_target(var/atom/target)
 	. = 0
 	if(target)
-		return max_dist - GET_EUCLIDEAN_DIST(get_turf(holder.owner), get_turf(target))
+		return max_dist - GET_MANHATTAN_DIST(get_turf(holder.owner), get_turf(target))
 
 /datum/aiTask/sequence/goalbased/proc/precondition()
 	// useful for goals that have a requirement, return 0 to instantly make this state score 0 and not be picked
@@ -57,7 +57,7 @@
 	..()
 	if(!holder.target)
 		holder.target = get_best_target(get_targets())
-	if(subtask_index == 1) // MOVE TASK
+	if(istype(subtasks[subtask_index], /datum/aiTask/succeedable/move)) // MOVE TASK
 		// make sure we both set our target and move to our target correctly
 		var/datum/aiTask/succeedable/move/M = subtasks[subtask_index]
 		if(M && !M.move_target)
@@ -150,37 +150,26 @@
 	if(!src.move_target)
 		fails++
 		return
+	if(!src.found_path)
+		get_path()
 
-	if(src.move_target && src.move_target.z == holder.owner.z)
-		var/dist = get_dist(holder.owner, src.move_target)
+	if(length(src.found_path) > 0) //use A* path finding instead of just stepping to the next tile
+		// follow the path
+		src.found_path.Cut(1, 2)
+		var/turf/next
+		if(src.found_path.len >= 1)
+			next = src.found_path[1]
+		else
+			next = move_target
+
+		var/dist = get_dist(holder.owner, next)
 		if (dist >= 1)
 			if (prob(80))
-				holder.move_to(src.move_target,0)
+				holder.move_to(next,0)
 			else
-				holder.move_circ(src.move_target)
+				holder.move_circ(next)
 		else
 			holder.stop_move()
-
-/*	walk(holder.owner, 0)
-	if(src.found_path)
-		if(src.found_path.len > 0)
-			// follow the path
-			src.found_path.Cut(1, 2)
-			var/turf/next
-			if(src.found_path.len >= 1)
-				next = src.found_path[1]
-			else
-				next = move_target
-			walk_to(holder.owner, next, 0, 4)
-			if(BOUNDS_DIST(get_turf(holder.owner), next) == 0)
-				fails = 0
-			else
-				// we aren't where we ought to be
-				fails++
-				get_path()
-	else
-		// get a path
-		get_path() */
 
 /datum/aiTask/succeedable/move/succeeded()
 	if(move_target)
