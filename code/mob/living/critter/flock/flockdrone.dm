@@ -265,9 +265,6 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "griptool"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 1
-	HH.can_attack = 1
-	HH.can_range_attack = 0
 
 	HH = hands[2]
 	HH.limb = new /datum/limb/flock_converter
@@ -275,9 +272,7 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "converter"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 1
-	HH.can_range_attack = 0
+	HH.can_hold_items = FALSE
 
 	HH = hands[3]
 	HH.limb = new /datum/limb/gun/flock_stunner
@@ -285,9 +280,8 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "incapacitor"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 0
-	HH.can_range_attack = 1
+	HH.can_hold_items = FALSE
+	HH.can_range_attack = TRUE
 
 /mob/living/critter/flock/drone/specific_emotes(var/act, var/param = null, var/voluntary = 0)
 	switch (act)
