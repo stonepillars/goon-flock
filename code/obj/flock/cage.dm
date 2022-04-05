@@ -49,6 +49,7 @@
 			occupant = iced
 
 		setMaterial(getMaterial("gnesis"))
+    src.health = src.health_max
 		UpdateIcon()
 
 	update_icon()
@@ -57,7 +58,6 @@
 		for(var/atom/O in src.contents)
 			src.underlays += O.appearance
 		UpdateOverlays(image(src.icon,src.icon_state,layer = EFFECTS_LAYER_UNDER_4),"icecube_layer")
-
 
 	proc/getHumanPiece(var/mob/living/carbon/human/H)
 		// prefer inventory items before limbs, and limbs before organs
@@ -304,4 +304,14 @@
 			return null // give the standard description
 
 
+/obj/icecube/flockdrone/attack_hand(mob/user as mob)
+	user.visible_message("<span class='alert'><b>[user]</b> kicks [src]!</span>", "<span class='alert'>You kick [src]!</span>")
+	attack_particle(user, src)
+	takeDamage(2)
+	playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
 
+/obj/icecube/flockdrone/attackby(obj/item/W as obj, mob/user as mob)
+	user.visible_message("<span class='alert'><b>[user]</b> hits [src] with [W]!</span>", "<span class='alert'>You hit [src] with [W]!</span>")
+	attack_particle(user, src)
+	takeDamage(W.force)
+	playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
