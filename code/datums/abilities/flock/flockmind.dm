@@ -125,8 +125,8 @@
 	if(..())
 		return 1
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	var/turf/simulated/T = get_turf(target)
-	if(!istype(T))
+	var/turf/T = get_turf(target)
+	if(!(istype(T, /turf/simulated) || istype(T, /turf/space)))
 		boutput(holder.owner, "<span class='alert'>The flock can't convert this.</span>")
 		return 1
 	if(isfeathertile(T))
@@ -178,15 +178,14 @@
 
 /datum/targetable/flockmindAbility/partitionMind/cast(atom/target)
 	if(..())
-		return 1
+		return TRUE
+
 	if(!holder.pointCheck(100))
-		boutput(holder,"<span class='alert'>You need more compute to partition yourself</span>")
-		return 1
+		return TRUE
+
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(F)
-		F.partition()
-	else
-		return 1 // not sure what happened here
+
+	return F.partition()
 
 /////////////////////////////////////////
 

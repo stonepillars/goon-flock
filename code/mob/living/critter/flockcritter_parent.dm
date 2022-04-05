@@ -35,6 +35,7 @@
 	use_stamina = 0 //haha no
 
 	can_lie = 0 // no rotate when dead
+	blood_id = "flockdrone_fluid"
 
 /mob/living/critter/flock/setup_healths()
 	add_hh_robot(src.health_brute, src.health_brute_vuln)
@@ -201,7 +202,7 @@
 			if(src.decal)
 				qdel(src.decal)
 			if(F.flock)
-				F.flock.unreserveTurf(target, F.real_name)
+				F.flock.unreserveTurf(F.real_name)
 
 	onEnd()
 		..()

@@ -74,7 +74,7 @@
 		if("delete_trace")
 			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
 			if(T)
-				if(alert(user, "This will destroy the flocktrace. Are you ABSOLUTELY SURE you want to do this?", "Confirmation", "Yes", "No") == "Yes")
+				if(tgui_alert(user, "This will destroy the Flocktrace. Are you sure you want to do this?", "Confirmation", list("Yes", "No")) == "Yes")
 					// if they're in a drone, kick them out
 					var/mob/living/critter/flock/drone/host = T.loc
 					if(istype(host))
@@ -403,6 +403,9 @@
 /datum/flock/proc/claimTurf(var/turf/simulated/T)
 	src.all_owned_tiles |= T
 	src.priority_tiles -= T // we have it now, it's no longer priority
+	for (var/obj/flock_structure/structure in T.contents)
+		structure.flock = src
+		src.registerStructure(structure)
 	src.updateAnnotations()
 
 /datum/flock/proc/isTurfFree(var/turf/simulated/T, var/queryName) // provide the drone's name here: if they own the turf it's free _to them_
@@ -413,7 +416,7 @@
 			return 0
 	return 1
 
-/datum/flock/proc/togglePriorityTurf(var/turf/simulated/T)
+/datum/flock/proc/togglePriorityTurf(var/turf/T)
     if(!T)
         return 1 // error!!
     if(T in priority_tiles)
@@ -470,17 +473,20 @@
 // simple enough: if object path matches key, replace with instance of value
 // if value is null, just delete object
 /var/list/flock_conversion_paths = list(
-	/obj/grille = /obj/grille/flock,
+	/obj/grille/steel = /obj/grille/flock,
 	/obj/window = /obj/window/feather,
 	/obj/machinery/door/airlock = /obj/machinery/door/feather,
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
 	/obj/table = /obj/table/flock/auto,
-	/obj/lattice = /obj/lattice/flock,
 	/obj/machinery/light = /obj/machinery/light/flock,
 	/obj/storage/closet = /obj/storage/closet/flock,
-	/obj/storage/secure/closet = /obj/storage/closet/flock
+	/obj/storage/secure/closet = /obj/storage/closet/flock,
+	/obj/machinery/computer3 = /obj/flock_structure/compute,
+	/obj/machinery/computer = /obj/flock_structure/compute,
+	/obj/machinery/networked/teleconsole = /obj/flock_structure/compute,
 	)
+
 /proc/flock_convert_turf(var/turf/T)
 	if(!T)
 		return
@@ -492,6 +498,47 @@
 	var/RL_AddLumR = T.RL_AddLumR
 	var/RL_AddLumG = T.RL_AddLumG
 	var/RL_AddLumB = T.RL_AddLumB
+
+	if(istype(T, /turf/simulated/floor))
+		if(istype(T, /turf/simulated/floor/feather))
+			// fix instead of replace
+			var/turf/simulated/floor/feather/TF = T
+			TF.repair()
+			animate_flock_convert_complete(T)
+		else
+			T.ReplaceWith("/turf/simulated/floor/feather", 0)
+			animate_flock_convert_complete(T)
+
+	if(istype(T, /turf/simulated/wall))
+		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		animate_flock_convert_complete(T)
+
+	// regular and flock lattices
+	var/obj/lattice/lat = locate(/obj/lattice) in T
+	if(lat)
+		qdel(lat)
+		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		animate_flock_convert_complete(T)
+
+	var/obj/grille/catwalk/catw = locate(/obj/grille/catwalk) in T
+	if(catw)
+		qdel(catw)
+		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		animate_flock_convert_complete(T)
+
+	if(istype(T, /turf/space))
+		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
+		if(!FL)
+			new /obj/lattice/flock(T)
+	else // don't do this stuff if the turf is space, it fucks it up more
+		T.RL_Cleanup()
+		T.RL_LumR = RL_LumR
+		T.RL_LumG = RL_LumG
+		T.RL_LumB = RL_LumB
+		T.RL_AddLumR = RL_AddLumR
+		T.RL_AddLumG = RL_AddLumG
+		T.RL_AddLumB = RL_AddLumB
+		if (RL_Started) RL_UPDATE_LIGHT(T)
 
 	for(var/obj/O in T)
 		if(istype(O, /obj/machinery/door/feather))
@@ -521,42 +568,6 @@
 					qdel(O)
 					converted.set_dir(dir)
 					animate_flock_convert_complete(converted)
-
-	// if floor, turn to floor, if wall, turn to wall
-	if(istype(T, /turf/simulated/floor))
-		if(istype(T, /turf/simulated/floor/feather))
-			// fix instead of replace
-			var/turf/simulated/floor/feather/TF = T
-			TF.repair()
-			animate_flock_convert_complete(T)
-		else
-			T.ReplaceWith("/turf/simulated/floor/feather", 0)
-			animate_flock_convert_complete(T)
-	if(istype(T, /turf/simulated/wall))
-		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
-		animate_flock_convert_complete(T)
-
-
-	if(istype(T, /turf/space))
-		// if we have a fibrenet, make it a floor
-		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
-		if(istype(FL))
-			qdel(FL)
-			T.ReplaceWith("/turf/simulated/floor/feather", 0)
-			animate_flock_convert_complete(T)
-		// if we have no fibrenet, make one
-		else
-			FL = new(T)
-			animate_flock_convert_complete(FL)
-	else // don't do this stuff if the turf is space, it fucks it up more
-		T.RL_Cleanup()
-		T.RL_LumR = RL_LumR
-		T.RL_LumG = RL_LumG
-		T.RL_LumB = RL_LumB
-		T.RL_AddLumR = RL_AddLumR
-		T.RL_AddLumG = RL_AddLumG
-		T.RL_AddLumB = RL_AddLumB
-		if (RL_Started) RL_UPDATE_LIGHT(T)
 
 	return T
 
