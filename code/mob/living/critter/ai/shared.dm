@@ -39,7 +39,7 @@
 /datum/aiTask/sequence/goalbased/proc/score_target(var/atom/target)
 	. = 0
 	if(target)
-		return max_dist - GET_MANHATTAN_DIST(get_turf(holder.owner), get_turf(target))
+		return 100*(max_dist - GET_MANHATTAN_DIST(get_turf(holder.owner), get_turf(target)))/max_dist //normalize distance weighting
 
 /datum/aiTask/sequence/goalbased/proc/precondition()
 	// useful for goals that have a requirement, return 0 to instantly make this state score 0 and not be picked
@@ -122,7 +122,7 @@
 /datum/aiTask/timed/targeted/proc/score_target(var/atom/target)
 	. = 0
 	if(target)
-		return target_range - GET_MANHATTAN_DIST(get_turf(holder.owner), get_turf(target))
+		return 100*(target_range - GET_MANHATTAN_DIST(get_turf(holder.owner), get_turf(target)))/target_range //normalize distance weighting
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // MOVE TASK

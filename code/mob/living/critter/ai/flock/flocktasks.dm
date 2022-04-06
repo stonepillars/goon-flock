@@ -103,7 +103,7 @@ butcher
 		if(isnull(locate(/obj/flock_structure/egg) in F))
 			// if we can get a valid path to the target, include it for consideration
 			. += F
-	. = get_path_to(holder.owner, ., max_dist*2, 1)
+	. = get_path_to(holder.owner, ., max_dist*2, can_be_adjacent_to_target)
 
 ////////
 
@@ -611,7 +611,7 @@ butcher
 /datum/aiTask/sequence/goalbased/harvest
 	name = "harvesting"
 	weight = 2
-	max_dist = 4
+	max_dist = 6
 
 /datum/aiTask/sequence/goalbased/harvest/New(parentHolder, transTask)
 	..(parentHolder, transTask)
@@ -630,15 +630,6 @@ butcher
 		if(!I.anchored && I.loc != holder.owner)
 			if(istype(I, /obj/item/game_kit))
 				continue // fuck the game kit
-			if(istype(I, /obj/item/paper_bin))
-				// special consideration because these things can empty out
-				var/obj/item/paper_bin/P = I
-				if(P.amount <= 0)
-					continue // do not try to fetch paper out of an empty paper bin forever
-			if(istype(I,/obj/item/card_group))
-				if(I.loc == holder.owner) //checks hand for card to allow taking from pockets/storage
-					holder.owner.u_equip(I)
-				holder.owner.put_in_hand_or_drop(I)
 			// if we can get a valid path to the target, include it for consideration
 			. += I
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
@@ -669,8 +660,21 @@ butcher
 			else
 				F.empty_hand(1) // drop whatever we might be holding just in case
 				// grab the item
-				F.set_dir(get_dir(F, harvest_target))
-				F.hand_attack(harvest_target)
+				F.set_dir(get_dir(F, harvest_target)) //look at it
+				//special item type handling
+				if(istype(harvest_target,/obj/item/card_group))
+					if(harvest_target.loc == holder.owner) //checks hand for card to allow taking from pockets/storage
+						holder.owner.u_equip(harvest_target)
+					holder.owner.put_in_hand_or_drop(harvest_target)
+				else if(istype(harvest_target, /obj/item/paper_bin))
+					// special consideration because these things can empty out
+					var/obj/item/paper_bin/P = harvest_target
+					if(P.amount <= 0) //if it's empty, pick up the bin
+						holder.owner.put_in_hand_or_drop(harvest_target)
+					else
+						F.hand_attack(harvest_target) //else grab some paper
+				else
+					F.hand_attack(harvest_target)
 			// if we have the item, equip it into our horrifying death chamber
 			if(F.is_in_hands(harvest_target))
 				F.absorber.equip(harvest_target) // hooray!

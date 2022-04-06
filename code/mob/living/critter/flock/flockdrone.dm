@@ -45,7 +45,7 @@
 	abilityHolder = new /datum/abilityHolder/critter/flockdrone(src)
 
 	SPAWN(3 SECONDS) // aaaaaaa
-		if(src) //this is terrible, but diffracting a drone immediately causes a runtime
+		if(src.zone_sel) //this is terrible, but diffracting a drone immediately causes a runtime
 			src.zone_sel.change_hud_style('icons/mob/flock_ui.dmi')
 
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
