@@ -148,7 +148,6 @@ butcher
 /datum/aiTask/sequence/goalbased/nest/New(parentHolder, transTask)
 	..(parentHolder, transTask)
 	add_task(holder.get_instance(/datum/aiTask/succeedable/build, list(holder)))
-	//add_task(holder.get_instance(/datum/aiTask/succeedable/replicate, list(holder)))
 
 /datum/aiTask/sequence/goalbased/nest/precondition()
 	. = 0
