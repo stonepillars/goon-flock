@@ -35,6 +35,7 @@
 	src.checknearby() //check for nearby groups
 	if(!group)//if no group found
 		initializegroup() //make a new one
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /turf/simulated/floor/feather/special_desc(dist, mob/user)
   if(isflock(user))
@@ -258,6 +259,7 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 /turf/simulated/wall/auto/feather/New()
 	..()
 	setMaterial(getMaterial("gnesis"))
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /turf/simulated/wall/auto/feather/special_desc(dist, mob/user)
   if(isflock(user))
@@ -268,6 +270,13 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
     // todo: damageable walls
   else
     return null // give the standard description
+
+/turf/simulated/wall/auto/feather/proc/destroy_resources()
+	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
+
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1, src))
+			W.UpdateIcon()
 
 /turf/simulated/wall/auto/feather/Entered(var/mob/living/critter/flock/drone/F, atom/oldloc)
 	..()
