@@ -58,6 +58,8 @@
 	// moved up from critter/small_animal
 	var/butcherable = 0
 	var/butcher_time = 1.2 SECONDS
+	/// The mob who is butchering this critter
+	var/mob/butcherer = null
 	var/meat_type = /obj/item/reagent_containers/food/snacks/ingredient/meat/mysterymeat
 	var/name_the_meat = 0
 	var/skinresult = /obj/item/material_piece/cloth/leather //YEP
@@ -1242,6 +1244,13 @@
 				src.click(W, list())
 		if ("togglethrow")
 			src.toggle_throw_mode()
+		if ("walk")
+			if (src.m_intent == "run")
+				src.m_intent = "walk"
+			else
+				src.m_intent = "run"
+			out(src, "You are now [src.m_intent == "walk" ? "walking" : "running"].")
+			hud.update_mintent()
 		else
 			return ..()
 
@@ -1323,3 +1332,15 @@
 
 	src.TakeDamage("All", damage, 0)
 	return
+
+/mob/living/critter/Logout()
+	..()
+	if (src.ai && !src.ai.enabled && src.is_npc)
+		ai.enabled = TRUE
+
+/mob/living/critter/Login()
+	..()
+	if (src.ai?.enabled && src.is_npc)
+		ai.enabled = FALSE
+		var/datum/targetable/A = src.abilityHolder?.getAbility(/datum/targetable/ai_toggle)
+		A?.updateObject()
