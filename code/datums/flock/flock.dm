@@ -541,7 +541,6 @@
 
 	for(var/obj/O in T)
 		for(var/keyPath in flock_conversion_paths)
-			var/obj/replacementPath = flock_conversion_paths[keyPath]
 			if(istype(O, keyPath))
 				if (istype(O, /obj/machinery/door))
 					if (istype(O, /obj/machinery/door/firedoor/pyro))
