@@ -309,8 +309,6 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	user.lastattacked = src
 	attack_particle(user, src)
 
-///turf/simulated/wall/auto/feather/take_hit(var/obj/item/I)
-
 /turf/simulated/wall/auto/feather/burn_down()
 	src.takeDamage("fire", 1)
 	if (src.health <= 0)
@@ -335,8 +333,6 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	if (src.health <= 0)
 		src.destroy()
 
-///turf/simulated/wall/auto/feather/bullet_act(var/obj/projectile/P)
-
 /turf/simulated/wall/auto/feather/blob_act(power)
 	var/modifier = power / 20
 	var/damage = rand(modifier, 12 + 8 * modifier)
@@ -348,18 +344,6 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 		src.destroy()
 
 /turf/simulated/wall/auto/feather/proc/takeDamage(damageType, amount, playAttackSound = TRUE)
-	/*
-	switch(damageType)
-		if("brute")
-			amount *= bruteVuln
-		if("burn")
-			amount *= fireVuln
-		if("fire")
-			amount *= fireVuln
-		if("mixed")
-			var/half = round(amount/2)
-			amount = half * bruteVuln + (amount - half) * fireVuln
-	*/
 	src.health = max(src.health - amount, 0)
 	if (src.health > 0 && playAttackSound)
 		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
