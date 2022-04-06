@@ -475,8 +475,7 @@
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
 	/obj/window = /obj/window/feather,
-	/obj/machinery/door/airlock = /obj/machinery/door/feather,
-	/obj/machinery/door = null,
+	/obj/machinery/door = /obj/machinery/door/feather,
 	/obj/stool = /obj/stool/chair/comfy/flock,
 	/obj/table = /obj/table/flock/auto,
 	/obj/machinery/light = /obj/machinery/light/flock,
@@ -541,33 +540,36 @@
 		if (RL_Started) RL_UPDATE_LIGHT(T)
 
 	for(var/obj/O in T)
-		if(istype(O, /obj/machinery/door/feather))
-			// repair door
-			var/obj/machinery/door/feather/door = O
-			door.heal_damage()
-			animate_flock_convert_complete(O)
 		for(var/keyPath in flock_conversion_paths)
 			var/obj/replacementPath = flock_conversion_paths[keyPath]
 			if(istype(O, keyPath))
-				if(isnull(replacementPath))
-					qdel(O)
-				else
-					var/dir = O.dir
-					var/obj/converted = new replacementPath(T)
-					// if the object is a closet, it might not have spawned its contents yet
-					// so force it to do that first
-					if(istype(O, /obj/storage))
-						var/obj/storage/S = O
-						if(!isnull(S.spawn_contents))
-							S.make_my_stuff()
-					// if the object has contents, move them over!!
-					for (var/obj/OO in O)
-						OO.set_loc(converted)
-					for (var/mob/M in O)
-						M.set_loc(converted)
-					qdel(O)
-					converted.set_dir(dir)
-					animate_flock_convert_complete(converted)
+				if (istype(O, /obj/machinery/door))
+					if (istype(O, /obj/machinery/door/firedoor/pyro))
+						qdel(O)
+						continue
+					if (istype(O, /obj/machinery/door/window) || istype(O, /obj/machinery/door/airlock/pyro/glass/windoor) || istype(O, /obj/machinery/door/unpowered/wood))
+						qdel(O)
+						continue
+					if (istype(O, /obj/machinery/door/poddoor/pyro) && !(findtext(O.name, "cargo") || findtext(O.name, "pod"))) // shutters
+						qdel(O)
+						continue
+				var/dir = O.dir
+				var/obj/replacementPath = flock_conversion_paths[keyPath]
+				var/obj/converted = new replacementPath(T)
+				// if the object is a closet, it might not have spawned its contents yet
+				// so force it to do that first
+				if(istype(O, /obj/storage))
+					var/obj/storage/S = O
+					if(!isnull(S.spawn_contents))
+						S.make_my_stuff()
+				// if the object has contents, move them over!!
+				for (var/obj/OO in O)
+					OO.set_loc(converted)
+				for (var/mob/M in O)
+					M.set_loc(converted)
+				qdel(O)
+				converted.set_dir(dir)
+				animate_flock_convert_complete(converted)
 
 	return T
 
