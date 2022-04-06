@@ -82,15 +82,12 @@
 		if(f.usesgroups)
 			f.group?.removestructure(f)
 			f.group = null
-<<<<<<< HEAD
 	for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
 		if (flockdrone.floorrunning)
 			flockdrone.end_floorrunning()
-=======
 
 /turf/simulated/floor/feather/burn_tile()
 	return
->>>>>>> originflockmind/master
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // stuff to make floorrunning possible (god i wish i could think of a better verb than "floorrunning")
