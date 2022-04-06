@@ -7,7 +7,7 @@
 	desc = "A vat of bubbling teal fluid, covered in hollow spikes."
 	icon_state = "teleblocker-off"
 	flock_id = "Gnesis turret"
-	//resourcecost = 300
+	resourcecost = 300
 	health = 80
 	var/fluid_level_max = 250
 	var/fluid_gen_amt = 3
