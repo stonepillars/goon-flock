@@ -155,7 +155,7 @@ butcher
 	if(F?.can_afford(120))
 		. = 1 //we can afford
 		for(var/turf/simulated/floor/feather/T in view(max_dist, holder.owner))
-			. = 0 //but there's a flocktile in view
+			return FALSE //but there's a flocktile in view
 
 
 /datum/aiTask/sequence/goalbased/nest/get_targets()
