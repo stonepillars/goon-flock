@@ -550,7 +550,7 @@
 					if (istype(O, /obj/machinery/door/window) || istype(O, /obj/machinery/door/airlock/pyro/glass/windoor) || istype(O, /obj/machinery/door/unpowered/wood))
 						qdel(O)
 						continue
-					if (istype(O, /obj/machinery/door/poddoor/pyro) && !(findtext(O.name, "cargo") || findtext(O.name, "pod"))) // shutters
+					if (istype(O, /obj/machinery/door/poddoor/pyro) && !(findtext(O.name, "cargo") || findtext(O.name, "pod") || findtext(O.name, "mass") || findtext(O.name, "disposal"))) // shutters
 						qdel(O)
 						continue
 				var/dir = O.dir
