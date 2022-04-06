@@ -407,9 +407,9 @@
 		var/mob/M = src.pulled_by
 		M.set_pulling(null)
 
-	var/obj/item/grab/g = src.find_type_in_hand(/obj/item/grab)
-	if (g && (g.state == GRAB_PIN || !istype(g, /obj/item/grab/block)))
-		qdel(g)
+	for (var/obj/item/grab/g in src.equipped_list())
+		if (!istype(g, /obj/item/grab/block))
+			qdel(g)
 
 	if (length(src.grabbed_by))
 		for(var/obj/item/grab/grab_grabbed_by in src.grabbed_by)
