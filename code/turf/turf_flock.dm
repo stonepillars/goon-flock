@@ -250,8 +250,8 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	desc = "You can feel it thrumming and pulsing."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "0"
-	health = 10
-	var/max_health = 10
+	health = 250
+	var/max_health = 250
 	flags = USEDELAY
 	mat_appearances_to_ignore = list("steel", "gnesis")
 	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather)
