@@ -30,8 +30,6 @@
 	/// the tile which its "connected to" and handles the group
 	var/turf/simulated/floor/feather/grouptile = null
 
-	var/attack_message_on_cd = FALSE
-
 /obj/flock_structure/New(var/atom/location, var/datum/flock/F=null)
 	..()
 	health_max = health
@@ -188,10 +186,7 @@
 	user.lastattacked = src
 
 /obj/flock_structure/proc/report_attack()
-	if (!attack_message_on_cd)
-		attack_message_on_cd = TRUE
-		SPAWN(30 SECONDS) attack_message_on_cd = FALSE
-
+	if (!ON_COOLDOWN(src, "attack_alert", 10 SECONDS))
 		flock_speak(src, "ALERT: Under attack", flock)
 
 /obj/flock_structure/ex_act(severity)
