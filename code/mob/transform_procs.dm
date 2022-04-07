@@ -117,10 +117,7 @@
 	boutput(O, "To use something, simply double-click it.")
 	boutput(O, "Currently right-click functions will not work for the AI (except examine), and will either be replaced with dialogs or won't be usable by the AI.")
 
-//	O.laws_object = new /datum/ai_laws/asimov
-//	O.laws_object = ticker.centralized_ai_laws
-//	O.current_law_set = O.laws_object
-	ticker.centralized_ai_laws.show_laws(O)
+	O.show_laws()
 	boutput(O, "<b>These laws may be changed by other players.</b>")
 
 	O.verbs += /mob/living/silicon/ai/proc/ai_call_shuttle
@@ -232,7 +229,7 @@
 			src.mind.transfer_to(cyborg)
 	cyborg.set_loc(get_turf(src.loc))
 	if (syndicate)
-		cyborg.handle_robot_antagonist_status("converted")
+		cyborg.make_syndicate("Robotize_MK2 (probably cyborg converter)")
 		boutput(cyborg, "<B>You have been transformed into a <i>syndicate</i> Cyborg. Cyborgs can interact with most electronic objects in their view.</B>")
 		boutput(cyborg, "<B>You must follow your laws and assist syndicate agents, who are identifiable by their icon.</B>")
 	else
@@ -887,10 +884,13 @@ var/respawn_arena_enabled = 0
 			ticker.minds += O.mind
 		qdel(src)
 
-		boutput(O, "<span class='bold'>You are a flocktrace, a partition of the flock's collective computation!</span>")
-		boutput(O, "<span class='bold'>Your loyalty is to the flock and to the flockmind. Spread drones, convert the station, aid in the construction of the Relay.</span>")
+		boutput(O, "<span class='bold'>You are a Flocktrace, a partition of the Flock's collective computation!</span>")
+		boutput(O, "<span class='bold'>Your loyalty is to the Flock of [flock.flockmind.real_name]. Spread drones, convert the station, and aid in the construction of the Relay.</span>")
 		boutput(O, "<span class='bold'>In this form, you cannot be harmed, but you can't do anything to the world at large.</span>")
-		boutput(O, "<span class='italic'>Tip: click-drag yourself onto unoccupied drones to take direct control of them.</span>")
+		boutput(O, "<span class='italic'>Tip: Click-drag yourself onto unoccupied drones to take direct control of them.</span>")
 		boutput(O, "<span class='notice'>You are part of the <span class='bold'>[flock.name]</span> flock.</span>")
+
+		flock_speak(null, "Trace partition [O.real_name] has been instantiated.", flock)
+
 		return O
 	return null

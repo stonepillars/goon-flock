@@ -35,6 +35,7 @@
 	use_stamina = 0 //haha no
 
 	can_lie = 0 // no rotate when dead
+	blood_id = "flockdrone_fluid"
 
 /mob/living/critter/flock/setup_healths()
 	add_hh_robot(src.health_brute, src.health_brute_vuln)
@@ -489,7 +490,7 @@
 				target = null
 			if(/turf/simulated/wall/auto/feather)
 				var/turf/simulated/wall/auto/feather/f = target
-				f.dismantle_wall()
+				f.destroy_resources()
 			if(/obj/machinery/door/feather)
 				var/turf/T = get_turf(target)
 				playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
