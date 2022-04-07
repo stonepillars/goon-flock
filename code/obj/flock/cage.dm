@@ -48,9 +48,6 @@
 				M.addOverlayComposition(/datum/overlayComposition/flockmindcircuit)
 			occupant = iced
 
-		setMaterial(getMaterial("gnesis"))
-		src.health = src.health_max
-		src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 		UpdateIcon()
 
 	update_icon()
@@ -271,29 +268,25 @@
 			return
 
 		if(prob(25))
-			takeDamage(1)
+			takeDamage("brute",1)
 		return
 
 	takeDamage(var/damageType, var/amount)
-		src.health -= amount
-		if(src.health <= 0)
-			qdel(src)
-			return
-		else
-			var/wiggle = 3
-			SPAWN(0)
-				while(wiggle > 0)
-					wiggle--
-					src.pixel_x = rand(-2,2)
-					src.pixel_y = rand(-2,2)
-					sleep(0.5)
-				src.pixel_x = 0
-				src.pixel_y = 0
+		..(damageType,amount)
+		var/wiggle = 3
+		SPAWN(0)
+			while(wiggle > 0)
+				wiggle--
+				src.pixel_x = rand(-2,2)
+				src.pixel_y = rand(-2,2)
+				sleep(0.5)
+			src.pixel_x = 0
+			src.pixel_y = 0
 
 	mob_flip_inside(var/mob/user)
 		..(user)
 		user.show_text("<span class='alert'>[src] [pick("cracks","bends","shakes","groans")].</span>")
-		src.takeDamage(6)
+		src.takeDamage("brute",6)
 
 	special_desc(dist, mob/user)
 		if(isflock(user))
@@ -307,16 +300,3 @@
 			return null // give the standard description
 
 
-
-/obj/icecube/flockdrone/attack_hand(mob/user as mob)
-	if (user.a_intent == INTENT_HARM)
-		user.visible_message("<span class='alert'><b>[user]</b> kicks [src]!</span>", "<span class='alert'>You kick [src]!</span>")
-		attack_particle(user, src)
-		takeDamage(2)
-		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
-
-/obj/icecube/flockdrone/attackby(obj/item/W as obj, mob/user as mob)
-	user.visible_message("<span class='alert'><b>[user]</b> hits [src] with [W]!</span>", "<span class='alert'>You hit [src] with [W]!</span>")
-	attack_particle(user, src)
-	takeDamage(W.force)
-	playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
