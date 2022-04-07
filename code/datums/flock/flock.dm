@@ -20,7 +20,7 @@
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
 	var/datum/tgui/flockpanel
-
+	var/list/pings = list()
 
 /datum/flock/New()
 	..()
@@ -215,6 +215,58 @@
 	src.traces -= T
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 	aH?.updateCompute()
+
+/datum/flock/proc/ping(var/atom/target, var/mob/living/intangible/flock/pinger)
+	//awful typecheck because turfs and movables have vis_contents defined seperately because god hates us
+	if (!istype(pinger) || (!istype(target, /atom/movable) && !istype(target, /turf)))
+		return
+
+	target.AddComponent(/datum/component/flock_ping)
+
+	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
+		var/class = "flocksay ping [istype(F, /mob/living/intangible/flock/flockmind) ? "flockmindsay" : ""]"
+		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target]'>Interrupt request, target: [target] in [get_area(target)].</a></span>")
+	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
+
+//is this a weird use case for components? probably, but it's kinda neat
+/datum/component/flock_ping
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+
+	var/const/duration = 1 SECOND
+	var/end_time = -1
+	var/obj/dummy = null
+
+	Initialize()
+		//initialize is called regardless of whether the component is actually added or not
+		if (parent.GetExactComponent(/datum/component/flock_ping))
+			return
+		//this cast is horribly unsafe, but we just need vis_contents
+		var/atom/movable/target = parent
+
+		src.end_time = world.timeofday + duration
+
+		dummy = new()
+		dummy.plane = PLANE_FLOCKVISION
+		dummy.invisibility = INVIS_FLOCKMIND
+		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM
+		target.render_target = ref(parent)
+		dummy.render_source = target.render_target
+		dummy.add_filter("outline", 1, outline_filter(size=1,color="#00ff9d"))
+		target.vis_contents += dummy
+
+		SPAWN(0)
+			while(world.timeofday < src.end_time)
+				sleep(duration)
+			qdel(src)
+
+	InheritComponent(datum/component/flock_ping/C, i_am_original)
+		if (i_am_original)
+			src.end_time = world.timeofday + duration
+
+	disposing()
+		. = ..()
+		qdel(dummy)
+
 
 // ANNOTATIONS
 

@@ -414,7 +414,7 @@
 	name = "Ping"
 	desc = "Request attention from other elements of the flock."
 	icon_state = "designate_tile"
-	cooldown = 5
+	cooldown = 0.1 SECONDS
 
 /datum/targetable/flockmindAbility/ping/cast(atom/target)
 	if(..())
@@ -424,5 +424,5 @@
 		return TRUE
 	if(F)
 		var/datum/flock/flock = F.flock
-		if(flock)
-			flock_speak(holder.owner, "Attention requested at [target].", flock)
+		flock?.ping(target, holder.owner)
+
