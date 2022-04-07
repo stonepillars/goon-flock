@@ -269,11 +269,8 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 /turf/simulated/wall/auto/feather/New()
 	..()
 	setMaterial(getMaterial("gnesis"))
-<<<<<<< HEAD
 	src.health = src.max_health
-=======
 	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
->>>>>>> originflockmind/master
 
 /turf/simulated/wall/auto/feather/special_desc(dist, mob/user)
   if(isflock(user))
