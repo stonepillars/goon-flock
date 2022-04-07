@@ -34,6 +34,7 @@
 	health_max = health
 	time_started = world.timeofday
 	processing_items |= src
+	setMaterial(getMaterial("gnesis"))
 	if(F)
 		src.flock = F
 		src.flock.registerStructure(src)
