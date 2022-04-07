@@ -224,6 +224,9 @@
 	target.AddComponent(/datum/component/flock_ping)
 
 	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
+		var/image/arrow = image('icons/mob/screen1.dmi', F, "point", EFFECTS_LAYER_1, get_dir(F, target), 0, 100)
+		arrow.transform = matrix(arrow.transform, 3,3, MATRIX_SCALE)
+		F.client?.images += arrow
 		var/class = "flocksay ping [istype(F, /mob/living/intangible/flock/flockmind) ? "flockmindsay" : ""]"
 		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target];ping=[TRUE]'>Interrupt request, target: [target] in [get_area(target)].</a></span>")
 	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
@@ -249,7 +252,9 @@
 		dummy.layer = target.layer
 		dummy.plane = PLANE_FLOCKVISION
 		dummy.invisibility = INVIS_FLOCKMIND
-		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM
+		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM | RESET_COLOR | PASS_MOUSE
+		dummy.icon = target.icon
+		dummy.icon_state = target.icon_state
 		target.render_target = ref(parent)
 		dummy.render_source = target.render_target
 		dummy.add_filter("outline", 1, outline_filter(size=1,color="#00ff9d"))
