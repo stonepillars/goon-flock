@@ -215,15 +215,16 @@
 		if (istype(A, /obj/itemspecialeffect))
 			var/obj/itemspecialeffect/E = A
 			return (E.can_clash && world.time != E.create_time && E.clash_time > 0 && world.time <= E.create_time + E.clash_time)
-		.= ((istype(A, /obj/critter) || (isliving(A)) || istype(A, /obj/machinery/bot)) && A != usr && A != user)
+		.= ((istype(A, /obj/critter) || (isliving(A) && !isintangible(A)) || istype(A, /obj/machinery/bot)) && A != usr && A != user)
 
-	proc/showEffect(var/name = null, var/direction = NORTH, var/mob/user, alpha=255)
+	proc/showEffect(var/name = null, var/direction = NORTH, var/mob/user, color="#FFFFFF", alpha=255)
 		if(name == null || master == null) return
 		if(!user) user = usr
 		var/obj/itemspecialeffect/E = new /obj/itemspecialeffect
 		if(src.animation_color)
 			E.color = src.animation_color
 		E.alpha = alpha
+		E.color = color
 		E.setup(get_turf(user))
 		E.set_dir(direction)
 		E.icon_state = name
@@ -484,6 +485,8 @@
 	name = "Stab"
 	desc = "Attack with a 2 tile range."
 
+	var/stab_color = "#FFFFFF"
+
 	onAdd()
 		if(master)
 			//cooldown = master.click_delay
@@ -501,7 +504,7 @@
 			var/turf/one = get_step(master, direction)
 			var/turf/two = get_step(one, direction)
 
-			showEffect("spear", direction)
+			showEffect("spear", direction, color=src.stab_color)
 
 			var/hit = 0
 			for(var/turf/T in list(one, two))
@@ -1772,6 +1775,9 @@ ABSTRACT_TYPE(/datum/item_special/spark)
 			if (!hit)
 				if (istype(turf,/turf/simulated/floor))
 					var/turf/simulated/floor/F = turf
+					if (istype(F, /turf/simulated/floor/feather))
+						boutput(user, "<span class='alert'><b>The tile stays stuck to the floor!</b></span>")
+						return
 					var/obj/item/tile = F.pry_tile(master, user, params)
 					if (tile)
 						hit = 1
@@ -1929,7 +1935,7 @@ ABSTRACT_TYPE(/datum/item_special/spark)
 		density = 1
 		del_self = 0
 		clash_time = -1
-	
+
 
 		//mouse_opacity = 1
 		var/bump_count = 0

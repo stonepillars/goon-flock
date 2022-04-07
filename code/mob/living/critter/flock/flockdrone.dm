@@ -63,6 +63,8 @@
 			emote("beep")
 			say(pick_string("flockmind.txt", "flockdrone_created"))
 
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
+
 /mob/living/critter/flock/drone/disposing()
 	src.remove_simple_light("drone_light")
 	..()
@@ -703,9 +705,8 @@
 		return 0
 	if (user.floorrunning)
 		return 0 // you'll need to be out of the floor to do anything
-	var/mob/living/critter/flock/drone/F = target
-	if(istype(F, /mob/living/critter/flock/drone))
-		boutput(user, "<span class='alert'>The grip tool refuses to harm another flockdrone, jamming briefly.</span>")
+	if (istype(target, /mob/living/critter/flock))
+		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
 	else
 		if (!target.melee_attack_test(user))
 			return
@@ -744,13 +745,17 @@
 		if(istype(target, /turf/simulated/floor/feather))
 			var/turf/simulated/floor/feather/flocktarget = target
 			if(user.a_intent == INTENT_DISARM)
-				if(!locate(/obj/grille/flock) in flocktarget)
-					if(user.resources < 25)
-						boutput(user, "<span class='alert'>Not enough resources to construct a barricade (you need 25).</span>")
-					else
-						actions.start(new/datum/action/bar/flock_construct(target), user)
+				for (var/atom/O in flocktarget.contents)
+					if (istype(O, /obj/grille/flock))
+						boutput(user, "<span class='alert'>There's already a barricade here.</span>")
+						return
+					if ((O.density && !isflock(O)) || istype(O, /obj/flock_structure/ghost))
+						boutput(user, "<span class='alert'>This tile has something that blocks barricade construction!</span>")
+						return
+				if (user.resources < 25)
+					boutput(user, "<span class='alert'>Not enough resources to construct a barricade (you need 25).</span>")
 				else
-					boutput(user, "<span class='alert'>There's already a barricade here.</span>")
+					actions.start(new/datum/action/bar/flock_construct(target), user)
 			else
 				boutput(user, "<span class='notice'>It's already been repurposed. Can't improve on perfection. (Use the disarm intent to construct a barricade.)</span>")
 		else
