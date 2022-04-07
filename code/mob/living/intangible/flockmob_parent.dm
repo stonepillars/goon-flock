@@ -210,3 +210,5 @@
 		var/atom/movable/origin = locate(href_list["origin"])
 		if(!QDELETED(origin))
 			src.set_loc(get_turf(origin))
+			if (href_list["ping"])
+				origin.AddComponent(/datum/component/flock_ping)

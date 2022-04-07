@@ -225,14 +225,14 @@
 
 	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
 		var/class = "flocksay ping [istype(F, /mob/living/intangible/flock/flockmind) ? "flockmindsay" : ""]"
-		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target]'>Interrupt request, target: [target] in [get_area(target)].</a></span>")
+		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target];ping=[TRUE]'>Interrupt request, target: [target] in [get_area(target)].</a></span>")
 	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
 
 //is this a weird use case for components? probably, but it's kinda neat
 /datum/component/flock_ping
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 
-	var/const/duration = 1 SECOND
+	var/const/duration = 5 SECOND
 	var/end_time = -1
 	var/obj/dummy = null
 
@@ -246,6 +246,7 @@
 		src.end_time = world.timeofday + duration
 
 		dummy = new()
+		dummy.layer = target.layer
 		dummy.plane = PLANE_FLOCKVISION
 		dummy.invisibility = INVIS_FLOCKMIND
 		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM
@@ -256,6 +257,10 @@
 
 		SPAWN(0)
 			while(world.timeofday < src.end_time)
+				animate(dummy, time = duration/9, alpha = 100)
+				for (var/i in 1 to 4)
+					animate(time = duration/9, alpha = 255)
+					animate(time = duration/9, alpha = 100)
 				sleep(duration)
 			qdel(src)
 
@@ -266,7 +271,6 @@
 	disposing()
 		. = ..()
 		qdel(dummy)
-
 
 // ANNOTATIONS
 
