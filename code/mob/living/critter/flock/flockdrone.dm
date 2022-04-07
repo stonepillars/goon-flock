@@ -267,9 +267,6 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "griptool"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 1
-	HH.can_attack = 1
-	HH.can_range_attack = 0
 
 	HH = hands[2]
 	HH.limb = new /datum/limb/flock_converter
@@ -277,9 +274,7 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "converter"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 1
-	HH.can_range_attack = 0
+	HH.can_hold_items = FALSE
 
 	HH = hands[3]
 	HH.limb = new /datum/limb/gun/flock_stunner
@@ -287,9 +282,8 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "incapacitor"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 0
-	HH.can_range_attack = 1
+	HH.can_hold_items = FALSE
+	HH.can_range_attack = TRUE
 
 /mob/living/critter/flock/drone/specific_emotes(var/act, var/param = null, var/voluntary = 0)
 	switch (act)
@@ -361,14 +355,17 @@
 /mob/living/critter/flock/drone/process_move(keys)
 	if(keys && length(src.grabbed_by))
 		// someone is grabbing us, and we want to move
-		++src.antigrab_counter
-		if(src.antigrab_counter >= src.antigrab_fires_at)
-			playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
-			boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
-			for(var/obj/item/grab/G in src.grabbed_by)
-				var/mob/living/L = G.assailant
-				L.shock(src, 5000)
+		if (length(src.grabbed_by) == 1 && src.find_type_in_hand(/obj/item/grab/block))
 			src.antigrab_counter = 0
+		else
+			++src.antigrab_counter
+			if(src.antigrab_counter >= src.antigrab_fires_at)
+				playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
+				boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
+				for(var/obj/item/grab/G in src.grabbed_by)
+					var/mob/living/L = G.assailant
+					L.shock(src, 5000)
+				src.antigrab_counter = 0
 	else
 		src.antigrab_counter = 0
 	if(keys & KEY_RUN)

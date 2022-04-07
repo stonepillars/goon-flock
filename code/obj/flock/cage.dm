@@ -9,6 +9,7 @@
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "cage"
 	flock_id = "matter reprocessor"
+	flags = USEDELAY
 	health = 30
 	health_max = 30
 	alpha = 192
@@ -262,7 +263,6 @@
 			AM.set_loc(src.loc)
 		..()
 
-
 	relaymove(mob/user as mob)
 		if (user.stat)
 			return
@@ -298,5 +298,6 @@
 			<br><span class='bold'>###=-</span></span>"}
 		else
 			return null // give the standard description
+
 
 
