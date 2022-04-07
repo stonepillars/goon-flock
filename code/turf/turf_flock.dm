@@ -35,6 +35,7 @@
 	src.checknearby() //check for nearby groups
 	if(!group)//if no group found
 		initializegroup() //make a new one
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /turf/simulated/floor/feather/special_desc(dist, mob/user)
   if(isflock(user))
@@ -61,11 +62,11 @@
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C], shattering it!</span>")
 		src.name = "weird broken floor"
 		src.desc = "It's broken. You could probably use a crowbar to pull the remnants out."
-		playsound(src.loc, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
+		playsound(src, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
 		break_tile()
 	else
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C]!</span>")
-		playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
+		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
 
 /turf/simulated/floor/feather/break_tile_to_plating()
 	// if the turf's on, turn it off
@@ -83,6 +84,8 @@
 			f.group?.removestructure(f)
 			f.group = null
 
+/turf/simulated/floor/feather/burn_tile()
+	return
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // stuff to make floorrunning possible (god i wish i could think of a better verb than "floorrunning")
@@ -117,7 +120,7 @@
 	src.name = "weird glowing floor"
 	src.desc = "Looks like disco's not dead after all."
 	on = 1
-	playsound(src.loc, "sound/machines/ArtifactFea3.ogg", 25, 1)
+	//playsound(src.loc, "sound/machines/ArtifactFea3.ogg", 25, 1)
 	src.light.enable()
 
 /turf/simulated/floor/feather/proc/off()
@@ -256,6 +259,7 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 /turf/simulated/wall/auto/feather/New()
 	..()
 	setMaterial(getMaterial("gnesis"))
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /turf/simulated/wall/auto/feather/special_desc(dist, mob/user)
   if(isflock(user))
@@ -266,6 +270,13 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
     // todo: damageable walls
   else
     return null // give the standard description
+
+/turf/simulated/wall/auto/feather/proc/destroy_resources()
+	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
+
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1, src))
+			W.UpdateIcon()
 
 /turf/simulated/wall/auto/feather/Entered(var/mob/living/critter/flock/drone/F, atom/oldloc)
 	..()
