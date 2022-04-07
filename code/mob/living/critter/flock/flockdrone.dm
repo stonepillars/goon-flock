@@ -738,16 +738,8 @@
 /datum/limb/flock_grip/harm(mob/target, var/mob/living/critter/flock/drone/user)
 	if (!user || !target)
 		return 0
-<<<<<<< HEAD
-	var/mob/living/critter/flock/drone/F = target
-	if(istype(F, /mob/living/critter/flock/drone))
-		boutput(user, "<span class='alert'>The grip tool refuses to harm another flockdrone, jamming briefly.</span>")
-=======
-	if (user.floorrunning)
-		return 0 // you'll need to be out of the floor to do anything
 	if (istype(target, /mob/living/critter/flock))
 		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
->>>>>>> originflockmind/master
 	else
 		if (!target.melee_attack_test(user))
 			return
