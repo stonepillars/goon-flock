@@ -63,6 +63,8 @@
 			emote("beep")
 			say(pick_string("flockmind.txt", "flockdrone_created"))
 
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
+
 /mob/living/critter/flock/drone/disposing()
 	src.remove_simple_light("drone_light")
 	..()
@@ -265,9 +267,6 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "griptool"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 1
-	HH.can_attack = 1
-	HH.can_range_attack = 0
 
 	HH = hands[2]
 	HH.limb = new /datum/limb/flock_converter
@@ -275,9 +274,7 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "converter"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 1
-	HH.can_range_attack = 0
+	HH.can_hold_items = FALSE
 
 	HH = hands[3]
 	HH.limb = new /datum/limb/gun/flock_stunner
@@ -285,9 +282,8 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "incapacitor"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 0
-	HH.can_range_attack = 1
+	HH.can_hold_items = FALSE
+	HH.can_range_attack = TRUE
 
 /mob/living/critter/flock/drone/specific_emotes(var/act, var/param = null, var/voluntary = 0)
 	switch (act)
@@ -359,14 +355,17 @@
 /mob/living/critter/flock/drone/process_move(keys)
 	if(keys && length(src.grabbed_by))
 		// someone is grabbing us, and we want to move
-		++src.antigrab_counter
-		if(src.antigrab_counter >= src.antigrab_fires_at)
-			playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
-			boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
-			for(var/obj/item/grab/G in src.grabbed_by)
-				var/mob/living/L = G.assailant
-				L.shock(src, 5000)
+		if (length(src.grabbed_by) == 1 && src.find_type_in_hand(/obj/item/grab/block))
 			src.antigrab_counter = 0
+		else
+			++src.antigrab_counter
+			if(src.antigrab_counter >= src.antigrab_fires_at)
+				playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
+				boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
+				for(var/obj/item/grab/G in src.grabbed_by)
+					var/mob/living/L = G.assailant
+					L.shock(src, 5000)
+				src.antigrab_counter = 0
 	else
 		src.antigrab_counter = 0
 	if(keys & KEY_RUN)
@@ -703,9 +702,8 @@
 		return 0
 	if (user.floorrunning)
 		return 0 // you'll need to be out of the floor to do anything
-	var/mob/living/critter/flock/drone/F = target
-	if(istype(F, /mob/living/critter/flock/drone))
-		boutput(user, "<span class='alert'>The grip tool refuses to harm another flockdrone, jamming briefly.</span>")
+	if (istype(target, /mob/living/critter/flock))
+		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
 	else
 		if (!target.melee_attack_test(user))
 			return
@@ -744,13 +742,17 @@
 		if(istype(target, /turf/simulated/floor/feather))
 			var/turf/simulated/floor/feather/flocktarget = target
 			if(user.a_intent == INTENT_DISARM)
-				if(!locate(/obj/grille/flock) in flocktarget)
-					if(user.resources < 25)
-						boutput(user, "<span class='alert'>Not enough resources to construct a barricade (you need 25).</span>")
-					else
-						actions.start(new/datum/action/bar/flock_construct(target), user)
+				for (var/atom/O in flocktarget.contents)
+					if (istype(O, /obj/grille/flock))
+						boutput(user, "<span class='alert'>There's already a barricade here.</span>")
+						return
+					if ((O.density && !isflock(O)) || istype(O, /obj/flock_structure/ghost))
+						boutput(user, "<span class='alert'>This tile has something that blocks barricade construction!</span>")
+						return
+				if (user.resources < 25)
+					boutput(user, "<span class='alert'>Not enough resources to construct a barricade (you need 25).</span>")
 				else
-					boutput(user, "<span class='alert'>There's already a barricade here.</span>")
+					actions.start(new/datum/action/bar/flock_construct(target), user)
 			else
 				boutput(user, "<span class='notice'>It's already been repurposed. Can't improve on perfection. (Use the disarm intent to construct a barricade.)</span>")
 		else

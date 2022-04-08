@@ -111,30 +111,32 @@
 /obj/storage/closet/flock/New()
 	..()
 	setMaterial("gnesis")
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /obj/storage/closet/flock/attackby(obj/item/W as obj, mob/user as mob)
-	// handle tools
-	if (istype(W, /obj/item/cargotele))
-		boutput(user, "<span class='alert'>For some reason, it refuses to budge.</span>")
-		return
-	else if (istype(W, /obj/item/satchel/))
-		boutput(user, "<span class='alert'>It isn't really clear how to make this work.</span>")
-		return
-	else if (!src.open && isweldingtool(W))
-		if (W:try_weld(user,0,-1,0,0))
+	if (istype(W, /obj/item/grab))
+		return ..()
+
+	if (!src.open)
+		if (istype(W, /obj/item/cargotele))
+			boutput(user, "<span class='alert'>For some reason, it refuses to budge.</span>")
+		else if (isweldingtool(W) && W:try_weld(user, 0, -1, 0, 0))
 			boutput(user, "<span class='alert'>It doesn't matter what you try, it doesn't seem to keep welded shut.</span>")
-		return
-	// smack the damn thing if it's closed
-	else if (!src.open && isitem(W))
-		var/force = W.force
-		// smack the damn thing
-		user.lastattacked = src
-		attack_particle(user,src)
-		playsound(src.loc, src.hitsound , 50, 1, pitch = 1.6)
-		src.take_damage(force, user)
-	// else if these special cases don't resolve things, throw it to the parent proc
+		else if (isitem(W))
+			var/force = W.force
+			user.lastattacked = src
+			attack_particle(user, src)
+			playsound(src.loc, src.hitsound, 50, 1, pitch = 1.6)
+			src.take_damage(force, user)
 	else
-		..()
+		if (istype(W, /obj/item/satchel) && length(W.contents))
+			..()
+		else if (!issilicon(user))
+			if (istype(user, /mob/living/critter/flock/drone))
+				user.u_equip(W)
+				W?.set_loc(src.loc)
+			else if(user.drop_item())
+				W?.set_loc(src.loc)
 
 /obj/storage/closet/flock/proc/take_damage(var/force, var/mob/user as mob)
 	if (!isnum(force) || force <= 0)
@@ -151,7 +153,7 @@
 		qdel(src)
 
 /obj/storage/closet/flock/attack_hand(mob/user as mob)
-	if (get_dist(user, src) > 1)
+	if (BOUNDS_DIST(user, src) > 0)
 		return
 
 	interact_particle(user,src)
@@ -189,6 +191,7 @@
 /obj/machinery/light/flock/New()
 	..()
 	light.set_color(0.45, 0.75, 0.675)
+	src.AddComponent(/datum/component/flock_protection, TRUE, FALSE, TRUE)
 
 /obj/machinery/light/flock/attack_hand(mob/user)
 	if(isflock(user))
@@ -221,6 +224,7 @@
 /obj/lattice/flock/New()
 	..()
 	setMaterial("gnesis")
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /obj/lattice/flock/attackby(obj/item/C as obj, mob/user as mob)
 	if (istype(C, /obj/item/tile))
@@ -281,6 +285,7 @@
 	..()
 	setMaterial("gnesis")
 	src.UpdateIcon()
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 
 // flockdrones can always move through
@@ -300,3 +305,8 @@
 		<br><span class='bold'>###=-</span></span>"}
 	else
 		return null // give the standard description
+
+/obj/grille/flock/attack_hand(mob/user)
+	if (user.a_intent != INTENT_HARM)
+		return
+	..()

@@ -8,6 +8,7 @@
 	desc = "You can see the person inside being rapidly taken apart by fibrous mechanisms. You ought to do something about that."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "cage"
+	flags = USEDELAY
 	steam_on_death = 0
 	health = 30
 	var/health_max = 30
@@ -37,7 +38,8 @@
 			occupant = iced
 		processing_items |= src
 		src.setMaterial(getMaterial("gnesis"))
-		src.health = initial(src.health)
+		src.health = src.health_max
+		src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 	proc/getHumanPiece(var/mob/living/carbon/human/H)
 		// prefer inventory items before limbs, and limbs before organs
@@ -164,7 +166,6 @@
 		occupant?.removeOverlayComposition(/datum/overlayComposition/flockmindcircuit)
 		..()
 
-
 /obj/icecube/flockdrone/special_desc(dist, mob/user)
 	if(isflock(user))
 		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
@@ -176,4 +177,17 @@
 	else
 		return null // give the standard description
 
+/obj/icecube/flockdrone/attack_hand(mob/user as mob)
+	if (user.a_intent == INTENT_HARM)
+		user.visible_message("<span class='alert'><b>[user]</b> kicks [src]!</span>", "<span class='alert'>You kick [src]!</span>")
+		attack_particle(user, src)
+		user.lastattacked = src
+		takeDamage(2)
+		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
 
+/obj/icecube/flockdrone/attackby(obj/item/W as obj, mob/user as mob)
+	user.visible_message("<span class='alert'><b>[user]</b> hits [src] with [W]!</span>", "<span class='alert'>You hit [src] with [W]!</span>")
+	attack_particle(user, src)
+	user.lastattacked = src
+	takeDamage(W.force)
+	playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
