@@ -561,7 +561,7 @@
 	src.icon_state = "drone-dead"
 	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
 	src.reduce_lifeprocess_on_death()
-	src.set_density(0)
+	src.set_density(FALSE)
 	desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
 	src.remove_simple_light("drone_light")
 
