@@ -242,7 +242,7 @@
 		if(occupant)
 			if(eating_occupant && prob(20))
 				boutput(occupant, "<span class='flocksay italics'>[pick_string("flockmind.txt", "flockmind_conversion")]</span>")
-		if(length(src.contents) <= 0 && reagents.get_reagent_amount(target_fluid) < create_egg_at_fluid)
+		if(!length(src.contents) && reagents.get_reagent_amount(target_fluid) < create_egg_at_fluid)
 			if(reagents.has_reagent(target_fluid)) // dump out our excess resources as a cache
 				playsound(src, "sound/impact_sounds/Slimy_Splat_1.ogg", 80, 1)
 				var/obj/item/flockcache/x = new(src.loc)
