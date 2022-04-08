@@ -139,7 +139,7 @@
 			playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 			boutput(R, "<span class='alert'>[src] pulls [target] from you and begins to rip it apart.</span>")
 			src.visible_message("<span class='alert'>[src] pulls [target] from [R] and begins to rip it apart.</span>")
-		else if(limbs.len >= 1)
+		else if(length(limbs))
 			eating_occupant = 1
 			target = pick(limbs)
 			R.compborg_lose_limb(target)
