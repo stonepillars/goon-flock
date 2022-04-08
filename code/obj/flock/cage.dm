@@ -13,6 +13,7 @@
 	health = 30
 	health_max = 30
 	alpha = 192
+	anchored = FALSE
 	var/atom/occupant = null
 	var/obj/target = null
 	var/eating_occupant = 0
@@ -56,7 +57,7 @@
 		src.underlays = list()
 		for(var/atom/O in src.contents)
 			src.underlays += O.appearance
-		UpdateOverlays(image(src.icon,src.icon_state,layer = EFFECTS_LAYER_UNDER_4),"icecube_layer")
+		UpdateOverlays(image(src.icon,src.icon_state,layer = EFFECTS_LAYER_UNDER_1),"icecube_layer")
 
 
 	proc/getHumanPiece(var/mob/living/carbon/human/H)
@@ -77,16 +78,16 @@
 			else
 				items += I
 		// only take the brain as the very last thing
-		if(organs.len >= 2)
+		if(length(organs) >= 2)
 			organs -= brain
-		if(items.len >= 1)
+		if(length(items) >= 1)
 			eating_occupant = 0
 			target = pick(items)
 			H.remove_item(target)
 			playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 			boutput(H, "<span class='alert'>[src] pulls [target] from you and begins to rip it apart.</span>")
 			src.visible_message("<span class='alert'>[src] pulls [target] from [H] and begins to rip it apart.</span>")
-		else if(limbs.len >= 1)
+		else if(length(limbs) >= 1)
 			eating_occupant = 1
 			target = pick(limbs)
 			H.limbs.sever(target)
@@ -95,7 +96,7 @@
 			playsound(src, "sound/impact_sounds/Flesh_Tear_1.ogg", 80, 1)
 			boutput(H, "<span class='alert bold'>[src] wrenches your [initial(target.name)] clean off and begins peeling it apart! Fuck!</span>")
 			src.visible_message("<span class='alert bold'>[src] wrenches [target.name] clean off and begins peeling it apart!</span>")
-		else if(organs.len >= 1)
+		else if(length(organs) >= 1)
 			eating_occupant = 1
 			target = pick(organs)
 			H.drop_organ(target)
@@ -251,6 +252,8 @@
 
 	disposing()
 		playsound(src, "sound/impact_sounds/Energy_Hit_2.ogg", 80, 1)
+		if (src.reagents) //spill out your contents
+			src.reagents.reaction(src.loc)
 
 		if(istype(occupant,/mob/living))
 			var/mob/living/M = occupant
@@ -282,6 +285,10 @@
 				sleep(0.5)
 			src.pixel_x = 0
 			src.pixel_y = 0
+
+	checkhealth()
+		if(src.health <= 0)
+			qdel(src)
 
 	mob_flip_inside(var/mob/user)
 		..(user)
