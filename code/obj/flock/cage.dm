@@ -87,7 +87,7 @@
 			playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 			boutput(H, "<span class='alert'>[src] pulls [target] from you and begins to rip it apart.</span>")
 			src.visible_message("<span class='alert'>[src] pulls [target] from [H] and begins to rip it apart.</span>")
-		else if(length(limbs) >= 1)
+		else if(length(limbs))
 			eating_occupant = 1
 			target = pick(limbs)
 			H.limbs.sever(target)
