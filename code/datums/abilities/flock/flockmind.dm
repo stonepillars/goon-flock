@@ -413,7 +413,7 @@
 /datum/targetable/flockmindAbility/ping
 	name = "Ping"
 	desc = "Request attention from other elements of the flock."
-	icon_state = "designate_tile"
+	icon_state = "ping"
 	cooldown = 0.1 SECONDS
 
 /datum/targetable/flockmindAbility/ping/cast(atom/target)

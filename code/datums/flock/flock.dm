@@ -20,7 +20,6 @@
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
 	var/datum/tgui/flockpanel
-	var/list/pings = list()
 
 /datum/flock/New()
 	..()
@@ -224,9 +223,18 @@
 	target.AddComponent(/datum/component/flock_ping)
 
 	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
-		var/image/arrow = image('icons/mob/screen1.dmi', F, "point", EFFECTS_LAYER_1, get_dir(F, target), 0, 100)
-		arrow.transform = matrix(arrow.transform, 3,3, MATRIX_SCALE)
-		F.client?.images += arrow
+		if (F != pinger)
+			var/image/arrow = image(point_img, loc = F, layer = HUD_LAYER)
+			arrow.color = "#00ff9dff"
+			arrow.pixel_y = 20
+			arrow.transform = matrix(arrow.transform, 2,2, MATRIX_SCALE)
+			var/angle = 180 + get_angle(F, target)
+			arrow.transform = matrix(arrow.transform, angle, MATRIX_ROTATE)
+			F.client?.images += arrow
+			animate(arrow, time = 3 SECONDS, alpha = 0)
+			SPAWN(3 SECONDS)
+				F.client?.images -= arrow
+				qdel(arrow)
 		var/class = "flocksay ping [istype(F, /mob/living/intangible/flock/flockmind) ? "flockmindsay" : ""]"
 		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target];ping=[TRUE]'>Interrupt request, target: [target] in [get_area(target)].</a></span>")
 	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
@@ -269,6 +277,7 @@
 				sleep(duration)
 			qdel(src)
 
+	//when a new ping component is added, reset the original's duration
 	InheritComponent(datum/component/flock_ping/C, i_am_original)
 		if (i_am_original)
 			src.end_time = world.timeofday + duration
