@@ -217,7 +217,7 @@
 
 /mob/living/critter/flock/drone/Cross(atom/movable/mover)
 	if(isflock(mover))
-		return 1
+		return TRUE
 	else
 		return !src.density
 
