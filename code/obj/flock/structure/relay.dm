@@ -104,7 +104,7 @@
 	sleep(2 SECONDS) //allow them to hear the explosion before their headsets scream and die
 	destroy_radios()
 
-///Brick every headset on the station Z level, noisily
+///Brick every headset noisily
 /obj/flock_structure/relay/proc/destroy_radios()
 	//mid-tier jank, but it's a nice easy way to get the radio network
 	var/obj/item/device/radio/headset/entrypoint = new()
