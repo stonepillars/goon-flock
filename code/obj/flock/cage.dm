@@ -130,7 +130,7 @@
 			//anything else is gonna be a borg tool, so ignore those
 
 		// only take the brain as the very last thing
-		if(organs.len >= 2)
+		if(length(organs) >= 2)
 			organs -= brain
 		if(items.len >= 1)
 			eating_occupant = 0
