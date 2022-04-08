@@ -132,7 +132,7 @@
 		// only take the brain as the very last thing
 		if(length(organs) >= 2)
 			organs -= brain
-		if(items.len >= 1)
+		if(length(items))
 			eating_occupant = 0
 			target = pick(items)
 			R.remove_item(target)
