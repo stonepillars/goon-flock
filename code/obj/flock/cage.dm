@@ -186,7 +186,7 @@
 			var/list/edibles = list()
 			for(var/obj/O in src.contents)
 				edibles += O
-			if(length(edibles) >= 1)
+			if(length(edibles))
 				target = pick(edibles)
 				eating_occupant = 0
 				playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
