@@ -111,7 +111,7 @@
 			playsound(src, "sound/impact_sounds/Flesh_Tear_2.ogg", 80, 1)
 			src.visible_message("<span class='alert bold'>[src] rips what's left of its occupant to shreds!</span>")
 
-	proc/getRobotPiece(var/mob/living/silicon/robot/R)
+	proc/getRobotPiece(mob/living/silicon/robot/R)
 		// prefer inventory items before limbs, and limbs before organs
 		var/list/organs = list()
 		var/list/limbs = list()
