@@ -354,7 +354,7 @@
 
 // ENEMIES
 
-/datum/flock/proc/updateEnemy(var/atom/M)
+/datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
 	if(!isliving(M) && !iscritter(M)))
