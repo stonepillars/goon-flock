@@ -652,7 +652,7 @@ butcher
 		var/atom/T = holder.target
 		// if target is down or in a cage, we don't care about this target now
 		// fetch a new one if we can
-		if(istype(T,/mob/living))
+		if(isliving(T))
 			var/mob/living/M = T
 			if(is_incapacitated(M))
 				holder.target = get_best_target(get_targets())
