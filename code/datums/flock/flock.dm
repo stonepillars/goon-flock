@@ -357,7 +357,7 @@
 /datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
-	if(!isliving(M) && !iscritter(M)))
+	if(!isliving(M) && !iscritter(M))
 		return
 	var/enemy_name = lowertext(M.name)
 	var/list/enemy_deets
@@ -374,9 +374,9 @@
 	// update annotations indicating enemies for flockmind and co
 	src.updateAnnotations()
 
-/datum/flock/proc/removeEnemy(var/M)
+/datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
-	if(!isliving(M) && !iscritter(M)))
+	if(!isliving(M) && !iscritter(M))
 		return
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
@@ -384,7 +384,7 @@
 			src.enemies -= name
 	src.updateAnnotations()
 
-/datum/flock/proc/isEnemy(var/mob/living/M)
+/datum/flock/proc/isEnemy(atom/M)
 	var/enemy_name = lowertext(M.name)
 	return (enemy_name in src.enemies)
 

@@ -684,20 +684,21 @@ butcher
 /datum/aiTask/timed/targeted/flockdrone_shoot/get_targets()
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F?.flock)
-		for(var/atom/T in view(target_range, holder.owner))
-			if(!F.flock.isEnemy(T))
+	if(!F?.flock)
+		return
+	for(var/atom/T in view(target_range, holder.owner))
+		if(!F.flock.isEnemy(T))
+			continue
+		if(isliving(T))
+			var/mob/living/M = T
+			if((M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
 				continue
-			if(isliving(T))
-				var/mob/living/M = T
-				if((M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
-					continue
 
-					// mob is a valid target, check if they're not already in a cage
-			if(!istype(T.loc.type, /obj/flock_structure/cage))
-				// if we can get a valid path to the target, include it for consideration
-				. += T
-			F.flock.updateEnemy(T)
+				// mob is a valid target, check if they're not already in a cage
+		if(!istype(T.loc.type, /obj/flock_structure/cage))
+			// if we can get a valid path to the target, include it for consideration
+			. += T
+		F.flock.updateEnemy(T)
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -760,7 +761,7 @@ butcher
 					continue
 
 					// mob is a valid target, check if they're not already in a cage
-			if(!istype(T.loc.type, /obj/flock_structure/cage))
+			if(!istype(T.loc, /obj/flock_structure/cage))
 				// if we can get a valid path to the target, include it for consideration
 				. += T
 			F.flock.updateEnemy(T)
