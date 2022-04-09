@@ -376,7 +376,7 @@
 
 /datum/flock/proc/removeEnemy(var/M)
 	// call off all drones attacking this guy
-	if(!istype(M,/mob/living) && !istype(M,/obj/critter))
+	if(!isliving(M) && !iscritter(M)))
 		return
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
