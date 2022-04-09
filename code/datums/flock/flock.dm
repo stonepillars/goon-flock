@@ -357,7 +357,7 @@
 /datum/flock/proc/updateEnemy(var/atom/M)
 	if(!M)
 		return
-	if(!istype(M,/mob/living) && !istype(M,/obj/critter))
+	if(!isliving(M) && !iscritter(M)))
 		return
 	var/enemy_name = lowertext(M.name)
 	var/list/enemy_deets
