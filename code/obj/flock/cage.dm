@@ -204,7 +204,7 @@
 				var/mob/living/M = occupant
 				target = M //set target to the mob
 			else if(iscritter(occupant))
-				eating_occupant = 1
+				eating_occupant = TRUE
 				var/obj/critter/C = occupant
 				C.CritterDeath() //kill obj/critters immediately because their behaviour is jank and awful
 				target = C //set target to the critter
