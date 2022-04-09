@@ -726,7 +726,7 @@ butcher
 		holder.target = get_best_target(get_targets())
 	if(holder.target)
 		var/T = holder.target
-		if(istype(T,/mob/living))
+		if(isliving(T))
 			var/mob/living/M = T
 			if(!(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
 				// target is up, abort
