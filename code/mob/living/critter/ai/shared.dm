@@ -157,7 +157,7 @@
 		// follow the path
 		src.found_path.Cut(1, 2)
 		var/turf/next
-		if(src.found_path.len >= 1)
+		if(length(src.found_path))
 			next = src.found_path[1]
 		else
 			next = move_target
