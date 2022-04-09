@@ -260,7 +260,7 @@
 		//this cast is horribly unsafe, but we just need vis_contents
 		var/atom/movable/target = parent
 
-		src.end_time = world.timeofday + duration
+		src.end_time = TIME + duration
 
 		dummy = new()
 		dummy.layer = target.layer
@@ -275,7 +275,7 @@
 		target.vis_contents += dummy
 
 		SPAWN(0)
-			while(world.timeofday < src.end_time)
+			while(TIME < src.end_time)
 				animate(dummy, time = duration/9, alpha = 100)
 				for (var/i in 1 to 4)
 					animate(time = duration/9, alpha = 255)
@@ -286,7 +286,7 @@
 	//when a new ping component is added, reset the original's duration
 	InheritComponent(datum/component/flock_ping/C, i_am_original)
 		if (i_am_original)
-			src.end_time = world.timeofday + duration
+			src.end_time = TIME + duration
 
 	disposing()
 		. = ..()
