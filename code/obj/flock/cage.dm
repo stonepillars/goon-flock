@@ -200,7 +200,7 @@
 				var/mob/living/silicon/robot/H = occupant
 				getRobotPiece(H) //cut off a robot part and add it to contents, set it to target
 			else if(isliving(occupant))
-				eating_occupant = 1
+				eating_occupant = TRUE
 				var/mob/living/M = occupant
 				target = M //set target to the mob
 			else if(iscritter(occupant))
