@@ -688,7 +688,7 @@ butcher
 		for(var/atom/T in view(target_range, holder.owner))
 			if(!F.flock.isEnemy(T))
 				continue
-			if(istype(T,/mob/living))
+			if(isliving(T))
 				var/mob/living/M = T
 				if((M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
 					continue
