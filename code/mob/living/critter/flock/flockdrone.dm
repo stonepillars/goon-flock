@@ -826,7 +826,7 @@
 /datum/limb/flock_converter/disarm(atom/target, var/mob/living/critter/flock/drone/user)
 	if(!target || !user)
 		return
-	if(!(istype(target,/mob/living) || istype(target,/obj/critter)))
+	if(!(isliving(target) || iscritter(target)))
 		return
 	if(isintangible(target))
 		return // STOP CAGING AI EYES
