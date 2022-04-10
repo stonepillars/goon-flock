@@ -253,10 +253,7 @@
 	var/end_time = -1
 	var/obj/dummy = null
 
-	Initialize()
-		//initialize is called regardless of whether the component is actually added or not
-		if (parent.GetExactComponent(/datum/component/flock_ping))
-			return
+	RegisterWithParent()
 		//this cast is horribly unsafe, but we just need vis_contents
 		var/atom/movable/target = parent
 
