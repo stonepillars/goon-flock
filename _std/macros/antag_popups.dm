@@ -93,6 +93,7 @@
 
 // flock
 #define SHOW_FLOCKTRACE_TIPS(M) M.Browse(grabResource("html/traitorTips/flocktraceTips.html"), ANTAG_TIPS_WINDOW)
+#define SHOW_FLOCKMIND_TIPS(M) M.Browse(grabResource("html/traitorTips/flockmindTips.html"), ANTAG_TIPS_WINDOW)
 
 /datum/adminAntagPopups
 	var/html
@@ -149,7 +150,8 @@
 	<a href='?src=\ref[src];action=legworm'>Legworm</a>
 </div>
 <div class='antagType' style='border-color:#AEC6CF'><b class='title' style='background:#AEC6CF'>Flock</b>
-	<a href='?src=\ref[src];action=flocktrace'>Flocktrace</a>
+	<a href='?src=\ref[src];action=flocktrace'>Flocktrace</a> |
+	<a href='?src=\ref[src];action=flockmind'>Flockmind</a>
 </div>
 <div class='antagType' style='border-color:#AEC6CF'><b class='title' style='background:#AEC6CF'>Other Antags</b>
 	<a href='?src=\ref[src];action=grinch'>Grinch</a> |
@@ -266,6 +268,8 @@
 			//flock
 			if("flocktrace")
 				SHOW_FLOCKTRACE_TIPS(M)
+			if("flockmind")
+				SHOW_FLOCKMIND_TIPS(M)
 
 			// other antags
 			if ("grinch")

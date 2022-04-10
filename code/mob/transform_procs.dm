@@ -860,6 +860,7 @@ var/respawn_arena_enabled = 0
 	boutput(O, "<B>You are a flockmind, the collective machine consciousness of a flock of drones! Your existence is tied to your flock! Ensure that it survives and thrives!</B>")
 	boutput(O, "<B>Silicon units are able to detect your transmissions and messages (with some signal corruption), so exercise caution in what you say.</B>")
 	boutput(O, "<B>On the flipside, you can hear silicon transmissions and all radio signals, but with heavy corruption.</B>")
+	SHOW_FLOCKMIND_TIPS(O)
 	return O
 
 // flocktraces are made by flockminds
@@ -889,7 +890,7 @@ var/respawn_arena_enabled = 0
 		boutput(O, "<span class='bold'>In this form, you cannot be harmed, but you can't do anything to the world at large.</span>")
 		boutput(O, "<span class='italic'>Tip: Click-drag yourself onto unoccupied drones to take direct control of them.</span>")
 		boutput(O, "<span class='notice'>You are part of the <span class='bold'>[flock.name]</span> flock.</span>")
-
+		SHOW_FLOCKMIND_TIPS(O)
 		flock_speak(null, "Trace partition [O.real_name] has been instantiated.", flock)
 
 		return O
