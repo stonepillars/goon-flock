@@ -251,10 +251,10 @@
 	for(var/turf/T in src.priority_tiles)
 		if(!(T in src.annotations))
 			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier")
+			I = image('icons/misc/featherzone.dmi', T, "frontier", T.layer)
 			I.blend_mode = BLEND_ADD
 			I.alpha = 180
-			I.plane = PLANE_ABOVE_LIGHTING
+			I.plane = T.plane
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -265,10 +265,10 @@
 		var/turf/T = src.busy_tiles[name]
 		if(isturf(T) && !(T in src.annotations))
 			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier")
+			I = image('icons/misc/featherzone.dmi', T, "frontier", T.layer)
 			I.blend_mode = BLEND_ADD
 			I.alpha = 80
-			I.plane = PLANE_ABOVE_LIGHTING
+			I.plane = T.plane
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -279,10 +279,10 @@
 		var/mob/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
 			// create a new image
-			I = image('icons/misc/featherzone.dmi', B, "hazard")
+			I = image('icons/misc/featherzone.dmi', B, "hazard", B.layer)
 			I.blend_mode = BLEND_ADD
 			I.pixel_y = 16
-			I.plane = PLANE_ABOVE_LIGHTING
+			I.plane = B.plane
 			I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 			// add to subscribers for annotations
 			images_to_add |= I
