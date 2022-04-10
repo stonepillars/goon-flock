@@ -890,7 +890,7 @@ var/respawn_arena_enabled = 0
 		boutput(O, "<span class='bold'>In this form, you cannot be harmed, but you can't do anything to the world at large.</span>")
 		boutput(O, "<span class='italic'>Tip: Click-drag yourself onto unoccupied drones to take direct control of them.</span>")
 		boutput(O, "<span class='notice'>You are part of the <span class='bold'>[flock.name]</span> flock.</span>")
-		SHOW_FLOCKMIND_TIPS(O)
+		SHOW_FLOCKTRACE_TIPS(O)
 		flock_speak(null, "Trace partition [O.real_name] has been instantiated.", flock)
 
 		return O
