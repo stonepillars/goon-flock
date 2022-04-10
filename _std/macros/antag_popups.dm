@@ -91,6 +91,9 @@
 // arcfiend
 #define SHOW_ARCFIEND_TIPS(M) M.Browse(grabResource("html/traitorTips/arcfiendTips.html"), ANTAG_TIPS_WINDOW)
 
+// flock
+#define SHOW_FLOCKTRACE_TIPS(M) M.Browse(grabResource("html/traitorTips/flocktraceTips.html"), ANTAG_TIPS_WINDOW)
+
 /datum/adminAntagPopups
 	var/html
 
@@ -144,6 +147,9 @@
 	<a href='?src=\ref[src];action=handspider'>Handspider</a> |
 	<a href='?src=\ref[src];action=eyespider'>Eye/Butt Spider</a> |
 	<a href='?src=\ref[src];action=legworm'>Legworm</a>
+</div>
+<div class='antagType' style='border-color:#AEC6CF'><b class='title' style='background:#AEC6CF'>Flock</b>
+	<a href='?src=\ref[src];action=flocktrace'>Flocktrace</a>
 </div>
 <div class='antagType' style='border-color:#AEC6CF'><b class='title' style='background:#AEC6CF'>Other Antags</b>
 	<a href='?src=\ref[src];action=grinch'>Grinch</a> |
@@ -256,6 +262,10 @@
 				SHOW_EYESPIDER_TIPS(M)
 			if ("legworm")
 				SHOW_LEGWORM_TIPS(M)
+
+			//flock
+			if("flocktrace")
+				SHOW_FLOCKTRACE_TIPS(M)
 
 			// other antags
 			if ("grinch")
