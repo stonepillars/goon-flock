@@ -359,7 +359,7 @@
 		return
 	if(!isliving(M) && !iscritter(M))
 		return
-	var/enemy_name = lowertext(M.name)
+	var/enemy_name = M
 	var/list/enemy_deets
 	if(!(enemy_name in src.enemies))
 		// add new
@@ -378,14 +378,11 @@
 	// call off all drones attacking this guy
 	if(!isliving(M) && !iscritter(M))
 		return
-	for(var/name in src.enemies)
-		var/list/enemy_stats = src.enemies[name]
-		if(enemy_stats["mob"] == M)
-			src.enemies -= name
+	src.enemies -= M
 	src.updateAnnotations()
 
 /datum/flock/proc/isEnemy(atom/M)
-	var/enemy_name = lowertext(M.name)
+	var/enemy_name = M
 	return (enemy_name in src.enemies)
 
 // DEATH
