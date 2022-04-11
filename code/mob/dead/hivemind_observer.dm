@@ -2,9 +2,13 @@
 	var/datum/abilityHolder/changeling/hivemind_owner
 	var/can_exit_hivemind_time = 0
 	var/last_attack = 0
+	/// Hivemind pointing uses an image rather than a decal
+	var/static/point_img = null
 
 	New()
 		. = ..()
+		if (!point_img)
+			point_img = image('icons/mob/screen1.dmi', icon_state = "arrow")
 		REMOVE_ATOM_PROPERTY(src, PROP_MOB_EXAMINE_ALL_NAMES, src)
 
 	say_understands(var/other)

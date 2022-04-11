@@ -229,7 +229,7 @@
 
 	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
 		if (F != pinger)
-			var/image/arrow = image(point_img, loc = F, layer = HUD_LAYER)
+			var/image/arrow = image(icon = 'icons/mob/screen1.dmi', icon_state = "arrow", loc = F, layer = HUD_LAYER)
 			arrow.color = "#00ff9dff"
 			arrow.pixel_y = 20
 			arrow.transform = matrix(arrow.transform, 2,2, MATRIX_SCALE)
@@ -290,8 +290,8 @@
 			src.end_time = TIME + duration
 
 	disposing()
-		. = ..()
 		qdel(dummy)
+		. = ..()
 
 // ANNOTATIONS
 
