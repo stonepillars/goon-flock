@@ -253,8 +253,12 @@
 	var/end_time = -1
 	var/obj/dummy = null
 
+	Initialize()
+		if (!ismovable(parent) && !isturf(parent))
+			return COMPONENT_INCOMPATIBLE
+
 	RegisterWithParent()
-		//this cast is horribly unsafe, but we just need vis_contents
+		//this cast looks horribly unsafe, but we've guaranteed that parent is a type with vis_contents in Initialize
 		var/atom/movable/target = parent
 
 		src.end_time = TIME + duration
