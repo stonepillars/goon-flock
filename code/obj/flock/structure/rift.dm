@@ -10,15 +10,8 @@
 	flock_id = "Entry Rift"
 	build_time = 10
 	health = 200 // stronk little thing
-	compute = 5
 	var/decal_made = 0 // for splashing stuff on throw
 	var/list/eject = list()
-	var/mainflock = null // for when a flockmind is spawning the little shits(read:drones) get assigned to it
-
-/obj/flock_structure/rift/New(var/atom/location, var/datum/flock/F=null)
-	..()
-	if(src.flock)
-		src.flock.registerUnit(src)
 
 /obj/flock_structure/rift/building_specific_info()
 	var/time_remaining = round(src.build_time - getTimeInSecondsSinceTime(src.time_started))
