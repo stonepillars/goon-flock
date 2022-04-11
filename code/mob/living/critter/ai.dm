@@ -67,6 +67,7 @@ var/list/ai_move_scheduled = list()
 		if(isdead(owner))
 			enabled = 0
 		if(!enabled)
+			stop_move()
 			walk(owner, 0)
 			return
 		if (!current_task)
@@ -96,6 +97,7 @@ var/list/ai_move_scheduled = list()
 		if(src.enabled)
 			current_task?.reset()
 			current_task = default_task
+			stop_move()
 
 	proc/die()
 		src.enabled = 0

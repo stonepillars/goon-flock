@@ -99,6 +99,7 @@
 		return
 	src.controller = pilot
 	walk(src, 0)
+	src.ai.stop_move() //cancel any pathing that's happening
 	src.is_npc = 0
 	src.dormant = 0
 	src.anchored = 0

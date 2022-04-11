@@ -725,8 +725,9 @@ butcher
 			owncritter.set_dir(get_dir(owncritter, holder.target))
 			owncritter.hand_range_attack(holder.target, dummy_params)
 			if(dist < run_range)
-				// RUN
-				holder.move_away(holder.target,4)
+				if(prob(20))
+					// RUN
+					holder.move_away(holder.target,4)
 			else if(prob(30))
 				// ROBUST DODGE
 				walk(owncritter, 0)
