@@ -373,6 +373,10 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 		if (playAttackSound)
 			playsound(src, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
 
+		for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+			if (flockdrone.floorrunning)
+				flockdrone.end_floorrunning()
+
 /turf/simulated/wall/auto/feather/proc/destroy()
 	var/turf/T = get_turf(src)
 
