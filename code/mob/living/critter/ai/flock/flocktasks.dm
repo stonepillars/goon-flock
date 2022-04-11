@@ -142,7 +142,7 @@ butcher
 /datum/aiTask/sequence/goalbased/nest
 	name = "nesting"
 	weight = 6
-	can_be_adjacent_to_target = 1
+	can_be_adjacent_to_target = TRUE
 	max_dist = 2
 
 /datum/aiTask/sequence/goalbased/nest/New(parentHolder, transTask)
@@ -150,10 +150,10 @@ butcher
 	add_task(holder.get_instance(/datum/aiTask/succeedable/build, list(holder)))
 
 /datum/aiTask/sequence/goalbased/nest/precondition()
-	. = 0
+	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.can_afford(120))
-		. = 1 //we can afford
+		. = TRUE //we can afford
 		for(var/turf/simulated/floor/feather/T in view(max_dist, holder.owner))
 			return FALSE //but there's a flocktile in view
 
