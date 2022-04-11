@@ -152,24 +152,8 @@
 		return
 	if(!src.found_path)
 		get_path()
-
-	if(length(src.found_path) > 0) //use A* path finding instead of just stepping to the next tile
-		// follow the path
-		src.found_path.Cut(1, 2)
-		var/turf/next
-		if(length(src.found_path))
-			next = src.found_path[1]
-		else
-			next = move_target
-
-		var/dist = get_dist(holder.owner, next)
-		if (dist >= 1)
-			if (prob(80))
-				holder.move_to(next,0)
-			else
-				holder.move_circ(next)
-		else
-			holder.stop_move()
+	if(length(src.found_path))
+		holder.move_to_with_path(move_target,src.found_path,0)
 
 /datum/aiTask/succeedable/move/succeeded()
 	if(move_target)
