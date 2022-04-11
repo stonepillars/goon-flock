@@ -446,8 +446,13 @@
 		if(!isturf(src.loc))
 			src.set_loc(get_turf(src))
 		if(NewLoc)
-			if (NewLoc.density && !istype(NewLoc, /turf/simulated/wall/auto/feather))
-				return
+			if (NewLoc.density)
+				if (istype(NewLoc, /turf/simulated/wall/auto/feather))
+					var/turf/simulated/wall/auto/feather/flockwall = NewLoc
+					if (flockwall.broken)
+						return
+				else
+					return
 			if (!istype(NewLoc, /turf/simulated/floor/feather))
 				for (var/obj/O in NewLoc.contents)
 					if (istype(O, /obj/grille/steel) || istype(O, /obj/window) || (istype(O, /obj/machinery/door) && O.density))
