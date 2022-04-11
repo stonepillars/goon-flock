@@ -35,6 +35,7 @@
 		for(var/i=1, i<5, i++)
 			var/obj/flock_structure/egg/e = new(src.contents, src.flock)
 			eject += e
+			e.flock = mainflock
 		var/list/candidate_turfs = list()
 		for(var/turf/simulated/floor/S in orange(src, 4))
 			candidate_turfs += S
@@ -48,6 +49,7 @@
 					candidate_turfs -= S
 					break
 		flockdronegibs(src.loc, null, eject)//here they are actually ejected
+		src.flock?.removeDrone(src)
 		qdel(src)
 	else
 		var/severity = round(((build_time - elapsed)/build_time) * 5)
