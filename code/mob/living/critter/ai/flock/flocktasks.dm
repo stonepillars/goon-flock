@@ -59,7 +59,7 @@ butcher
 
 /datum/aiTask/prioritizer/flock/on_tick()
 	if(isdead(holder.owner))
-		holder.enabled = 0
+		holder.enabled = FALSE
 		walk(holder.owner, 0) // STOP RUNNING AROUND YOU'RE SUPPOSED TO BE DEAD
 
 /datum/aiTask/prioritizer/flock/on_reset()
@@ -73,7 +73,7 @@ butcher
 /datum/aiTask/sequence/goalbased/rally
 	name = "rallying"
 	weight = 0
-	can_be_adjacent_to_target = 0
+	can_be_adjacent_to_target = FALSE
 	max_dist = 0
 // most of the functionality here is already in the base goalbased task, we only want movement
 
@@ -84,17 +84,17 @@ butcher
 /datum/aiTask/sequence/goalbased/replicate
 	name = "replicating"
 	weight = 7
-	can_be_adjacent_to_target = 0
+	can_be_adjacent_to_target = FALSE
 
 /datum/aiTask/sequence/goalbased/replicate/New(parentHolder, transTask)
 	..(parentHolder, transTask)
 	add_task(holder.get_instance(/datum/aiTask/succeedable/replicate, list(holder)))
 
 /datum/aiTask/sequence/goalbased/replicate/precondition()
-	. = 0
+	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.can_afford(100))
-		. = 1
+		. = TRUE
 
 /datum/aiTask/sequence/goalbased/replicate/get_targets()
 	. = list()
@@ -109,17 +109,17 @@ butcher
 
 /datum/aiTask/succeedable/replicate
 	name = "replicate subtask"
-	var/has_started = 0
+	var/has_started = FALSE
 
 /datum/aiTask/succeedable/replicate/failed()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(!F)
-		return 1
+		return TRUE
 	if(F && !F.can_afford(100))
-		return 1
+		return TRUE
 	var/turf/simulated/floor/feather/N = get_turf(holder.owner)
 	if(!N)
-		return 1
+		return TRUE
 
 /datum/aiTask/succeedable/replicate/succeeded()
 	. = (!actions.hasAction(holder.owner, "flock_egg")) // for whatever reason, the required action has stopped
@@ -129,10 +129,10 @@ butcher
 		var/mob/living/critter/flock/drone/F = holder.owner
 		if(F)
 			F.create_egg()
-			has_started = 1
+			has_started = TRUE
 
 /datum/aiTask/succeedable/replicate/on_reset()
-	has_started = 0
+	has_started = FALSE
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -233,19 +233,19 @@ butcher
 
 /datum/aiTask/succeedable/build
 	name = "build subtask"
-	var/has_started = 0
+	var/has_started = FALSE
 
 /datum/aiTask/succeedable/build/failed()
 	var/turf/simulated/floor/build_target = holder.target
 	if(!build_target || BOUNDS_DIST(holder.owner, build_target) > 0)
-		return 1
+		return TRUE
 	var/mob/living/critter/flock/F = holder.owner
 	if(!F)
-		return 1
+		return TRUE
 	if(!F.can_afford(20))
-		return 1
+		return TRUE
 	if(F.flock && !F.flock.isTurfFree(build_target, F.real_name)) // oh no, someone else claimed this tile before we got to it
-		return 1
+		return TRUE
 
 /datum/aiTask/succeedable/build/succeeded()
 	. = isfeathertile(holder.target) || (has_started && !actions.hasAction(holder.owner, "flock_convert"))
@@ -256,10 +256,10 @@ butcher
 		if(F?.set_hand(2)) // nanite spray
 			holder.owner.set_dir(get_dir(holder.owner, holder.target))
 			F.hand_attack(holder.target)
-			has_started = 1
+			has_started = TRUE
 
 /datum/aiTask/succeedable/build/on_reset()
-	has_started = 0
+	has_started = FALSE
 	var/mob/living/critter/flock/F = holder.owner
 	if(F?.flock && !failed() && !succeeded())
 		F.flock.reserveTurf(holder.target, F.real_name)
@@ -314,7 +314,7 @@ butcher
 			. += T
 
 	// if there are absolutely no walls/doors/closets in view, and no reserved tiles, then fine, you can have a floor tile
-	if(length(.) == 0)
+	if(!length(.))
 		for(var/turf/simulated/T in view(max_dist, holder.owner))
 			if(!isfeathertile(T))
 				if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
@@ -338,10 +338,10 @@ butcher
 	add_task(holder.get_instance(/datum/aiTask/succeedable/repair, list(holder)))
 
 /datum/aiTask/sequence/goalbased/repair/precondition()
-	. = 0
+	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.can_afford(10))
-		. = 1
+		. = TRUE
 
 /datum/aiTask/sequence/goalbased/repair/on_reset()
 	var/mob/living/critter/flock/drone/F = holder.owner
@@ -365,15 +365,15 @@ butcher
 
 /datum/aiTask/succeedable/repair
 	name = "repair subtask"
-	var/has_started = 0
+	var/has_started = FALSE
 
 /datum/aiTask/succeedable/repair/failed()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	var/mob/living/critter/flock/drone/T = holder.target
 	if(!F || !T || BOUNDS_DIST(T, F) > 0)
-		return 1
+		return TRUE
 	if(F && (!F.can_afford() || !F.abilityHolder))
-		return 1
+		return TRUE
 
 /datum/aiTask/succeedable/repair/succeeded()
 	. = (!actions.hasAction(holder.owner, "flock_repair")) // for whatever reason, the required action has stopped
@@ -382,14 +382,14 @@ butcher
 	if(!has_started)
 		var/mob/living/critter/flock/drone/F = holder.owner
 		var/mob/living/critter/flock/drone/T = holder.target
-		if(F && T && BOUNDS_DIST(holder.owner, holder.target) == 0)
+		if(F && T && BOUNDS_DIST(holder.owner, holder.target) == FALSE)
 			if(F.set_hand(2)) // nanite spray
 				holder.owner.set_dir(get_dir(holder.owner, holder.target))
 				F.hand_attack(T)
-				has_started = 1
+				has_started = TRUE
 
 /datum/aiTask/succeedable/repair/on_reset()
-	has_started = 0
+	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DEPOSIT GOAL
@@ -404,10 +404,10 @@ butcher
 	add_task(holder.get_instance(/datum/aiTask/succeedable/deposit, list(holder)))
 
 /datum/aiTask/sequence/goalbased/deposit/precondition()
-	. = 0
+	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.can_afford(10))
-		. = 1
+		. = TRUE
 
 /datum/aiTask/sequence/goalbased/deposit/on_reset()
 	var/mob/living/critter/flock/drone/F = holder.owner
@@ -430,15 +430,15 @@ butcher
 
 /datum/aiTask/succeedable/deposit
 	name = "deposit subtask"
-	var/has_started = 0
+	var/has_started = FALSE
 
 /datum/aiTask/succeedable/deposit/failed()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	var/obj/flock_structure/ghost/T = holder.target
 	if(!F || !T || BOUNDS_DIST(T, F) > 0)
-		return 1
+		return TRUE
 	if(F && (!F.can_afford() || !F.abilityHolder))
-		return 1
+		return TRUE
 
 /datum/aiTask/succeedable/deposit/succeeded()
 	. = (!actions.hasAction(holder.owner, "flock_repair")) // for whatever reason, the required action has stopped
@@ -447,14 +447,14 @@ butcher
 	if(!has_started)
 		var/mob/living/critter/flock/drone/F = holder.owner
 		var/obj/flock_structure/ghost/T = holder.target
-		if(F && T && BOUNDS_DIST(holder.owner, holder.target) == 0)
+		if(F && T && BOUNDS_DIST(holder.owner, holder.target) == FALSE)
 			if(F.set_hand(2)) // nanite spray
 				holder.owner.set_dir(get_dir(holder.owner, holder.target))
 				F.hand_attack(T)
-				has_started = 1
+				has_started = TRUE
 
 /datum/aiTask/succeedable/deposit/on_reset()
-	has_started = 0
+	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // OPEN CONTAINER GOAL
@@ -472,7 +472,7 @@ butcher
 	add_task(holder.get_instance(/datum/aiTask/succeedable/open_container, list(holder)))
 
 /datum/aiTask/sequence/goalbased/open_container/precondition()
-	. = 1 // no precondition required that isn't already checked for targets
+	. = TRUE // no precondition required that isn't already checked for targets
 
 /datum/aiTask/sequence/goalbased/open_container/get_targets()
 	. = list()
@@ -491,18 +491,18 @@ butcher
 /datum/aiTask/succeedable/open_container/failed()
 	var/obj/storage/container_target = holder.target
 	if(!container_target || BOUNDS_DIST(holder.owner, container_target) > 0 || fails >= max_fails)
-		. = 1
+		. = TRUE
 
 /datum/aiTask/succeedable/open_container/succeeded()
 	var/obj/storage/container_target = holder.target
 	if(container_target) // fix runtime Cannot read null.open
 		return container_target.open
 	else
-		return 0
+		return FALSE
 
 /datum/aiTask/succeedable/open_container/on_tick()
 	var/obj/storage/container_target = holder.target
-	if(container_target && BOUNDS_DIST(holder.owner, container_target) == 0 && !succeeded())
+	if(container_target && BOUNDS_DIST(holder.owner, container_target) == FALSE && !succeeded())
 		var/mob/living/critter/flock/drone/F = holder.owner
 		if(F?.set_hand(1)) // grip tool
 			F.set_dir(get_dir(F, container_target))
@@ -528,7 +528,7 @@ butcher
 	add_task(holder.get_instance(/datum/aiTask/succeedable/rummage, list(holder)))
 
 /datum/aiTask/sequence/goalbased/rummage/precondition()
-	. = 1 // no precondition required that isn't already checked for targets
+	. = TRUE // no precondition required that isn't already checked for targets
 
 /datum/aiTask/sequence/goalbased/rummage/get_targets()
 	. = list()
@@ -548,14 +548,14 @@ butcher
 /datum/aiTask/succeedable/rummage/failed()
 	var/obj/item/storage/container_target = holder.target
 	if(!container_target || BOUNDS_DIST(holder.owner, container_target) > 0 || fails >= max_fails)
-		. = 1
+		. = TRUE
 
 /datum/aiTask/succeedable/rummage/succeeded()
 	var/obj/item/storage/container_target = holder.target
 	if(container_target) // fix runtime Cannot read null.contents
-		return container_target.contents.len <= 0
+		return !length(container_target.contents)
 	else
-		return 0
+		return FALSE
 
 /datum/aiTask/succeedable/rummage/on_tick()
 	var/obj/item/storage/container_target = holder.target
@@ -620,7 +620,7 @@ butcher
 	if(F)
 		return !(F.absorber.item)
 	else
-		return 0 // can't harvest anyway, if not a flockdrone
+		return FALSE // can't harvest anyway, if not a flockdrone
 
 /datum/aiTask/sequence/goalbased/harvest/get_targets()
 	. = list()
@@ -641,7 +641,7 @@ butcher
 /datum/aiTask/succeedable/harvest/failed()
 	var/obj/item/harvest_target = holder.target
 	if(!harvest_target || BOUNDS_DIST(holder.owner, harvest_target) > 0 || fails >= max_fails)
-		. = 1
+		. = TRUE
 
 /datum/aiTask/succeedable/harvest/succeeded()
 	. = holder.owner.find_in_equipment(holder.target)
@@ -711,7 +711,7 @@ butcher
 		if(!M || istype(M.loc, /obj/icecube/flockdrone) || is_incapacitated(M))
 			// target is down or in a cage, we don't care about this target now
 			// end the current shooting task, and move on - if there are more targets, another shooting task will be created
-			frustration = frustration_threshold
+			holder.interrupt()
 			return
 		var/dist = get_dist(owncritter, holder.target)
 		if(dist > target_range)
@@ -738,7 +738,7 @@ butcher
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
 		for(var/mob/living/M in view(target_range, holder.owner))
-			if(!istype(M.loc?.type, /obj/icecube/flockdrone) && !(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
+			if(!istype(M.loc?.type, /obj/icecube/flockdrone) && !is_incapacitated(M))
 				// mob isn't already stunned, check if they're in our target list
 				if(F.flock.isEnemy(M))
 					. += M
@@ -752,7 +752,7 @@ butcher
 	name = "capturing"
 	weight = 15
 	max_dist = 12
-	can_be_adjacent_to_target = 1
+	can_be_adjacent_to_target = TRUE
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/New(parentHolder, transTask)
 	..(parentHolder, transTask)
@@ -775,7 +775,7 @@ butcher
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
 		for(var/mob/living/M in view(max_dist, holder.owner))
-			if(F.flock.isEnemy(M) && (M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
+			if(F.flock.isEnemy(M) && is_incapacitated(M))
 				// mob is a valid target, check if they're not already in a cage
 				if(!istype(M.loc, /obj/icecube/flockdrone))
 					// if we can get a valid path to the target, include it for consideration
@@ -786,7 +786,7 @@ butcher
 
 /datum/aiTask/succeedable/capture
 	name = "capture subtask"
-	var/has_started = 0
+	var/has_started = FALSE
 
 /datum/aiTask/succeedable/capture/failed()
 	var/mob/living/critter/flock/F = holder.owner
@@ -795,22 +795,24 @@ butcher
 	if(!F.can_afford(15))
 		return TRUE
 	if(get_dist(F, holder.target) > 1) //moved away before we could finish
-		return 1
+		return TRUE
 
 /datum/aiTask/succeedable/capture/succeeded()
-	. = istype(holder.target.loc, /obj/icecube/flockdrone) || (has_started && !actions.hasAction(holder.owner, "flock_entomb"))
+	. = istype(holder?.target?.loc, /obj/icecube/flockdrone) || (has_started && !actions.hasAction(holder.owner, "flock_entomb"))
 
 /datum/aiTask/succeedable/capture/on_tick()
 	if(!has_started && !failed() && !succeeded())
 		if(holder.target)
 			var/mob/living/M = holder.target
 			var/mob/living/critter/flock/drone/owncritter = holder.owner
-			if(!(M.getStatusDuration("stunned") || M.getStatusDuration("weakened") || M.getStatusDuration("paralysis") || M.stat))
+			if(!is_incapacitated(M))
 				// target is up, abort
-				src.reset() // try again next tick
+				holder.interrupt() // re-evaluate task options
+				return
 			var/dist = get_dist(owncritter, holder.target)
 			if(dist > 1)
-				src.reset()
+				holder.interrupt() //this should basically never happen, but sanity check just in case
+				return
 			else if(!actions.hasAction(owncritter, "flock_entomb")) // let's not keep interrupting our own action
 				if(owncritter.active_hand != 2) // nanite spray
 					owncritter.set_hand(2)
@@ -820,7 +822,7 @@ butcher
 				owncritter.hand_attack(holder.target)
 
 /datum/aiTask/succeedable/capture/on_reset()
-	has_started = 0
+	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -858,15 +860,15 @@ butcher
 
 /datum/aiTask/succeedable/butcher
 	name = "butcher subtask"
-	var/has_started = 0
+	var/has_started = FALSE
 
 /datum/aiTask/succeedable/butcher/failed()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	var/mob/living/critter/flock/drone/T = holder.target
 	if(!F || !T || BOUNDS_DIST(T, F) > 0)
-		return 1
+		return TRUE
 	if(F && !F.abilityHolder)
-		return 1
+		return TRUE
 
 /datum/aiTask/succeedable/butcher/succeeded()
 	. = (!actions.hasAction(holder.owner, "butcherlivingcritter")) // for whatever reason, the required action has stopped
@@ -879,7 +881,7 @@ butcher
 			if(F.set_hand(2)) // nanite spray
 				holder.owner.set_dir(get_dir(holder.owner, holder.target))
 				F.hand_attack(T)
-				has_started = 1
+				has_started = TRUE
 
 /datum/aiTask/succeedable/butcher/on_reset()
-	has_started = 0
+	has_started = FALSE
