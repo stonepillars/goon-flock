@@ -449,7 +449,7 @@
 			if (NewLoc.density && !istype(NewLoc, /turf/simulated/wall/auto/feather))
 				return
 			if (!istype(NewLoc, /turf/simulated/floor/feather))
-				for (var/atom/O in NewLoc.contents)
+				for (var/obj/O in NewLoc.contents)
 					if (istype(O, /obj/grille/steel) || istype(O, /obj/window) || (istype(O, /obj/machinery/door) && O.density))
 						return
 			src.set_loc(NewLoc)
