@@ -152,14 +152,17 @@
 	qdel(src)
 
 /obj/flock_structure/attack_hand(var/mob/user)
+	user.lastattacked = src
+
 	if(user.a_intent == INTENT_HARM)
 		if(isflock(user))
 			boutput(user, "<span class='alert'>You find you can't bring yourself to harm [src]!</span>")
 		else
 			user.visible_message("<span class='alert'><b>[user]</b> punches [src]! It's very ineffective!</span>")
-			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
-			src.takeDamage("brute", 1)
 			src.report_attack()
+			src.takeDamage("brute", 1)
+			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+
 	else
 		var/action = ""
 		switch(user.a_intent)
@@ -170,20 +173,18 @@
 			if(INTENT_GRAB)
 				action = "squeezes"
 		src.visible_message("<span class='alert'><b>[user]</b> [action] [src], but nothing happens.</span>")
-	user.lastattacked = src
 
 /obj/flock_structure/attackby(obj/item/W as obj, mob/user as mob)
 	src.visible_message("<span class='alert'><b>[user]</b> attacks [src] with [W]!</span>")
-	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
 	src.report_attack()
+	user.lastattacked = src
 
 	var/damtype = "brute"
 	if (W.hit_type == DAMAGE_BURN)
 		damtype = "fire"
 
 	takeDamage(damtype, W.force)
-
-	user.lastattacked = src
+	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
 
 /obj/flock_structure/proc/report_attack()
 	if (!ON_COOLDOWN(src, "attack_alert", 10 SECONDS))
