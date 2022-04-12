@@ -460,7 +460,7 @@
 /mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
 	. = ..()
 	var/mob/attacker = thr.user
-	if(istype(attacker) && !istype(attacker, /mob/living/critter/flock/drone))
+	if(istype(attacker) && !isflock(attacker))
 		src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
