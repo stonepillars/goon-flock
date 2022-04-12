@@ -193,6 +193,8 @@
 		flock_speak(src, "ALERT: Under attack", flock)
 
 /obj/flock_structure/ex_act(severity)
+	src.report_attack()
+	
 	var/damage = 0
 	var/damage_mult = 1
 	switch(severity)
@@ -206,8 +208,6 @@
 			damage = rand(10,20)
 			damage_mult = 2
 	src.takeDamage("mixed", damage * damage_mult)
-
-	src.report_attack()
 
 /obj/flock_structure/bullet_act(var/obj/projectile/P)
 	src.report_attack()
@@ -240,12 +240,13 @@
 
 
 /obj/flock_structure/blob_act(var/power)
+	src.visible_message("<span class='alert'>[src] is hit by the blob!/span>")
+	src.report_attack()
+
 	var/modifier = power / 20
 	var/damage = rand(modifier, 12 + 8 * modifier)
 
 	takeDamage("mixed", damage)
-	src.visible_message("<span class='alert'>[src] is hit by the blob!/span>")
-	src.report_attack()
 
 /obj/flock_structure/Cross(atom/movable/mover)
 	. = ..()
