@@ -13,7 +13,7 @@
 /obj/machinery/door/feather/New()
 	..()
 	setMaterial("gnesis")
-	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE, TRUE)
 
 /obj/machinery/door/feather/special_desc(dist, mob/user)
 	if(isflock(user))
