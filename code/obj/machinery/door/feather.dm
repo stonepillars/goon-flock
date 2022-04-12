@@ -14,7 +14,7 @@
 	..()
 	setMaterial("gnesis")
 	var/datum/component/C = src.GetComponent(/datum/component/mechanics_holder)
-	C.RemoveComponent()
+	C?.RemoveComponent()
 	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /obj/machinery/door/feather/special_desc(dist, mob/user)
