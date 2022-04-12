@@ -152,6 +152,7 @@
 	qdel(src)
 
 /obj/flock_structure/attack_hand(var/mob/user)
+	attack_particle(user, src)
 	user.lastattacked = src
 
 	if(user.a_intent == INTENT_HARM)
@@ -177,6 +178,7 @@
 /obj/flock_structure/attackby(obj/item/W as obj, mob/user as mob)
 	src.visible_message("<span class='alert'><b>[user]</b> attacks [src] with [W]!</span>")
 	src.report_attack()
+	attack_particle(user, src)
 	user.lastattacked = src
 
 	var/damtype = "brute"
