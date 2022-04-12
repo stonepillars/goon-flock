@@ -389,6 +389,10 @@
 					return ..()
 				if(!floor.on)
 					floor.on()
+			else
+				var/turf/simulated/wall/auto/feather/wall = src.loc
+				if (wall.broken)
+					return ..()
 
 			src.start_floorrunning()
 	else if(keys && src.floorrunning)
