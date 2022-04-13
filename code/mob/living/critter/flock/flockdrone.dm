@@ -397,6 +397,10 @@
 			src.start_floorrunning()
 	else if(keys && src.floorrunning)
 		src.end_floorrunning()
+		if (istype(src.loc, /turf/simulated/floor/feather))
+			var/turf/simulated/floor/feather/floor = src.loc
+			if (floor.on && !floor.connected)
+				floor.off()
 	return ..()
 
 /mob/living/critter/flock/drone/proc/start_floorrunning()
