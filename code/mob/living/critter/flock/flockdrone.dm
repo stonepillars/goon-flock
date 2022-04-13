@@ -405,6 +405,7 @@
 	playsound(src, "sound/misc/flockmind/flockdrone_floorrun.ogg", 50, 1, -3)
 	src.floorrunning = 1
 	src.set_density(0)
+	src.throws_can_hit_me = FALSE
 	src.set_pulling(null)
 	if (src.pulled_by)
 		var/mob/M = src.pulled_by
@@ -426,6 +427,7 @@
 	playsound(src, "sound/misc/flockmind/flockdrone_floorrun.ogg", 50, 1, -3)
 	src.floorrunning = 0
 	src.set_density(1)
+	src.throws_can_hit_me = TRUE
 	animate_flock_floorrun_end(src)
 
 /mob/living/critter/flock/drone/movement_delay()
