@@ -319,7 +319,7 @@
 	if(I)
 		var/absorb = clamp(src.absorb_rate, 0, I.health)
 		I.health -= absorb
-		src.resources += src.absorb_per_health * absorb
+		src.resources += src.absorb_per_health * absorb * I.amount
 		playsound(src, "sound/effects/sparks[rand(1,6)].ogg", 50, 1)
 		if(I && I.health <= 0) // fix runtime Cannot read null.health
 			playsound(src, "sound/impact_sounds/Energy_Hit_1.ogg", 50, 1)
@@ -336,7 +336,7 @@
 					src.visible_message("<span class='alert'>The contents of [I] tumble out of [src].</span>",
 						"<span class='alert'>The contents of [I] tumble out of you.</span>",
 						"<span class='alert'>You hear things fall onto the floor.</span")
-			src.resources += src.absorb_completion
+			src.resources += src.absorb_completion * I.amount
 			boutput(src, "<span class='notice'>You finish converting [I] into resources (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]).</span>")
 			if(istype(I, /obj/item/organ/heart/flock))
 				var/obj/item/organ/heart/flock/F = I
