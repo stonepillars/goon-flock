@@ -163,12 +163,15 @@ var/list/ai_move_scheduled = list()
 				src.owner.move_dir = turn(get_dir(src.owner,get_turf(src.move_target)),turn)
 				src.owner.process_move()
 		else if (length(src.move_path))
-			src.move_path.Cut(1, 2)
 			var/turf/next
+			if(src.move_path[1] == src.owner.loc) //check you've completed a step before removing it from the path
+				src.move_path.Cut(1, 2)
+
 			if(length(src.move_path))
 				next = src.move_path[1]
 			else
-				next = move_target
+				next = src.move_target
+
 			if (get_dist(src.owner,get_turf(next)) > src.move_dist)
 				src.owner.move_dir = get_dir(src.owner,get_turf(next))
 				src.owner.process_move()
