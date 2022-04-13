@@ -275,24 +275,29 @@
 		dummy.add_filter("outline", 1, outline_filter(size=1,color="#00ff9d"))
 		target.vis_contents += dummy
 
+		play_animation()
+
 		SPAWN(0)
 			while(TIME < src.end_time)
-				animate(dummy, time = duration/9, alpha = 100)
-				for (var/i in 1 to 4)
-					animate(time = duration/9, alpha = 255)
-					animate(time = duration/9, alpha = 100)
-				sleep(duration)
+				var/delta = src.end_time - TIME
+				sleep(min(src.duration, delta))
 			qdel(src)
 
 	//when a new ping component is added, reset the original's duration
 	InheritComponent(datum/component/flock_ping/C, i_am_original)
 		if (i_am_original)
+			play_animation()
 			src.end_time = TIME + duration
 
 	disposing()
 		qdel(dummy)
 		. = ..()
 
+	proc/play_animation()
+		animate(dummy, time = duration/9, alpha = 100)
+		for (var/i in 1 to 4)
+			animate(time = duration/9, alpha = 255)
+			animate(time = duration/9, alpha = 100)
 // ANNOTATIONS
 
 // currently both flockmind and player units get the same annotations: what tiles are marked for conversion, and who is shitlisted
