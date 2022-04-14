@@ -39,7 +39,7 @@
 		processing_items |= src
 		src.setMaterial(getMaterial("gnesis"))
 		src.health = src.health_max
-		src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
+		src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE, TRUE)
 
 	proc/getHumanPiece(var/mob/living/carbon/human/H)
 		// prefer inventory items before limbs, and limbs before organs
