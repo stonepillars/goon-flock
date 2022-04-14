@@ -3,17 +3,20 @@
 	var/report_hand_attack
 	var/report_obj_attack
 	var/report_thrown_attack
+	var/report_proj_attack
 
-/datum/component/flock_protection/Initialize(flockdrones_can_hit, report_hand_attack, report_obj_attack, report_thrown_attack)
+/datum/component/flock_protection/Initialize(flockdrones_can_hit, report_hand_attack, report_obj_attack, report_thrown_attack, report_proj_attack)
 	src.flockdrones_can_hit = flockdrones_can_hit
 	src.report_hand_attack = report_hand_attack
 	src.report_obj_attack = report_obj_attack
 	src.report_thrown_attack = report_thrown_attack
+	src.report_proj_attack = report_proj_attack
 
 /datum/component/flock_protection/RegisterWithParent()
 	RegisterSignal(parent, COMSIG_ATTACKHAND, .proc/handle_attackhand)
 	RegisterSignal(parent, COMSIG_ATTACKBY, .proc/handle_attackby)
 	RegisterSignal(parent, COMSIG_ATOM_HITBY_THROWN, .proc/handle_hitby_thrown)
+	RegisterSignal(parent, COMSIG_ATOM_HITBY_PROJ, .proc/handle_hitby)
 
 /datum/component/flock_protection/proc/handle_attackhand(source, mob/user as mob)
 	if (user.a_intent != INTENT_HARM)
@@ -70,6 +73,13 @@
 	if(!istype(attacker))
 		return
 	if (!isflock(attacker) && report_thrown_attack)
+		src.attempt_report_attack(source, attacker)
+
+/datum/component/flock_protection/proc/handle_hitby(source, obj/projectile/P)
+	var/mob/attacker = P.shooter
+	if(!istype(attacker))
+		return
+	if (!istype(attacker, /mob/living/critter/flock/drone) && report_proj_attack)
 		src.attempt_report_attack(source, attacker)
 
 /datum/component/flock_protection/proc/attempt_report_attack(source, mob/attacker)
