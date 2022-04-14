@@ -69,7 +69,7 @@
 	var/mob/attacker = thr.user
 	if(!istype(attacker))
 		return
-	if (!istype(attacker, /mob/living/critter/flock/drone) && report_thrown_attack)
+	if (!isflock(attacker) && report_thrown_attack)
 		src.attempt_report_attack(source, attacker)
 
 /datum/component/flock_protection/proc/attempt_report_attack(source, mob/attacker)
