@@ -45,7 +45,8 @@
 	abilityHolder = new /datum/abilityHolder/critter/flockdrone(src)
 
 	SPAWN(3 SECONDS) // aaaaaaa
-		src.zone_sel.change_hud_style('icons/mob/flock_ui.dmi')
+		//this is terrible, but diffracting a drone immediately causes a runtime
+		src?.zone_sel?.change_hud_style('icons/mob/flock_ui.dmi')
 
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
@@ -100,6 +101,7 @@
 		return
 	src.controller = pilot
 	walk(src, 0)
+	src.ai.stop_move() //cancel any pathing that's happening
 	src.is_npc = 0
 	src.dormant = 0
 	src.anchored = 0
@@ -456,6 +458,12 @@
 		var/mob/attacker = P.shooter
 		if(istype(attacker))
 			src.harmedBy(attacker)
+
+/mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
+	. = ..()
+	var/mob/attacker = thr.user
+	if(istype(attacker) && !isflock(attacker))
+		src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
 	// check whatever reagents are about to get dumped on us
