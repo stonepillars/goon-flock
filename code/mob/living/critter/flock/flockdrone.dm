@@ -45,7 +45,8 @@
 	abilityHolder = new /datum/abilityHolder/critter/flockdrone(src)
 
 	SPAWN(3 SECONDS) // aaaaaaa
-		src.zone_sel.change_hud_style('icons/mob/flock_ui.dmi')
+		//this is terrible, but diffracting a drone immediately causes a runtime
+		src?.zone_sel?.change_hud_style('icons/mob/flock_ui.dmi')
 
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
@@ -100,6 +101,7 @@
 		return
 	src.controller = pilot
 	walk(src, 0)
+	src.ai.stop_move() //cancel any pathing that's happening
 	src.is_npc = 0
 	src.dormant = 0
 	src.anchored = 0
@@ -432,7 +434,7 @@
 		return ..(NewLoc, direct)
 
 // catchall for shitlisting a dude that attacks us
-/mob/living/critter/flock/drone/proc/harmedBy(var/mob/enemy)
+/mob/living/critter/flock/drone/proc/harmedBy(var/atom/enemy)
 	if(isflock(enemy))
 		return
 	if(!isdead(src) && src.is_npc && src.flock)
@@ -456,6 +458,12 @@
 		var/mob/attacker = P.shooter
 		if(istype(attacker))
 			src.harmedBy(attacker)
+
+/mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
+	. = ..()
+	var/mob/attacker = thr.user
+	if(istype(attacker) && !isflock(attacker))
+		src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
 	// check whatever reagents are about to get dumped on us
@@ -745,6 +753,12 @@
 		return
 	if (user.floorrunning)
 		return // you'll need to be out of the floor to do anything
+
+	if(istype(target,/obj/critter)) //gods how I hate /obj/critter
+		if(user.a_intent == INTENT_DISARM)
+			src.disarm(target,user)
+			return
+
 	// CONVERT TURF
 	if(!isturf(target) && !(istype(target, /obj/storage/closet/flock) || istype(target, /obj/table/flock) || istype(target, /obj/structure/girder) || istype(target, /obj/machinery/door/feather) || istype(target, /obj/flock_structure/ghost)))
 		target = get_turf(target)
@@ -830,8 +844,10 @@
 	else
 		..()
 
-/datum/limb/flock_converter/disarm(mob/target, var/mob/living/critter/flock/drone/user)
+/datum/limb/flock_converter/disarm(atom/target, var/mob/living/critter/flock/drone/user)
 	if(!target || !user)
+		return
+	if(!(isliving(target) || iscritter(target)))
 		return
 	if(isintangible(target))
 		return // STOP CAGING AI EYES
@@ -846,7 +862,7 @@
 		return
 	else if(user.resources < 15)
 		boutput(user, "<span class='alert'>Not enough resources to imprison (you need 15).</span>")
-	else if(istype(target.loc, /obj/icecube/flockdrone))
+	else if(istype(target.loc, /obj/flock_structure/cage))
 		boutput(user, "<span class='alert'>They're already imprisoned, you can't double-imprison them!</span>")
 	else
 		actions.start(new/datum/action/bar/flock_entomb(target), user)

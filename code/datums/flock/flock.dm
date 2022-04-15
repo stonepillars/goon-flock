@@ -119,8 +119,8 @@
 	var/list/enemylist = list()
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
-		var/mob/living/M = enemy_stats["mob"]
-		if(istype(M)) // fix runtime: Cannot read null.name
+		var/atom/M = enemy_stats["mob"]
+		if(M)
 			var/list/enemy = list()
 			enemy["name"] = M.name
 			enemy["area"] = enemy_stats["last_seen"]
@@ -276,7 +276,7 @@
 		valid_keys |= T
 	// highlight enemies
 	for(var/name in src.enemies)
-		var/mob/B = src.enemies[name]["mob"]
+		var/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
 			// create a new image
 			I = image('icons/misc/featherzone.dmi', B, "hazard", B.layer)
@@ -354,10 +354,12 @@
 
 // ENEMIES
 
-/datum/flock/proc/updateEnemy(var/mob/living/M)
+/datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
-	var/enemy_name = lowertext(M.name)
+	if(!isliving(M) && !iscritter(M))
+		return
+	var/enemy_name = M
 	var/list/enemy_deets
 	if(!(enemy_name in src.enemies))
 		// add new
@@ -372,16 +374,15 @@
 	// update annotations indicating enemies for flockmind and co
 	src.updateAnnotations()
 
-/datum/flock/proc/removeEnemy(var/mob/living/M)
+/datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
-	for(var/name in src.enemies)
-		var/list/enemy_stats = src.enemies[name]
-		if(enemy_stats["mob"] == M)
-			src.enemies -= name
+	if(!isliving(M) && !iscritter(M))
+		return
+	src.enemies -= M
 	src.updateAnnotations()
 
-/datum/flock/proc/isEnemy(var/mob/living/M)
-	var/enemy_name = lowertext(M.name)
+/datum/flock/proc/isEnemy(atom/M)
+	var/enemy_name = M
 	return (enemy_name in src.enemies)
 
 // DEATH
@@ -406,6 +407,8 @@
 /datum/flock/proc/reserveTurf(var/turf/simulated/T, var/name)
 	if(T in all_owned_tiles)
 		return
+	if(T in src.busy_tiles)
+		return //can't reserve tiles that are already reserved
 	src.busy_tiles[name] = T
 	src.updateAnnotations()
 
@@ -486,6 +489,9 @@
 // made into a global proc so a reagent can use it
 // simple enough: if object path matches key, replace with instance of value
 // if value is null, just delete object
+// !!!! priority is determined by list order !!!!
+// if you have a subclass, it MUST go first in the list, or the first type that matches will take priority (ie, the superclass)
+// see /obj/machinery/light/small/floor and /obj/machinery/light for examples of this
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
 	/obj/window = /obj/window/feather,
@@ -493,6 +499,7 @@
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
 	/obj/table = /obj/table/flock/auto,
+	/obj/machinery/light/small/floor = /obj/machinery/light/flock/floor,
 	/obj/machinery/light = /obj/machinery/light/flock,
 	/obj/storage/closet = /obj/storage/closet/flock,
 	/obj/storage/secure/closet = /obj/storage/closet/flock,
@@ -560,28 +567,31 @@
 			var/obj/machinery/door/feather/door = O
 			door.heal_damage()
 			animate_flock_convert_complete(O)
-		for(var/keyPath in flock_conversion_paths)
-			var/obj/replacementPath = flock_conversion_paths[keyPath]
-			if(istype(O, keyPath))
-				if(isnull(replacementPath))
-					qdel(O)
-				else
-					var/dir = O.dir
-					var/obj/converted = new replacementPath(T)
-					// if the object is a closet, it might not have spawned its contents yet
-					// so force it to do that first
-					if(istype(O, /obj/storage))
-						var/obj/storage/S = O
-						if(!isnull(S.spawn_contents))
-							S.make_my_stuff()
-					// if the object has contents, move them over!!
-					for (var/obj/OO in O)
-						OO.set_loc(converted)
-					for (var/mob/M in O)
-						M.set_loc(converted)
-					qdel(O)
-					converted.set_dir(dir)
-					animate_flock_convert_complete(converted)
+		else
+			for(var/keyPath in flock_conversion_paths) //types are converted with priority determined by list order
+				var/obj/replacementPath = flock_conversion_paths[keyPath] //put subclasses ahead of superclasses in the flock_conversion_paths list
+				if(istype(O, keyPath))
+					if(isnull(replacementPath))
+						qdel(O)
+					else
+						var/dir = O.dir
+						var/obj/converted = new replacementPath(T)
+						// if the object is a closet, it might not have spawned its contents yet
+						// so force it to do that first
+						if(istype(O, /obj/storage))
+							var/obj/storage/S = O
+							if(!isnull(S.spawn_contents))
+								S.make_my_stuff()
+						// if the object has contents, move them over!!
+						for (var/obj/OO in O)
+							OO.set_loc(converted)
+						for (var/mob/M in O)
+							M.set_loc(converted)
+						qdel(O)
+						converted.set_dir(dir)
+						animate_flock_convert_complete(converted)
+					break //we found and converted the type, don't convert it again
+
 
 	return T
 
