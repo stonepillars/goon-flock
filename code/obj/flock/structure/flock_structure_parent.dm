@@ -44,7 +44,7 @@
 		group = f.group
 		f.group.addstructure(src)
 
-	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE, TRUE)
+	src.AddComponent(/datum/component/flock_protection)
 
 /obj/flock_structure/disposing()
 	processing_items -= src
@@ -194,7 +194,7 @@
 
 /obj/flock_structure/ex_act(severity)
 	src.report_attack()
-	
+
 	var/damage = 0
 	var/damage_mult = 1
 	switch(severity)

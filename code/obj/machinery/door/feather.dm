@@ -13,7 +13,7 @@
 /obj/machinery/door/feather/New()
 	..()
 	setMaterial("gnesis")
-	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE, TRUE, TRUE)
+	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE)
 	var/datum/component/C = src.GetComponent(/datum/component/mechanics_holder)
 	C?.RemoveComponent()
 
