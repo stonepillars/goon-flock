@@ -17,6 +17,8 @@
 	var/datum/equipmentHolder/flockAbsorption/absorber
 	health_brute = 30
 	health_burn = 30
+	contextLayout = new /datum/contextLayout/experimentalcircle
+
 	var/damaged = 0 // used for state management for description showing, as well as preventing drones from screaming about being hit
 
 	// too lazy, might as well use existing stuff
@@ -63,6 +65,10 @@
 		else
 			emote("beep")
 			say(pick_string("flockmind.txt", "flockdrone_created"))
+
+	src.contextActions = list()
+	for (var/type in childrentypesof(/datum/contextAction/flockdrone))
+		src.contextActions += new type
 
 	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
 

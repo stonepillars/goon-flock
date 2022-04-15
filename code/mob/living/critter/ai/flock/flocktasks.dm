@@ -75,6 +75,11 @@ butcher
 	weight = 0
 	can_be_adjacent_to_target = FALSE
 	max_dist = 0
+
+	on_tick()
+		if (!holder.target)
+			holder.target = get_turf(src.target)
+		. = ..()
 // most of the functionality here is already in the base goalbased task, we only want movement
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -881,3 +886,7 @@ butcher
 
 /datum/aiTask/succeedable/butcher/on_reset()
 	has_started = FALSE
+
+
+/////// Targetable versions of other AI tasks
+// /datum/aitask

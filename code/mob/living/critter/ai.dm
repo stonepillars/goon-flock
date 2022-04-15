@@ -7,6 +7,8 @@ var/list/ai_move_scheduled = list()
 	var/datum/aiTask/current_task = null  // what the critter is currently doing
 	var/datum/aiTask/default_task = null  // what behavior the critter will fall back on
 	var/list/task_cache = list()
+	/// The default prioritizer will consume tasks from this list in order before it picks any others
+	var/list/datum/aiTask/priority_tasks = list()
 	var/move_target = null
 
 	var/move_dist = 0
@@ -187,6 +189,7 @@ var/list/ai_move_scheduled = list()
 /datum/aiTask
 	var/name = "task"
 	var/datum/aiHolder/holder = null
+	var/atom/target = null
 
 	New(parentHolder)
 		..()
@@ -227,6 +230,10 @@ var/list/ai_move_scheduled = list()
 		transition_tasks[transTask] = 0
 
 	next_task()
+		if (length(holder.priority_tasks)) //consume priority tasks first
+			var/datum/aiTask/chosen_one = holder.priority_tasks[1]
+			holder.priority_tasks -= chosen_one
+			return chosen_one
 		var/mp = -100
 		var/mT = null
 		for (var/T in transition_tasks)
