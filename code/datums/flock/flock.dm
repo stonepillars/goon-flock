@@ -250,11 +250,12 @@
 	// highlight priority tiles
 	for(var/turf/T in src.priority_tiles)
 		if(!(T in src.annotations))
-			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier", T.layer)
-			I.blend_mode = BLEND_ADD
+			// create a new image and attach it to the light overlay 
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay, "frontier", T.layer)
+			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 180
-			I.plane = T.plane
+			I.plane = PLANE_ABOVE_LIGHTING
+			I.mouse_opacity = FALSE
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -264,11 +265,12 @@
 	for(var/name in src.busy_tiles)
 		var/turf/T = src.busy_tiles[name]
 		if(isturf(T) && !(T in src.annotations))
-			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier", T.layer)
-			I.blend_mode = BLEND_ADD
+			// create a new image and attach it to the light overlay 
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay, "frontier", T.layer)
+			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 80
-			I.plane = T.plane
+			I.plane = PLANE_ABOVE_LIGHTING
+			I.mouse_opacity = FALSE
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -276,13 +278,13 @@
 		valid_keys |= T
 	// highlight enemies
 	for(var/name in src.enemies)
-		var/B = src.enemies[name]["mob"]
+		var/atom/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
-			// create a new image
+			// create a new image attached to the mob
 			I = image('icons/misc/featherzone.dmi', B, "hazard", B.layer)
 			I.blend_mode = BLEND_ADD
 			I.pixel_y = 16
-			I.plane = B.plane
+			I.plane = PLANE_ABOVE_LIGHTING
 			I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 			// add to subscribers for annotations
 			images_to_add |= I
