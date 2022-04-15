@@ -10,6 +10,13 @@
 	health = 80
 	health_max = 80
 
+/obj/machinery/door/feather/New()
+	..()
+	setMaterial("gnesis")
+	var/datum/component/C = src.GetComponent(/datum/component/mechanics_holder)
+	C?.RemoveComponent()
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
+
 /obj/machinery/door/feather/special_desc(dist, mob/user)
 	if(isflock(user))
 		var/special_desc = {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
@@ -90,10 +97,6 @@
 
 /obj/machinery/door/feather/allowed(mob/M)
 	return isflock(M) // haha fuck you everyone else
-
-/obj/machinery/door/feather/New()
-	..()
-	setMaterial("gnesis")
 
 /obj/machinery/door/feather/open()
 	if(..())

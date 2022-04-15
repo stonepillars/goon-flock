@@ -111,6 +111,7 @@
 /obj/storage/closet/flock/New()
 	..()
 	setMaterial("gnesis")
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /obj/storage/closet/flock/attackby(obj/item/W as obj, mob/user as mob)
 	if (istype(W, /obj/item/grab))
@@ -132,8 +133,11 @@
 			..()
 		else if (!issilicon(user))
 			if (istype(user, /mob/living/critter/flock/drone))
-				user.u_equip(W)
-				W?.set_loc(src.loc)
+				if (W)
+					user.u_equip(W)
+					W.set_loc(src.loc)
+				else
+					return ..()
 			else if(user.drop_item())
 				W?.set_loc(src.loc)
 
@@ -190,6 +194,7 @@
 /obj/machinery/light/flock/New()
 	..()
 	light.set_color(0.45, 0.75, 0.675)
+	src.AddComponent(/datum/component/flock_protection, TRUE, FALSE, TRUE)
 
 /obj/machinery/light/flock/attack_hand(mob/user)
 	if(isflock(user))
@@ -206,7 +211,15 @@
   else
     return null // give the standard description
 
-
+/obj/machinery/light/flock/floor
+	name = "pulsing cabochon"
+	desc = "It pulses and flares to a strange rhythm."
+	icon_state = "flock_floor1"
+	base_state = "flock_floor"
+	brightness = 1.2
+	power_usage = 0
+	on = 1
+	removable_bulb = 0
 /////////////
 // FIBRENET
 /////////////
@@ -222,6 +235,7 @@
 /obj/lattice/flock/New()
 	..()
 	setMaterial("gnesis")
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /obj/lattice/flock/attackby(obj/item/C as obj, mob/user as mob)
 	if (istype(C, /obj/item/tile))
@@ -282,6 +296,7 @@
 	..()
 	setMaterial("gnesis")
 	src.UpdateIcon()
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 
 // flockdrones can always move through
@@ -301,3 +316,8 @@
 		<br><span class='bold'>###=-</span></span>"}
 	else
 		return null // give the standard description
+
+/obj/grille/flock/attack_hand(mob/user)
+	if (user.a_intent != INTENT_HARM)
+		return
+	..()
