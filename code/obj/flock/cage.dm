@@ -96,7 +96,7 @@
 			playsound(src, "sound/impact_sounds/Flesh_Tear_1.ogg", 80, 1)
 			boutput(H, "<span class='alert bold'>[src] wrenches your [initial(target.name)] clean off and begins peeling it apart! Fuck!</span>")
 			src.visible_message("<span class='alert bold'>[src] wrenches [target.name] clean off and begins peeling it apart!</span>")
-      flock.achieve("human dissection")
+			flock.achieve("human dissection")
 		else if(length(organs))
 			eating_occupant = 1
 			target = pick(organs)
