@@ -133,8 +133,11 @@
 			..()
 		else if (!issilicon(user))
 			if (istype(user, /mob/living/critter/flock/drone))
-				user.u_equip(W)
-				W?.set_loc(src.loc)
+				if (W)
+					user.u_equip(W)
+					W.set_loc(src.loc)
+				else
+					return ..()
 			else if(user.drop_item())
 				W?.set_loc(src.loc)
 
@@ -208,7 +211,16 @@
   else
     return null // give the standard description
 
-
+/obj/machinery/light/flock/floor
+	name = "pulsing cabochon"
+	desc = "It pulses and flares to a strange rhythm."
+	icon_state = "flock_floor1"
+	base_state = "flock_floor"
+	plane = PLANE_FLOOR
+	brightness = 1.2
+	power_usage = 0
+	on = 1
+	removable_bulb = 0
 /////////////
 // FIBRENET
 /////////////
