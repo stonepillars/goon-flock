@@ -948,7 +948,7 @@ butcher
 		var/mob/living/critter/target = holder.target
 		var/mob/living/critter/flock/drone/F = holder.owner
 		if(target && IN_RANGE(holder.owner, target, 1))
-			if(ON_COOLDOWN(holder.owner,"bird_staring",rand(60 SECONDS, 180 SECONDS))) //you can only stare at birds once every now an then. randomise for staggering
+			if(!ON_COOLDOWN(holder.owner,"bird_staring",rand(60 SECONDS, 180 SECONDS))) //you can only stare at birds once every now an then. randomise for staggering
 				switch(rand(1,100))
 					if(1 to 30)
 						//pat the birb
