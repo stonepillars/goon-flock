@@ -1195,3 +1195,9 @@
 
 		checkRequirements(mob/living/critter/flock/drone/target, mob/living/intangible/flock/user)
 			return ..() && target.resources > 25
+
+	shoot
+		name = "Shoot"
+		desc = "Shoot this enemy"
+		icon_state = "weapon"
+		task_type = /datum/aiTask/timed/targeted/flockdrone_shoot/targetable

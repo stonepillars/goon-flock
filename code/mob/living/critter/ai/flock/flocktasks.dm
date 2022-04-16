@@ -952,8 +952,6 @@ butcher
 
 /////// Targetable AI tasks, instead of looking for targets around them they just override with their own target var
 /datum/aiTask/sequence/goalbased/build/targetable
-	max_dist = 15
-
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
@@ -964,8 +962,6 @@ butcher
 		holder.target = get_turf(src.target)
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
-	max_dist = 15
-
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
@@ -980,8 +976,6 @@ butcher
 		return ismob(target) && !isintangible(target) && !isflock(target) && is_incapacitated(target)
 
 /datum/aiTask/sequence/goalbased/barricade/targetable
-	max_dist = 15
-
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
@@ -990,3 +984,16 @@ butcher
 	on_reset()
 		..()
 		holder.target = get_turf(src.target)
+
+/datum/aiTask/timed/targeted/flockdrone_shoot/targetable
+	switched_to()
+		on_reset()
+		if (!ismob(src.target))
+			holder.interrupt()
+			return
+		var/mob/living/critter/flock/drone/drone = holder.owner
+		drone.flock.updateEnemy(src.target)
+
+	on_reset()
+		..()
+		holder.target = src.target
