@@ -1160,21 +1160,38 @@
 			ability.holder.owner.update_cursor()
 		user.closeContextActions()
 
-	checkRequirements(atom/target, var/mob/living/intangible/flock/user)
-		return istype(user) && !user.targeting_ability
+	checkRequirements(var/mob/living/critter/flock/drone/target, var/mob/living/intangible/flock/user)
+		return istype(target) && istype(user) && !user.targeting_ability
 
 	move
 		name = "Move"
 		desc = "Go somwhere."
-		icon_state = "wrench"
+		icon_state = "right_arrow"
 		task_type = /datum/aiTask/sequence/goalbased/rally
 
-	// convert
-	// 	name = "Convert"
-	// 	desc = "Convert this thing"
-	// 	icon_state = "wrench"
-	// 	task_type = /datum/aiTask/sequence/goalbased/build/targetable
+	convert
+		name = "Convert"
+		desc = "Convert this thing"
+		icon_state = "pulse"
+		task_type = /datum/aiTask/sequence/goalbased/build/targetable
 
-	// 	checkRequirements(var/mob/living/critter/flock/drone/target, var/mob/living/intangible/flock/user)
-	// 		. = ..()
-	// 		return . && istype(target) && target.resources > 20
+		checkRequirements(var/mob/living/critter/flock/drone/target, var/mob/living/intangible/flock/user)
+			return ..() && target.resources > 20
+
+	capture
+		name = "Capture"
+		desc = "Capture this enemy"
+		icon_state = "beepsky"
+		task_type = /datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
+
+		checkRequirements(var/mob/living/critter/flock/drone/target, var/mob/living/intangible/flock/user)
+			return ..() && target.resources > 20
+
+	barricade
+		name = "Barricade"
+		desc = "Build a barricade"
+		icon_state = "wrench"
+		task_type = /datum/aiTask/sequence/goalbased/barricade/targetable
+
+		checkRequirements(mob/living/critter/flock/drone/target, mob/living/intangible/flock/user)
+			return ..() && target.resources > 25

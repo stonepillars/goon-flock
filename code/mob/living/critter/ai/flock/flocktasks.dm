@@ -204,6 +204,13 @@ butcher
 		if (F.flock?.isTurfFree(T, F.real_name))
 			F.flock.reserveTurf(T, F.real_name)
 
+/datum/aiTask/sequence/goalbased/build/valid_target(var/atom/target)
+	var/mob/living/critter/flock/F = holder.owner
+	if(!isfeathertile(target))
+		if(F?.flock && !F.flock.isTurfFree(target, F.real_name))
+			return FALSE
+		return TRUE
+
 /datum/aiTask/sequence/goalbased/build/get_targets()
 	var/mob/living/critter/flock/F = holder.owner
 
@@ -227,11 +234,10 @@ butcher
 	. = list()
 	// else just go for one nearby
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
-		if(!isfeathertile(T))
-			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
-				continue // this tile's been claimed by someone else
-			// if we can get a valid path to the target, include it for consideration
-			. += T
+		if (!valid_target(T))
+			continue // this tile's been claimed by someone else
+		// if we can get a valid path to the target, include it for consideration
+		. += T
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
@@ -771,16 +777,21 @@ butcher
 		holder.target = get_best_target(get_targets())
 	..()
 
+/datum/aiTask/sequence/goalbased/flockdrone_capture/valid_target(atom/target)
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(F.flock.isEnemy(target) && is_incapacitated(target))
+		// mob is a valid target, check if they're not already in a cage
+		if(!istype(target.loc, /obj/icecube/flockdrone))
+			return TRUE
+
 /datum/aiTask/sequence/goalbased/flockdrone_capture/get_targets()
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
 		for(var/mob/living/M in view(max_dist, holder.owner))
-			if(F.flock.isEnemy(M) && is_incapacitated(M))
-				// mob is a valid target, check if they're not already in a cage
-				if(!istype(M.loc, /obj/icecube/flockdrone))
-					// if we can get a valid path to the target, include it for consideration
-					. += M
+			if (valid_target(M))
+				// if we can get a valid path to the target, include it for consideration
+				. += M
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
@@ -817,6 +828,7 @@ butcher
 			else if(!actions.hasAction(owncritter, "flock_entomb")) // let's not keep interrupting our own action
 				if(owncritter.active_hand != 2) // nanite spray
 					owncritter.set_hand(2)
+				if (owncritter.a_intent != INTENT_DISARM)
 					owncritter.set_a_intent(INTENT_DISARM)
 					owncritter.hud.update_intent()
 				owncritter.set_dir(get_dir(owncritter, holder.target))
@@ -887,6 +899,91 @@ butcher
 /datum/aiTask/succeedable/butcher/on_reset()
 	has_started = FALSE
 
+///Since we don't want flockdrones building barricades randomly, this task only exists for the targetable version to inherit from
+/datum/aiTask/sequence/goalbased/barricade
+	name = "barricading"
+	can_be_adjacent_to_target = TRUE
 
-/////// Targetable versions of other AI tasks
-// /datum/aitask
+/datum/aiTask/sequence/goalbased/barricade/New(parentHolder, transTask)
+	..(parentHolder, transTask)
+	add_task(holder.get_instance(/datum/aiTask/succeedable/barricade, list(holder)))
+
+/datum/aiTask/sequence/goalbased/barricade/valid_target(atom/target)
+	return isfeathertile(target) && !is_blocked_turf(target)
+
+/datum/aiTask/sequence/goalbased/barricade/on_reset()
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(F)
+		F.active_hand = 2 // nanite spray
+		F.set_a_intent(INTENT_DISARM)
+		F.hud?.update_intent()
+		F.hud?.update_hands() // for observers
+
+/datum/aiTask/succeedable/barricade
+	name = "barricade subtask"
+	var/has_started = FALSE
+
+/datum/aiTask/succeedable/barricade/failed()
+	var/mob/living/critter/flock/F = holder.owner
+	if(!F)
+		return TRUE
+	if(!F.can_afford(25))
+		return TRUE
+	if(get_dist(F, holder.target) > 1) //moved away before we could finish
+		return TRUE
+
+/datum/aiTask/succeedable/barricade/succeeded()
+	return is_blocked_turf(target) || (has_started && !actions.hasAction(holder.owner, "flock_construct"))
+
+/datum/aiTask/succeedable/barricade/on_tick()
+	if (!has_started && !failed() && !succeeded())
+		var/mob/living/critter/flock/drone/drone = holder.owner
+		var/dist = get_dist(drone, holder.target)
+		if(dist > 1)
+			holder.interrupt() //this should basically never happen, but sanity check just in case
+			return
+		else if(!actions.hasAction(drone, "flock_convert")) // let's not keep interrupting our own action
+			drone.set_dir(get_dir(drone, holder.target))
+			drone.hand_attack(holder.target)
+			has_started = TRUE
+
+/datum/aiTask/succeedable/barricade/on_reset()
+	has_started = FALSE
+
+/////// Targetable AI tasks
+/datum/aiTask/sequence/goalbased/build/targetable
+	max_dist = 15
+
+	on_reset()
+		..()
+		holder.target = get_turf(src.target)
+
+	get_targets()
+		if (valid_target(holder.target))
+			return get_path_to(holder.owner, list(holder.target), max_dist*2, 1)
+
+/datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
+	max_dist = 15
+
+	on_reset()
+		..()
+		holder.target = src.target
+
+	//simpler check because we want to be able to manually tell drones to capture non-enemies
+	valid_target(atom/target)
+		return is_incapacitated(target)
+
+	get_targets()
+		if (valid_target(holder.target))
+			return get_path_to(holder.owner, list(holder.target), max_dist*2, 1)
+
+/datum/aiTask/sequence/goalbased/barricade/targetable
+	max_dist = 15
+
+	on_reset()
+		..()
+		holder.target = get_turf(src.target)
+
+	get_targets()
+		if (valid_target(holder.target))
+			return get_path_to(holder.owner, list(holder.target), max_dist*2, 1)
