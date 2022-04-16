@@ -813,7 +813,7 @@ butcher
 			if (valid_target(T))
 				// if we can get a valid path to the target, include it for consideration
 				. += T
-			F.flock.updateEnemy(T)
+				F.flock.updateEnemy(T)
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 /datum/aiTask/succeedable/capture
@@ -996,7 +996,6 @@ butcher
 
 	//broader check because we want to be able to manually tell drones to capture non-enemies
 	valid_target(atom/target)
-		var/mob/living/critter/flock/drone/F = holder.owner
 		if(istype(target,/mob/living))
 			var/mob/living/mob = target
 			if(!is_incapacitated(mob))
