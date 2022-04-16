@@ -944,36 +944,42 @@ butcher
 	return has_started
 
 /datum/aiTask/succeedable/stare_at_bird/on_tick()
-	if(!has_started)
-		var/mob/living/critter/target = holder.target
-		var/mob/living/critter/flock/drone/F = holder.owner
-		if(target && IN_RANGE(holder.owner, target, 1))
-			if(!ON_COOLDOWN(holder.owner,"bird_staring",rand(60 SECONDS, 180 SECONDS))) //you can only stare at birds once every now an then. randomise for staggering
-				switch(rand(1,100))
-					if(1 to 30)
-						//pat the birb
-						if(F.set_hand(1)) // manipulator hand
-							F.empty_hand(1) //drop any item we might be holding first
-							F.set_a_intent(INTENT_HELP)
-							holder.owner.set_dir(get_dir(holder.owner, holder.target))
-							F.hand_attack(target)
-							has_started = TRUE
-					if(30 to 50)
-						//attempt to communicate
-						holder.owner.set_dir(get_dir(holder.owner, holder.target))
-						F.emote("whistle", FALSE)
-						has_started = TRUE
-					if(50 to 90)
-						//watch carefully
-						holder.owner.set_dir(get_dir(holder.owner, holder.target))
-						F.emote("stare [target]", FALSE)
-						has_started = TRUE
-					if(90 to 101)
-						if(istype(holder.target, /mob/living/critter/small_animal/bird/owl/))
-							F.say("hoot hoot")
-						else
-							F.say("tweet tweet")
-						has_started = TRUE
+	if(has_started)
+		return
+
+	var/mob/living/critter/target = holder.target
+	var/mob/living/critter/flock/drone/F = holder.owner
+
+	if(!target)
+		return
+	if(!IN_RANGE(holder.owner, target, 1))
+		return
+	if(!ON_COOLDOWN(holder.owner,"bird_staring",rand(60 SECONDS, 180 SECONDS))) //you can only stare at birds once every now an then. randomise for staggering
+		switch(rand(1,100))
+			if(1 to 30)
+				//pat the birb
+				if(F.set_hand(1)) // manipulator hand
+					F.empty_hand(1) //drop any item we might be holding first
+					F.set_a_intent(INTENT_HELP)
+					holder.owner.set_dir(get_dir(holder.owner, holder.target))
+					F.hand_attack(target)
+					has_started = TRUE
+			if(30 to 50)
+				//attempt to communicate
+				holder.owner.set_dir(get_dir(holder.owner, holder.target))
+				F.emote("whistle", FALSE)
+				has_started = TRUE
+			if(50 to 90)
+				//watch carefully
+				holder.owner.set_dir(get_dir(holder.owner, holder.target))
+				F.emote("stare [target]", FALSE)
+				has_started = TRUE
+			if(90 to 101)
+				if(istype(holder.target, /mob/living/critter/small_animal/bird/owl/))
+					F.say("hoot hoot")
+				else
+					F.say("tweet tweet")
+				has_started = TRUE
 
 /datum/aiTask/succeedable/stare_at_bird/on_reset()
 	has_started = FALSE
