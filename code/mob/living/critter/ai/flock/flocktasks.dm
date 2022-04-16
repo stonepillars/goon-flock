@@ -950,20 +950,26 @@ butcher
 /datum/aiTask/succeedable/barricade/on_reset()
 	has_started = FALSE
 
-/////// Targetable AI tasks
+/////// Targetable AI tasks, instead of looking for targets around them they just override with their own target var
 /datum/aiTask/sequence/goalbased/build/targetable
 	max_dist = 15
+
+	switched_to()
+		on_reset()
+		if (!valid_target(holder.target))
+			holder.interrupt()
 
 	on_reset()
 		..()
 		holder.target = get_turf(src.target)
 
-	get_targets()
-		if (valid_target(holder.target))
-			return get_path_to(holder.owner, list(holder.target), max_dist*2, 1)
-
 /datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
 	max_dist = 15
+
+	switched_to()
+		on_reset()
+		if (!valid_target(holder.target))
+			holder.interrupt()
 
 	on_reset()
 		..()
@@ -971,19 +977,16 @@ butcher
 
 	//simpler check because we want to be able to manually tell drones to capture non-enemies
 	valid_target(atom/target)
-		return is_incapacitated(target)
-
-	get_targets()
-		if (valid_target(holder.target))
-			return get_path_to(holder.owner, list(holder.target), max_dist*2, 1)
+		return ismob(target) && !isintangible(target) && !isflock(target) && is_incapacitated(target)
 
 /datum/aiTask/sequence/goalbased/barricade/targetable
 	max_dist = 15
 
+	switched_to()
+		on_reset()
+		if (!valid_target(holder.target))
+			holder.interrupt()
+
 	on_reset()
 		..()
 		holder.target = get_turf(src.target)
-
-	get_targets()
-		if (valid_target(holder.target))
-			return get_path_to(holder.owner, list(holder.target), max_dist*2, 1)

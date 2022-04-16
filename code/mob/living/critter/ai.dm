@@ -4,7 +4,8 @@ var/list/ai_move_scheduled = list()
 	var/mob/living/owner = null
 	var/mob/living/carbon/human/ownhuman = null // for use when you would normally cast holder.owner as human for a proc.
 	var/atom/target = null // the simplest blackboard ever
-	var/datum/aiTask/current_task = null  // what the critter is currently doing
+	///What the critter is currently doing. Do not set directly, use switch_to
+	var/datum/aiTask/current_task = null
 	var/datum/aiTask/default_task = null  // what behavior the critter will fall back on
 	var/list/task_cache = list()
 	/// The default prioritizer will consume tasks from this list in order before it picks any others
@@ -65,6 +66,10 @@ var/list/ai_move_scheduled = list()
 			task_cache = null
 		..()
 
+	proc/switch_to(var/datum/aiTask/task)
+		current_task = task
+		task?.switched_to()
+
 	proc/tick()
 		if(isdead(owner))
 			enabled = 0
@@ -73,13 +78,13 @@ var/list/ai_move_scheduled = list()
 			walk(owner, 0)
 			return
 		if (!current_task)
-			current_task = default_task
+			switch_to(default_task)
 		if (current_task)
 			current_task.tick()
 
 			var/datum/aiTask/T = current_task.next_task()
 			if (T)
-				current_task = T
+				switch_to(T)
 				T.reset()
 
 	proc/get_instance(taskType, list/nparams)
@@ -93,18 +98,18 @@ var/list/ai_move_scheduled = list()
 		// switch into the wait task NOW, and add our current task as the task to return to
 		var/datum/aiTask/timed/wait/waitTask = src.get_instance(/datum/aiTask/timed/wait, list(src))
 		waitTask.transition_task = current_task
-		current_task = waitTask
+		switch_to(waitTask)
 
 	proc/interrupt()
 		if(src.enabled)
 			current_task?.reset()
-			current_task = default_task
+			switch_to(default_task)
 			stop_move()
 
 	proc/die()
 		src.enabled = 0
 		stop_move()
-		current_task = null
+		switch_to(null)
 
 	//store a path and move to it with speed - useful for going fast but using smarter pathfinding
 	proc/move_to_with_path(var/A, var/list/path = null, var/dist = 1)
@@ -200,6 +205,9 @@ var/list/ai_move_scheduled = list()
 	disposing()
 		holder = null
 		..()
+
+	///Called when the task is switched to by the holder
+	proc/switched_to()
 
 	proc/on_tick()
 
