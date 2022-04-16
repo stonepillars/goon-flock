@@ -996,6 +996,8 @@ butcher
 
 	//broader check because we want to be able to manually tell drones to capture non-enemies
 	valid_target(atom/target)
+		if (!ismob(target) && !iscritter(target) || isintangible(target))
+			return FALSE
 		if(istype(target,/mob/living))
 			var/mob/living/mob = target
 			if(!is_incapacitated(mob))
