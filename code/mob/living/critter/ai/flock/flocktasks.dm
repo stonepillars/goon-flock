@@ -713,12 +713,20 @@ butcher
 	if(!holder.target)
 		holder.target = get_best_target(get_targets())
 	if(holder.target)
-		var/mob/living/M = holder.target
-		if(!M || istype(M.loc, /obj/icecube/flockdrone) || is_incapacitated(M))
-			// target is down or in a cage, we don't care about this target now
-			// end the current shooting task, and move on - if there are more targets, another shooting task will be created
+		var/atom/T = holder.target
+		// if target is down or in a cage, we don't care about this target now
+		// fetch a new one if we can
+		if(isliving(T))
+			var/mob/living/M = T
+			if(is_incapacitated(M))
+				holder.target = get_best_target(get_targets())
+		if(istype(T.loc, /obj/flock_structure/cage))
+			holder.target = get_best_target(get_targets())
+
+		if(!holder.target)
 			holder.interrupt()
 			return
+
 		var/dist = get_dist(owncritter, holder.target)
 		if(dist > target_range)
 			holder.target = get_best_target(get_targets())
@@ -743,14 +751,22 @@ butcher
 /datum/aiTask/timed/targeted/flockdrone_shoot/get_targets()
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F?.flock)
-		for(var/mob/living/M in view(target_range, holder.owner))
-			if(!istype(M.loc?.type, /obj/icecube/flockdrone) && !is_incapacitated(M))
-				// mob isn't already stunned, check if they're in our target list
-				if(F.flock.isEnemy(M))
-					. += M
-					// also, while we're here, update the last time this mob was seen
-					F.flock.updateEnemy(M)
+	if(!F?.flock)
+		return
+	for(var/atom/T in view(target_range, holder.owner))
+		if(!F.flock.isEnemy(T))
+			continue
+		if(isliving(T))
+			var/mob/living/M = T
+			if(is_incapacitated(M))
+				continue
+
+		// mob is a valid target, check if they're not already in a cage
+		if(!istype(T.loc.type, /obj/flock_structure/cage))
+			// if we can get a valid path to the target, include it for consideration
+			. += T
+		F.flock.updateEnemy(T)
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE-SPECIFIC CAPTURE TASK
@@ -779,22 +795,26 @@ butcher
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/valid_target(atom/target)
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F.flock.isEnemy(target) && is_incapacitated(target))
-		// mob is a valid target, check if they're not already in a cage
-		if(!istype(target.loc, /obj/icecube/flockdrone))
-			return TRUE
+	if(!F.flock.isEnemy(target))
+		return FALSE
+	if(istype(target,/mob/living))
+		var/mob/living/mob = target
+		if(!is_incapacitated(mob))
+			return FALSE
+	// mob is a valid target, check if they're not already in a cage
+	if(!istype(target.loc, /obj/flock_structure/cage))
+		return TRUE
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/get_targets()
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
-		for(var/mob/living/M in view(max_dist, holder.owner))
-			if (valid_target(M))
+		for(var/atom/T in view(max_dist, holder.owner))
+			if (valid_target(T))
 				// if we can get a valid path to the target, include it for consideration
-				. += M
+				. += T
+			F.flock.updateEnemy(T)
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
-
-////////
 
 /datum/aiTask/succeedable/capture
 	name = "capture subtask"
@@ -810,17 +830,19 @@ butcher
 		return TRUE
 
 /datum/aiTask/succeedable/capture/succeeded()
-	. = istype(holder?.target?.loc, /obj/icecube/flockdrone) || (has_started && !actions.hasAction(holder.owner, "flock_entomb"))
+	. = istype(holder?.target?.loc, /obj/flock_structure/cage) || (has_started && !actions.hasAction(holder.owner, "flock_entomb"))
 
 /datum/aiTask/succeedable/capture/on_tick()
 	if(!has_started && !failed() && !succeeded())
 		if(holder.target)
-			var/mob/living/M = holder.target
+			var/atom/T = holder.target
+			if(isliving(T))
+				var/mob/living/M = T
+				if(!is_incapacitated(M))
+					// target is up, abort
+					holder.interrupt() // re-evaluate task options
+					return
 			var/mob/living/critter/flock/drone/owncritter = holder.owner
-			if(!is_incapacitated(M))
-				// target is up, abort
-				holder.interrupt() // re-evaluate task options
-				return
 			var/dist = get_dist(owncritter, holder.target)
 			if(dist > 1)
 				holder.interrupt() //this should basically never happen, but sanity check just in case
@@ -833,12 +855,13 @@ butcher
 					owncritter.hud.update_intent()
 				owncritter.set_dir(get_dir(owncritter, holder.target))
 				owncritter.hand_attack(holder.target)
-
+		else
+			holder.interrupt() //somehow lost target, go do something else
+			return
 /datum/aiTask/succeedable/capture/on_reset()
 	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // BUTCHER GOAL
@@ -971,9 +994,16 @@ butcher
 		..()
 		holder.target = src.target
 
-	//simpler check because we want to be able to manually tell drones to capture non-enemies
+	//broader check because we want to be able to manually tell drones to capture non-enemies
 	valid_target(atom/target)
-		return ismob(target) && !isintangible(target) && !isflock(target) && is_incapacitated(target)
+		var/mob/living/critter/flock/drone/F = holder.owner
+		if(istype(target,/mob/living))
+			var/mob/living/mob = target
+			if(!is_incapacitated(mob))
+				return FALSE
+		// mob is a valid target, check if they're not already in a cage
+		if(!istype(target.loc, /obj/flock_structure/cage))
+			return TRUE
 
 /datum/aiTask/sequence/goalbased/barricade/targetable
 	switched_to()
