@@ -374,7 +374,7 @@
 		// add key to list
 		valid_keys |= B
 	//highlight deconstruction targets
-	for(var/obj/D in src.deconstruct_targets)
+	for(var/atom/D in src.deconstruct_targets)
 		if(!(D in src.annotations))
 			// create a new image
 			I = image('icons/misc/featherzone.dmi', D, "hazard")
@@ -568,6 +568,14 @@
 
 	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
 		ufs.process()
+
+	//handle deconstruct targets being destroyed by other means
+	var/list/toRemove = list()
+	for(var/atom/S in src.deconstruct_targets)
+		if(S.disposed)
+			toRemove += S
+	for(var/atom/S in toRemove)
+		src.deconstruct_targets -= S
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
