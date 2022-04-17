@@ -804,6 +804,9 @@
 		//walls
 		else if(istype(target, /turf/simulated/wall/auto/feather))
 			actions.start(new /datum/action/bar/flock_decon(target), user)
+		//windows
+		else if(istype(target, /obj/window/feather))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
 		else if(istype(target,/obj/structure/girder))
 			if(target?.material.mat_id == "gnesis")
 				actions.start(new /datum/action/bar/flock_decon(target), user)

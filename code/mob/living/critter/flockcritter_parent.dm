@@ -535,6 +535,20 @@
 			qdel(target)
 		if(istype(target, /obj/grille/flock))
 			qdel(target)
+		if(istype(target, /obj/window/feather))
+			var/obj/window/the_window = target
+			//copied wholesale from the /obj/window deconstruction code
+			var/obj/item/sheet/A = new /obj/item/sheet(get_turf(the_window))
+			if(the_window.material)
+				A.setMaterial(the_window.material)
+			else
+				var/datum/material/M = getMaterial("glass")
+				A.setMaterial(M)
+			if(!(the_window.dir in cardinal)) // full window takes two sheets to make
+				A.amount += 1
+			if(the_window.reinforcement)
+				A.set_reinforcement(the_window.reinforcement)
+			qdel(the_window)
 //
 //deposit action
 //

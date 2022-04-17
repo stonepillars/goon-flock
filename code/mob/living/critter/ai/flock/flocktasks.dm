@@ -957,9 +957,10 @@ butcher
 		return TRUE
 
 /datum/aiTask/succeedable/deconstruct/succeeded()
-	. = (!actions.hasAction(holder.owner, "flock_deconstruct")) // for whatever reason, the required action has stopped
-	var/mob/living/critter/flock/drone/F = holder.owner
-	F?.flock?.deconstruct_targets -= holder.target
+	. = (!actions.hasAction(holder.owner, "flock_decon")) // for whatever reason, the required action has stopped
+	if(.)
+		var/mob/living/critter/flock/drone/F = holder.owner
+		F?.flock?.deconstruct_targets -= holder.target
 
 /datum/aiTask/succeedable/deconstruct/on_tick()
 	if(!has_started)
@@ -970,7 +971,6 @@ butcher
 				F.set_a_intent(INTENT_HARM)
 				holder.owner.set_dir(get_dir(holder.owner, holder.target))
 				F.hand_attack(T)
-
 				has_started = TRUE
 
 /datum/aiTask/succeedable/deconstruct/on_reset()
