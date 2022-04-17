@@ -979,6 +979,8 @@ butcher
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid conversion target provided by sentient level instruction.", drone.flock)
 			holder.interrupt()
 
 	on_reset()
@@ -989,6 +991,8 @@ butcher
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid capture target provided by sentient level instruction.", drone.flock)
 			holder.interrupt()
 
 	on_reset()
@@ -1011,6 +1015,8 @@ butcher
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid construction target provided by sentient level instruction.", drone.flock)
 			holder.interrupt()
 
 	on_reset()
@@ -1021,6 +1027,8 @@ butcher
 	switched_to()
 		on_reset()
 		if (!ismob(src.target) && !iscritter(src.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid elimination target provided by sentient level instruction.", drone.flock)
 			holder.interrupt()
 			return
 		var/mob/living/critter/flock/drone/drone = holder.owner
