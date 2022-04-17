@@ -848,17 +848,18 @@ butcher
 				holder.interrupt() //this should basically never happen, but sanity check just in case
 				return
 			else if(!actions.hasAction(owncritter, "flock_entomb")) // let's not keep interrupting our own action
-				if(owncritter.active_hand != 2) // nanite spray
-					owncritter.set_hand(2)
-				if (owncritter.a_intent != INTENT_DISARM)
-					owncritter.set_a_intent(INTENT_DISARM)
-					owncritter.hud.update_intent()
 				owncritter.set_dir(get_dir(owncritter, holder.target))
 				owncritter.hand_attack(holder.target)
 		else
 			holder.interrupt() //somehow lost target, go do something else
 			return
 /datum/aiTask/succeedable/capture/on_reset()
+	var/mob/living/critter/flock/drone/drone = holder.owner
+	if (drone)
+		drone.set_hand(2) // nanite spray
+		drone.set_a_intent(INTENT_DISARM)
+		drone.hud?.update_intent()
+		drone.hud?.update_hands()
 	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////

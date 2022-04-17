@@ -142,7 +142,7 @@
 	if (istype(drone))
 		//we have to do this manually in order to handle the input properly
 		var/datum/contextAction/active_actions = list()
-		for (var/datum/contextAction/action in drone.contexts)
+		for (var/datum/contextAction/action as anything in drone.contexts)
 			if (action.checkRequirements(target, src))
 				active_actions += action
 		src.showContextActions(active_actions, drone)

@@ -68,7 +68,7 @@
 			emote("beep")
 			say(pick_string("flockmind.txt", "flockdrone_created"))
 
-	for (var/type in childrentypesof(/datum/contextAction/flockdrone))
+	for (var/type as anything in childrentypesof(/datum/contextAction/flockdrone))
 		src.contexts += new type
 
 	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
