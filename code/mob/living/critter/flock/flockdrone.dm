@@ -798,26 +798,26 @@
 		if(istype(target, /turf))
 			actions.start(new/datum/action/bar/flock_convert(target), user)
 	if(user.a_intent == INTENT_HARM)
-		switch (target.type)
-			if(/obj/table/flock, /obj/table/flock/auto)
+		//furniture
+		if(istype(target, /obj/storage/closet/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/table/flock) || istype(target, /obj/machinery/light/flock))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		//walls
+		else if(istype(target, /turf/simulated/wall/auto/feather))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		else if(istype(target,/obj/structure/girder))
+			if(target?.material.mat_id == "gnesis")
 				actions.start(new /datum/action/bar/flock_decon(target), user)
-			if(/obj/storage/closet/flock)
-				//soap
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-			if(/turf/simulated/wall/auto/feather)
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-			if(/obj/structure/girder)
-				if(target?.material.mat_id == "gnesis")
-					var/atom/A = new /obj/item/sheet(get_turf(target))
-					if (target.material)
-						A.setMaterial(target.material)
-						qdel(target)
-				else
-					return
-			if(/obj/machinery/door/feather)
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-			else
-				..()
+		//door
+		else if(istype(target, /obj/machinery/door/feather))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		//structures
+		else if(istype(target, /obj/flock_structure))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		//lattice/grille
+		else if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		else
+			..()
 //help intent actions
 	else if(user.a_intent == INTENT_HELP)
 		switch(target.type)//making this into switches for easy of expansion later

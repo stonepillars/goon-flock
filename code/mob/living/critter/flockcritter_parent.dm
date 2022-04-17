@@ -488,35 +488,53 @@
 
 	onEnd()
 		..()
-		switch(target.type)
-			if(/obj/storage/closet/flock)
-				var/turf/T = get_turf(target)
-				var/obj/storage/closet/flock/c = target
-				playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-				var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-				S.set_loc(T)
-				S.setMaterial(getMaterial("gnesisglass"))
-				c.dump_contents()
-				qdel(target)
-				target = null
-			if(/turf/simulated/wall/auto/feather)
-				var/turf/simulated/wall/auto/feather/f = target
-				f.destroy_resources()
-			if(/obj/machinery/door/feather)
-				var/turf/T = get_turf(target)
-				playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-				var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-				S.set_loc(T)
-				S.setMaterial(getMaterial("gnesisglass"))
-				S = new /obj/item/raw_material/shard
-				S.set_loc(T)
-				S.setMaterial(getMaterial("gnesis"))
-				qdel(target)
-				target = null
-			if(/obj/table/flock, /obj/table/flock/auto)
-				var/obj/table/flock/f = target
-				playsound(f, "sound/items/Deconstruct.ogg", 50, 1)
+		//good news, switch is awful, we're doing an if chain now
+		if(istype(target, /obj/storage/closet/flock))
+			var/turf/T = get_turf(target)
+			var/obj/storage/closet/flock/c = target
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesisglass"))
+			c.dump_contents()
+			qdel(target)
+			target = null
+		if(istype(target, /turf/simulated/wall/auto/feather))
+			var/turf/simulated/wall/auto/feather/f = target
+			f.destroy_resources()
+		if(istype(target, /obj/machinery/door/feather))
+			var/turf/T = get_turf(target)
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesisglass"))
+			S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesis"))
+			qdel(target)
+			target = null
+		if(istype(target, /obj/table/flock))
+			var/obj/table/flock/f = target
+			playsound(f, "sound/items/Deconstruct.ogg", 50, 1)
+			f.deconstruct()
+		if(istype(target, /obj/flock_structure))
+			if(istype(target,/obj/flock_structure/ghost))
+				var/obj/flock_structure/ghost/f = target
+				f.cancelBuild()
+			else
+				var/obj/flock_structure/f = target
 				f.deconstruct()
+		if(istype(target, /obj/stool/chair/comfy/flock))
+			var/obj/stool/chair/comfy/flock/c = target
+			c.deconstruct()
+		if(istype(target, /obj/machinery/light/flock))
+			var/turf/T = get_turf(target)
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			qdel(target)
+		if(istype(target, /obj/lattice/flock))
+			qdel(target)
+		if(istype(target, /obj/grille/flock))
+			qdel(target)
 //
 //deposit action
 //

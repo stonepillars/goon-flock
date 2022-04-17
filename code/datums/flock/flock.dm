@@ -10,6 +10,7 @@
 	var/list/all_owned_tiles = list()
 	var/list/busy_tiles = list()
 	var/list/priority_tiles = list()
+	var/list/deconstruct_targets = list()
 	var/list/traces = list()
 	var/list/units = list()
 	var/list/enemies = list()

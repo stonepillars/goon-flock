@@ -438,47 +438,39 @@
 /////////////////////////////////////////
 
 /datum/targetable/flockmindAbility/deconstruct
-	name = "Dissolve Structure"
-	desc = "Dissolve an existing flock structure, refunding some resources."
+	name = "Mark for Deconstruction"
+	desc = "Mark an existing flock structure for deconstruction, refunding some resources."
 	icon_state = "ping"
-	cooldown = 2 SECONDS
+	cooldown = 0.1 SECONDS
 
 /datum/targetable/flockmindAbility/deconstruct/cast(atom/target)
 	if(..())
 		return TRUE
-	//TODO animations for it to go all melty (maybe some sort of mask?)
-	if(istype(target, /turf/simulated/wall/auto/feather))
-		var/turf/simulated/wall/auto/feather/W = target
-		if(W)
-			W.destroy_resources()
-			return FALSE
-
-	if (isturf(target))
-		for(var/obj in target)
-			if(src.cast(obj))
-				return TRUE //pick the first thing on the turf that can be hit by this
+	var/mob/living/intangible/flock/F = holder.owner
+	//furniture
+	if(istype(target, /obj/storage/closet/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/table/flock) || istype(target, /obj/machinery/light/flock))
+		F.flock.deconstruct_targets += target
 		return FALSE
-	//precise targetting gets precise handling
-	if (isflockstructure(target))
-		var/mob/living/intangible/flock/F = holder.owner
-		var/obj/flock_structure/S = target
-		if(S && S.flock == F.flock)
-			S.deconstruct()
-			return FALSE
-	if(istype(target, /obj/machinery/door/feather))
-		var/obj/machinery/door/feather/D = target
-		if(D)
-			D.break_me_complitely()
-			return FALSE
-	if(istype(target, /obj/table/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/storage/closet/flock) || istype(target, /obj/machinery/light/flock))
-		//you a furniture, good job, you get melty
-		//spawn some gnesis on the floor?
-		qdel(target)
+	//walls
+	else if(istype(target, /turf/simulated/wall/auto/feather))
+		F.flock.deconstruct_targets += target
 		return FALSE
-	if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
-		qdel(target)
+	else if(istype(target,/obj/structure/girder))
+		if(target?.material.mat_id == "gnesis")
+			F.flock.deconstruct_targets += target
+			return FALSE
+	//door
+	else if(istype(target, /obj/machinery/door/feather))
+		F.flock.deconstruct_targets += target
 		return FALSE
-
+	//structures
+	else if(istype(target, /obj/flock_structure))
+		F.flock.deconstruct_targets += target
+		return FALSE
+	//lattice/grille
+	else if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
+		F.flock.deconstruct_targets += target
+		return FALSE
 
 	return TRUE
 
