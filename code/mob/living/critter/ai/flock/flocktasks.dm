@@ -1019,7 +1019,7 @@ butcher
 /datum/aiTask/timed/targeted/flockdrone_shoot/targetable
 	switched_to()
 		on_reset()
-		if (!ismob(src.target))
+		if (!ismob(src.target) && !iscritter(src.target))
 			holder.interrupt()
 			return
 		var/mob/living/critter/flock/drone/drone = holder.owner
