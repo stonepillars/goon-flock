@@ -98,4 +98,4 @@
 ////////////////////////////////////////////////////////////////////////
 
 /datum/component/flock_ping/obstruction
-	outline_color = "#f51e1e"
+	outline_color = "#910707"
