@@ -108,7 +108,7 @@
 	..()
 	if(!istype(F) || !newloc)
 		return
-	if(on && !connected)
+	if(F.floorrunning && !connected)
 		if (locate(/mob/living/critter/flock/drone) in src.contents)
 			var/floorrunning_flockdrone = FALSE
 			for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
@@ -122,9 +122,9 @@
 		if(istype(newloc, /turf/simulated/floor/feather))
 			var/turf/simulated/floor/feather/T = newloc
 			if(T.broken)
-				F.end_floorrunning() // broken tiles won't let you continue floorrunning
+				F.end_floorrunning()
 		else if(!isfeathertile(newloc))
-			F.end_floorrunning() // you left flocktile territory, boyo
+			F.end_floorrunning()
 
 /turf/simulated/floor/feather/proc/on()
 	if(src.broken)
