@@ -939,7 +939,7 @@ butcher
 /datum/aiTask/sequence/goalbased/deconstruct/get_targets()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	. = list()
-	for(var/obj/S in F?.flock?.deconstruct_targets)
+	for(var/atom/S in F?.flock?.deconstruct_targets)
 		if(IN_RANGE(S,holder.owner,max_dist))
 			// if we can get a valid path to the target, include it for consideration
 			. += S
@@ -953,7 +953,7 @@ butcher
 
 /datum/aiTask/succeedable/deconstruct/failed()
 	var/mob/living/critter/flock/drone/F = holder.owner
-	var/obj/T = holder.target
+	var/atom/T = holder.target
 	if(!F || !T || BOUNDS_DIST(T, F) > 0)
 		return TRUE
 
@@ -966,7 +966,7 @@ butcher
 /datum/aiTask/succeedable/deconstruct/on_tick()
 	if(!has_started)
 		var/mob/living/critter/flock/drone/F = holder.owner
-		var/obj/T = holder.target
+		var/atom/T = holder.target
 		if(F && T && BOUNDS_DIST(holder.owner, holder.target) == FALSE)
 			if(F.set_hand(2)) // nanite spray
 				F.set_a_intent(INTENT_HARM)
