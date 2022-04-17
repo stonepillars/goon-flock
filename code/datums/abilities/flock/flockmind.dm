@@ -450,26 +450,37 @@
 	//furniture
 	if(istype(target, /obj/storage/closet/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/table/flock) || istype(target, /obj/machinery/light/flock))
 		F.flock.deconstruct_targets += target
+		F.flock.updateAnnotations()
 		return FALSE
 	//walls
 	else if(istype(target, /turf/simulated/wall/auto/feather))
 		F.flock.deconstruct_targets += target
+		F.flock.updateAnnotations()
+		return FALSE
+	//windows
+	else if(istype(target, /obj/window/feather))
+		F.flock.deconstruct_targets += target
+		F.flock.updateAnnotations()
 		return FALSE
 	else if(istype(target,/obj/structure/girder))
 		if(target?.material.mat_id == "gnesis")
 			F.flock.deconstruct_targets += target
+			F.flock.updateAnnotations()
 			return FALSE
 	//door
 	else if(istype(target, /obj/machinery/door/feather))
 		F.flock.deconstruct_targets += target
+		F.flock.updateAnnotations()
 		return FALSE
 	//structures
 	else if(istype(target, /obj/flock_structure))
 		F.flock.deconstruct_targets += target
+		F.flock.updateAnnotations()
 		return FALSE
 	//lattice/grille
 	else if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
 		F.flock.deconstruct_targets += target
+		F.flock.updateAnnotations()
 		return FALSE
 
 	return TRUE

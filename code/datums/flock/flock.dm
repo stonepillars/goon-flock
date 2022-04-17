@@ -373,6 +373,21 @@
 			src.annotations[B] = I
 		// add key to list
 		valid_keys |= B
+	//highlight deconstruction targets
+	for(var/obj/D in src.deconstruct_targets)
+		if(!(D in src.annotations))
+			// create a new image
+			I = image('icons/misc/featherzone.dmi', D, "hazard")
+			I.blend_mode = BLEND_ADD
+			I.pixel_y = 16
+			I.plane = PLANE_ABOVE_LIGHTING
+			I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+			// add to subscribers for annotations
+			images_to_add |= I
+			src.annotations[D] = I
+		// add key to list
+		if(!D.disposed)
+			valid_keys |= D
 	var/list/to_remove = list()
 	for(var/atom/key in src.annotations)
 		if(!(key in valid_keys))

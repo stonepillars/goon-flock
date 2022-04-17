@@ -916,6 +916,7 @@ butcher
 /datum/aiTask/sequence/goalbased/deconstruct
 	name = "deconstructing"
 	weight = 8
+	can_be_adjacent_to_target = TRUE
 
 /datum/aiTask/sequence/goalbased/deconstruct/New(parentHolder, transTask)
 	..(parentHolder, transTask)
