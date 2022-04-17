@@ -391,10 +391,10 @@
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
 		return 1
 
-	for (var/atom/O in T.contents)
+/*	for (var/atom/O in T.contents)
 		if (O.density && !isflock(O))
 			boutput(holder.owner, "<span class='alert'>That tile has something that blocks tealprint creation!</span>")
-			return 1
+			return 1 */
 
 	var/list/friendlyNames = list()
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
@@ -415,7 +415,7 @@
 			break
 
 	if(structurewantedtype)
-		F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
+		return F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
 
 /////////////////////////////////////////
 
@@ -434,5 +434,53 @@
 	if(F)
 		var/datum/flock/flock = F.flock
 		flock?.ping(target, holder.owner)
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/deconstruct
+	name = "Dissolve Structure"
+	desc = "Dissolve an existing flock structure, refunding some resources."
+	icon_state = "ping"
+	cooldown = 2 SECONDS
+
+/datum/targetable/flockmindAbility/deconstruct/cast(atom/target)
+	if(..())
+		return TRUE
+	//TODO animations for it to go all melty (maybe some sort of mask?)
+	if(istype(target, /turf/simulated/wall/auto/feather))
+		var/turf/simulated/wall/auto/feather/W = target
+		if(W)
+			W.destroy_resources()
+			return FALSE
+
+	if (isturf(target))
+		for(var/obj in target)
+			if(src.cast(obj))
+				return TRUE //pick the first thing on the turf that can be hit by this
+		return FALSE
+	//precise targetting gets precise handling
+	if (isflockstructure(target))
+		var/mob/living/intangible/flock/F = holder.owner
+		var/obj/flock_structure/S = target
+		if(S && S.flock == F.flock)
+			S.deconstruct()
+			return FALSE
+	if(istype(target, /obj/machinery/door/feather))
+		var/obj/machinery/door/feather/D = target
+		if(D)
+			D.break_me_complitely()
+			return FALSE
+	if(istype(target, /obj/table/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/storage/closet/flock) || istype(target, /obj/machinery/light/flock))
+		//you a furniture, good job, you get melty
+		//spawn some gnesis on the floor?
+		qdel(target)
+		return FALSE
+	if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
+		qdel(target)
+		return FALSE
+
+
+	return TRUE
+
 
 

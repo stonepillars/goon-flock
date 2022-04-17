@@ -252,6 +252,7 @@
 	var/const/duration = 5 SECOND
 	var/end_time = -1
 	var/obj/dummy = null
+	var/outline_color = "#00ff9d"
 
 	Initialize()
 		if (!ismovable(parent) && !isturf(parent))
@@ -272,7 +273,7 @@
 		dummy.icon_state = target.icon_state
 		target.render_target = ref(parent)
 		dummy.render_source = target.render_target
-		dummy.add_filter("outline", 1, outline_filter(size=1,color="#00ff9d"))
+		dummy.add_filter("outline", 1, outline_filter(size=1,color=src.outline_color))
 		target.vis_contents += dummy
 
 		play_animation()
