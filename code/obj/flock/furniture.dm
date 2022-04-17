@@ -155,6 +155,9 @@
 		make_cleanable( /obj/decal/cleanable/flockdrone_debris, T)
 		qdel(src)
 
+/obj/storage/closet/flock/proc/repair()
+	src.health_attack = min(src.health_attack + 25, src.health_max)
+
 /obj/storage/closet/flock/attack_hand(mob/user as mob)
 	if (BOUNDS_DIST(user, src) > 0)
 		return
@@ -322,3 +325,10 @@
 	if (user.a_intent != INTENT_HARM)
 		return
 	..()
+
+/obj/grille/flock/proc/repair()
+	src.health = min(src.health + 10, src.health_max)
+	if (ruined)
+		src.set_density(TRUE)
+		src.ruined = FALSE
+	src.UpdateIcon()

@@ -1067,6 +1067,9 @@
   else
     return null // give the standard description
 
+/obj/window/feather/proc/repair()
+	src.health = min(src.health + 10, src.health_max)
+
 /obj/window/feather/north
 	dir = NORTH
 
