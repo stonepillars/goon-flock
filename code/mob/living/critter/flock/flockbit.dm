@@ -23,12 +23,14 @@
 	src.real_name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
 	src.update_name_tag()
 
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
+
 /mob/living/critter/flock/bit/special_desc(dist, mob/user)
 	if(isflock(user))
 		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> [src.real_name]
 		<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
-		<br><span class='bold'>System Integrity:</span> [round(src.get_health_percentage()*100)]%
+		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
 		<br><span class='bold'>Cognition:</span> PREDEFINED
 		<br><span class='bold'>###=-</span></span>"}
 	else

@@ -150,10 +150,10 @@
 	if(..())
 		return TRUE
 
-	var/mob/M = target
-	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	var/M = target
+	var/mob/living/intangible/flock/F = holder.owner
 
-	if (!isliving(M) || isflock(M) || isintangible(M))
+	if (!(isliving(M) || iscritter(M)) || isflock(M) || isintangible(M))
 		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
 		return TRUE
 
@@ -202,6 +202,8 @@
 	if (target.get_health_percentage() >= 1)
 		boutput(holder.owner, "<span class='notice'>[target.real_name] has no damage!</span>")
 		return TRUE
+	if (isdead(target))
+		return TRUE
 
 	playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
 	boutput(holder.owner, "<span class='notice'>You focus the flock's efforts on fixing [target.real_name]</span>")
@@ -218,18 +220,19 @@
 
 /datum/targetable/flockmindAbility/splitDrone/cast(mob/living/critter/flock/drone/target)
 	if(..())
-		return 1
+		return TRUE
 	if(!istype(target))
-		return 1
-	// sanity check: don't remove our last complex drone
+		return TRUE
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(!F?.flock || F.flock != target.flock)
-		boutput(holder.owner, "<span class='notice'>The drone does not respond to your command.</span>")
-		return 1
+	if(!F.flock || F.flock != target.flock)
+		boutput(F, "<span class='notice'>The drone does not respond to your command.</span>")
+		return TRUE
+	if (isdead(target))
+		return TRUE
 	if(F.flock.getComplexDroneCount() == 1)
-		boutput(holder.owner, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
-		return 1
-	boutput(holder.owner, "<span class='notice'>You diffract the drone.</span>")
+		boutput(F, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
+		return TRUE
+	boutput(F, "<span class='notice'>You diffract the drone.</span>")
 	target.split_into_bits()
 
 
@@ -355,8 +358,8 @@
 /////////////////////////////////////////
 
 /datum/targetable/flockmindAbility/controlPanel
-	name = "Flock Control"
-	desc = "(TEMPORARY) Open flock control panel."
+	name = "Flock Control Panel"
+	desc = "Open the Flock control panel."
 	icon_state = "radio_stun"
 	targeted = 0
 	cooldown = 0
@@ -377,8 +380,6 @@
 	targeted = 0
 
 /datum/targetable/flockmindAbility/createStructure/cast()
-	var/resourcecost = null
-	var/structurewantedtype = null
 	var/turf/T = get_turf(holder.owner)
 	if(!istype(T, /turf/simulated/floor/feather))
 		boutput(holder.owner, "<span class='alert'>You aren't above a flocktile.</span>")//todo maybe make this flock themed?
@@ -389,21 +390,49 @@
 	if(locate(/obj/flock_structure) in T)
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
 		return 1
+
 	for (var/atom/O in T.contents)
 		if (O.density && !isflock(O))
 			boutput(holder.owner, "<span class='alert'>That tile has something that blocks tealprint creation!</span>")
 			return 1
+
+	var/list/friendlyNames = list()
+	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
+		if(ufs.check_unlocked())
+			friendlyNames += ufs.friendly_name
+
+
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
-	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", list("Collector", "Sentinel"))
+	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
+
 	if (!structurewanted)
 		return TRUE
-	switch(structurewanted)
-		if("Collector")
-			structurewantedtype = /obj/flock_structure/collector
-			resourcecost = 200
-		if("Sentinel")
-			structurewantedtype = /obj/flock_structure/sentinel
-			resourcecost = 300
+	var/obj/flock_structure/structurewantedtype = null
+	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
+		if(ufs.friendly_name == structurewanted)
+			structurewantedtype = ufs.structType
+			break
+
 	if(structurewantedtype)
-		var/mob/living/intangible/flock/F = holder.owner
-		F.createstructure(structurewantedtype, resourcecost)
+		F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/ping
+	name = "Ping"
+	desc = "Request attention from other elements of the flock."
+	icon_state = "ping"
+	cooldown = 0.1 SECONDS
+
+/datum/targetable/flockmindAbility/ping/cast(atom/target)
+	if(..())
+		return TRUE
+	var/mob/living/intangible/flock/F = holder.owner
+	if (!isturf(target.loc) && !isturf(target))
+		return TRUE
+	if(F)
+		var/datum/flock/flock = F.flock
+		flock?.ping(target, holder.owner)
+
+

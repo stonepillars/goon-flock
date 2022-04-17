@@ -26,8 +26,8 @@
 	src.update_name_tag()
 	src.flock.registerFlockmind(src)
 	src.flock.showAnnotations(src)
-	src.addAbility(/datum/targetable/flockmindAbility/controlPanel)
 	src.addAbility(/datum/targetable/flockmindAbility/spawnEgg)
+	src.addAbility(/datum/targetable/flockmindAbility/ping)
 
 /mob/living/intangible/flock/flockmind/special_desc(dist, mob/user)
   if(isflock(user))
@@ -59,9 +59,14 @@
 
 /mob/living/intangible/flock/flockmind/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
-		return 1
-	if (src.started && src.flock && src.flock.total_compute() <= 0)
-		src.death() // get rekt
+		return TRUE
+	if (src.started && src.flock)
+		if (src.flock.getComplexDroneCount())
+			return
+		for (var/obj/flock_structure/s in src.flock.structures)
+			if (istype(s, /obj/flock_structure/egg) || istype(s, /obj/flock_structure/rift))
+				return
+		src.death()
 
 /mob/living/intangible/flock/flockmind/proc/spawnEgg()
 	if(src.flock)
@@ -76,6 +81,7 @@
 	src.addAllAbilities()
 
 /mob/living/intangible/flock/flockmind/proc/addAllAbilities()
+	src.addAbility(/datum/targetable/flockmindAbility/controlPanel)
 	src.addAbility(/datum/targetable/flockmindAbility/designateTile)
 	src.addAbility(/datum/targetable/flockmindAbility/designateEnemy)
 	src.addAbility(/datum/targetable/flockmindAbility/partitionMind)
@@ -109,12 +115,6 @@
 	animate_bumble(O) // bob up and down
 	O.alpha = 160
 	return O
-
-/mob/living/intangible/flock/flockmind/Topic(href, href_list)
-	if(href_list["origin"])
-		var/atom/movable/origin = locate(href_list["origin"])
-		if(!QDELETED(origin))
-			src.set_loc(get_turf(origin))
 
 
 /mob/living/intangible/flock/flockmind/proc/partition()

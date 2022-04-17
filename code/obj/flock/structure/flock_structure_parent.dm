@@ -6,6 +6,7 @@
 	density = 1
 	name = "uh oh"
 	desc = "CALL A CODER THIS SHOULDN'T BE SEEN"
+	flags = USEDELAY
 	var/flock_id = "ERROR"
 	/// when did we get created?
 	var/time_started = 0
@@ -18,6 +19,8 @@
 	var/datum/flock/flock = null
 	//base compute provided
 	var/compute = 0
+	//resource cost for building
+	var/resourcecost = 50
 	/// can flockdrones pass through this akin to a grille? need to set USE_CANPASS to make this work however
 	var/passthrough = FALSE
 	/// not everything needs a group so dont check for everysingle god damn structure
@@ -32,6 +35,7 @@
 	health_max = health
 	time_started = world.timeofday
 	processing_items |= src
+	setMaterial(getMaterial("gnesis"))
 	if(F)
 		src.flock = F
 		src.flock.registerStructure(src)
@@ -40,6 +44,8 @@
 		grouptile = f
 		group = f.group
 		f.group.addstructure(src)
+
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /obj/flock_structure/disposing()
 	processing_items -= src
@@ -147,13 +153,18 @@
 	qdel(src)
 
 /obj/flock_structure/attack_hand(var/mob/user)
+	attack_particle(user, src)
+	user.lastattacked = src
+
 	if(user.a_intent == INTENT_HARM)
 		if(isflock(user))
 			boutput(user, "<span class='alert'>You find you can't bring yourself to harm [src]!</span>")
 		else
 			user.visible_message("<span class='alert'><b>[user]</b> punches [src]! It's very ineffective!</span>")
-			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+			src.report_attack()
 			src.takeDamage("brute", 1)
+			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+
 	else
 		var/action = ""
 		switch(user.a_intent)
@@ -167,15 +178,24 @@
 
 /obj/flock_structure/attackby(obj/item/W as obj, mob/user as mob)
 	src.visible_message("<span class='alert'><b>[user]</b> attacks [src] with [W]!</span>")
-	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+	src.report_attack()
+	attack_particle(user, src)
+	user.lastattacked = src
 
 	var/damtype = "brute"
 	if (W.hit_type == DAMAGE_BURN)
 		damtype = "fire"
 
 	takeDamage(damtype, W.force)
+	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+
+/obj/flock_structure/proc/report_attack()
+	if (!ON_COOLDOWN(src, "attack_alert", 10 SECONDS))
+		flock_speak(src, "ALERT: Under attack", flock)
 
 /obj/flock_structure/ex_act(severity)
+	src.report_attack()
+	
 	var/damage = 0
 	var/damage_mult = 1
 	switch(severity)
@@ -191,6 +211,8 @@
 	src.takeDamage("mixed", damage * damage_mult)
 
 /obj/flock_structure/bullet_act(var/obj/projectile/P)
+	src.report_attack()
+
 	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0) // stuns will do nothing
 	var/damage_mult = 1
 	var/damtype = "brute"
@@ -219,11 +241,13 @@
 
 
 /obj/flock_structure/blob_act(var/power)
+	src.visible_message("<span class='alert'>[src] is hit by the blob!/span>")
+	src.report_attack()
+
 	var/modifier = power / 20
 	var/damage = rand(modifier, 12 + 8 * modifier)
 
 	takeDamage("mixed", damage)
-	src.visible_message("<span class='alert'>[src] is hit by the blob!/span>")
 
 /obj/flock_structure/Cross(atom/movable/mover)
 	. = ..()
