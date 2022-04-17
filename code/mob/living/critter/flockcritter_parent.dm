@@ -380,6 +380,8 @@
 		if (istype(target, /mob/living/critter/flock))
 			var/mob/living/critter/flock/flockcritter = target
 			flockcritter.HealDamage("All", flockcritter.health_brute / 3, flockcritter.health_burn / 3)
+			if (flockcritter.is_npc)
+				flockcritter.ai.interrupt()
 		else if (istype(target, /obj/flock_structure))
 			var/obj/flock_structure/structure = target
 			structure.repair()

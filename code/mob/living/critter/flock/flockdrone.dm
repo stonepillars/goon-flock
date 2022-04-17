@@ -194,7 +194,7 @@
 			special_desc += "<br><span class='bold'>ID:</span> [src.real_name]"
 		special_desc += {"<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
 		<br><span class='bold'>Resources:</span> [src.resources]
-		<br><span class='bold'>System Integrity:</span> [round(src.get_health_percentage()*100)]%
+		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
 		<br><span class='bold'>Cognition:</span> [isalive(src) && !dormant ? src.is_npc ? "TORPID" : "SAPIENT" : "ABSENT"]"}
 		if (src.is_npc && istype(src.ai.current_task))
 			special_desc += "<br><span class='bold'>Task:</span> [uppertext(src.ai.current_task.name)]"
@@ -498,8 +498,10 @@
 // also maybe we've just had environmental damage, who knows
 /mob/living/critter/flock/drone/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
 	..()
-	var/prev_damaged = src.damaged
 	src.check_health()
+	if (brute <= 0 && burn <= 0 && tox <= 0)
+		return
+	var/prev_damaged = src.damaged
 	if(!isdead(src) && src.is_npc)
 		// if we've been damaged a new stage, call it out
 		if(prev_damaged != src.damaged && src.damaged > 0)
@@ -866,6 +868,8 @@
 	if(istype(F))
 		if(F.get_health_percentage() >= 1.0)
 			boutput(user, "<span class='alert'>They don't need to be repaired, they're in perfect condition.</span>")
+			return
+		if (isdead(F))
 			return
 		if(user.resources < 10)
 			boutput(user, "<span class='alert'>Not enough resources to repair (you need 10).</span>")
