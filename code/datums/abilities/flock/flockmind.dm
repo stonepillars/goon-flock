@@ -474,9 +474,14 @@
 		return FALSE
 	//structures
 	else if(istype(target, /obj/flock_structure))
-		F.flock.deconstruct_targets += target
-		F.flock.updateAnnotations()
-		return FALSE
+		if(istype(target,/obj/flock_structure/ghost))
+			//do the tgui window instead
+			//this actually doesn't need bonus behaviour because the cancelbuild is on click, but will need to fix this if we change that in future
+			return TRUE
+		else
+			F.flock.deconstruct_targets += target
+			F.flock.updateAnnotations()
+			return FALSE
 	//lattice/grille
 	else if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
 		F.flock.deconstruct_targets += target

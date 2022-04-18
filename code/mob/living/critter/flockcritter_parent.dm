@@ -501,7 +501,9 @@
 			target = null
 		if(istype(target, /turf/simulated/wall/auto/feather))
 			var/turf/simulated/wall/auto/feather/f = target
+			var/turf/T = get_turf(target)
 			f.destroy_resources()
+			make_cleanable( /obj/decal/cleanable/flockdrone_debris/fluid,T)
 		if(istype(target, /obj/machinery/door/feather))
 			var/turf/T = get_turf(target)
 			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
@@ -518,17 +520,14 @@
 			playsound(f, "sound/items/Deconstruct.ogg", 50, 1)
 			f.deconstruct()
 		if(istype(target, /obj/flock_structure))
-			if(istype(target,/obj/flock_structure/ghost))
-				var/obj/flock_structure/ghost/f = target
-				f.cancelBuild()
-			else
-				var/obj/flock_structure/f = target
-				f.deconstruct()
+			var/obj/flock_structure/f = target
+			f.deconstruct()
 		if(istype(target, /obj/stool/chair/comfy/flock))
 			var/obj/stool/chair/comfy/flock/c = target
 			c.deconstruct()
 		if(istype(target, /obj/machinery/light/flock))
 			var/turf/T = get_turf(target)
+			make_cleanable( /obj/decal/cleanable/flockdrone_debris/fluid,T)
 			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
 			qdel(target)
 		if(istype(target, /obj/lattice/flock))

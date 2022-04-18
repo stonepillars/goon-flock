@@ -64,8 +64,7 @@
 		cancelBuild()
 
 /obj/flock_structure/ghost/deconstruct()
-	if (tgui_alert(usr, "Cancel tealprint construction?", "Tealprint", list("Yes", "No")) == "Yes")
-		cancelBuild()
+	cancelBuild()
 
 /obj/flock_structure/ghost/process()
 	if(currentmats > goal)
