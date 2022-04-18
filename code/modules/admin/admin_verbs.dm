@@ -404,7 +404,7 @@ var/list/admin_verbs = list(
 		/client/proc/toggle_numbers_station_messages,
 		// /client/proc/export_async_banlist,
 		// /client/proc/import_banlist,
-
+		/client/proc/flock_cheat,
 
 		/client/proc/ticklag,
 		/client/proc/cmd_debug_vox,
@@ -2215,3 +2215,17 @@ var/list/fun_images = list()
 				if((i++ % 5) == 0)
 					sleep(1 SECOND)
 				apc.setStatus("lightsout", dur SECONDS)
+
+/client/proc/flock_cheat()
+	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
+	set name = "Flock cheatmode"
+	set desc = "Toggle cheatmode on or off on a particular flock"
+
+	var/flockname = tgui_input_list(src, "Pick a flock", "Choose flock", flocks)
+	var/datum/flock/flock = flocks[flockname]
+	if (!flock)
+		return
+	if (!flock.hasAchieved("cheatmode"))
+		flock.achieve("cheatmode")
+	else
+		flock.unAchieve("cheatmode")
