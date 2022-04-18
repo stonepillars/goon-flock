@@ -138,7 +138,7 @@
 	if (!length(candidates))
 		message_admins("No ghosts responded to a Flocktrace offer from [src.real_name]")
 		logTheThing("admin", null, null, "No ghosts responded to Flocktrace offer from [src.real_name]")
-		boutput(src, "<span class='alert'>Unable to partition, please try again later.</span>")
+		flock_speak(null, "Partition failure: unable to coalesce sentience.", src.flock)
 		return TRUE
 
 	var/mob/picked = pick(candidates)
