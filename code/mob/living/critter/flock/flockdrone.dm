@@ -325,7 +325,7 @@
 	var/obj/item/I = absorber.item
 
 	if(I)
-		var/absorb = clamp(src.absorb_rate, 0, I.health)
+		var/absorb = clamp(src.absorb_rate / I.amount, 0, I.health)
 		I.health -= absorb
 		src.resources += src.absorb_per_health * absorb * I.amount
 		playsound(src, "sound/effects/sparks[rand(1,6)].ogg", 50, 1)
