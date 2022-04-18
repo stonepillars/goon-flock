@@ -51,8 +51,8 @@
 /mob/living/critter/flock/New(var/atom/L, var/datum/flock/F=null)
 	..()
 
-	// throw away the ability holder
 	qdel(abilityHolder)
+	APPLY_ATOM_PROPERTY(src, PROP_MOB_RADPROT, src, 100)
 
 	// do not automatically set up a flock if one is not provided
 	// flockless drones act differently
@@ -391,6 +391,8 @@
 					D.icon_state = "door1"//make it not look broke
 			else
 				T.HealDamage("All", T.health_brute / 3, T.health_burn / 3)
+				if (T.is_npc)
+					T.ai.interrupt()
 			F.pay_resources(10)
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -402,10 +404,10 @@
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 60
 
-	var/mob/living/target
+	var/atom/target
 	var/obj/decal/decal
 
-	New(var/mob/living/ntarg, var/duration_i)
+	New(var/atom/ntarg, var/duration_i)
 		..()
 		if (ntarg)
 			target = ntarg
@@ -428,7 +430,9 @@
 					F, "<span class='notice'>You begin imprisoning [target]. You will both need to stay still for this to work.</span>",
 					target, "<span class='alert'>[F] is forming a structure around you!</span>",
 					"You hear strange building noises.")
-				target.was_harmed(F, null, "flock", INTENT_DISARM)
+				if(istype(target,/mob/living))
+					var/mob/living/M = target
+					M.was_harmed(F, null, "flock", INTENT_DISARM)
 				// do effect
 				src.decal = new /obj/decal/flock_build_wall
 				if(src.decal)
@@ -447,7 +451,7 @@
 			qdel(src.decal)
 		var/mob/living/critter/flock/F = owner
 		if(F && target && in_interact_range(owner, target))
-			var/obj/icecube/flockdrone/cage = new /obj/icecube/flockdrone(target.loc, target, F.flock)
+			var/obj/flock_structure/cage/cage = new /obj/flock_structure/cage(target.loc, target, F.flock)
 			cage.visible_message("<span class='alert'>[cage] forms around [target], entombing them completely!</span>")
 			F.pay_resources(15)
 			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 70, 1)
@@ -548,7 +552,7 @@
 		amounttopay = min(F.resources, difference, 10)
 		F.pay_resources(amounttopay)
 		target.currentmats += amounttopay
-		if(F.resources && !F.is_npc) //npc check just to make sure it doesnt interfere with their ai.
+		if(F.resources)
 			src.onRestart() //restart the action akin to automenders
 
 // flock health holders

@@ -150,10 +150,10 @@
 	if(..())
 		return TRUE
 
-	var/mob/M = target
-	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	var/M = target
+	var/mob/living/intangible/flock/F = holder.owner
 
-	if (!isliving(M) || isflock(M) || isintangible(M))
+	if (!(isliving(M) || iscritter(M)) || isflock(M) || isintangible(M))
 		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
 		return TRUE
 
@@ -202,6 +202,8 @@
 	if (target.get_health_percentage() >= 1)
 		boutput(holder.owner, "<span class='notice'>[target.real_name] has no damage!</span>")
 		return TRUE
+	if (isdead(target))
+		return TRUE
 
 	playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
 	boutput(holder.owner, "<span class='notice'>You focus the flock's efforts on fixing [target.real_name]</span>")
@@ -218,18 +220,19 @@
 
 /datum/targetable/flockmindAbility/splitDrone/cast(mob/living/critter/flock/drone/target)
 	if(..())
-		return 1
+		return TRUE
 	if(!istype(target))
-		return 1
-	// sanity check: don't remove our last complex drone
+		return TRUE
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(!F?.flock || F.flock != target.flock)
-		boutput(holder.owner, "<span class='notice'>The drone does not respond to your command.</span>")
-		return 1
+	if(!F.flock || F.flock != target.flock)
+		boutput(F, "<span class='notice'>The drone does not respond to your command.</span>")
+		return TRUE
+	if (isdead(target))
+		return TRUE
 	if(F.flock.getComplexDroneCount() == 1)
-		boutput(holder.owner, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
-		return 1
-	boutput(holder.owner, "<span class='notice'>You diffract the drone.</span>")
+		boutput(F, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
+		return TRUE
+	boutput(F, "<span class='notice'>You diffract the drone.</span>")
 	target.split_into_bits()
 
 
@@ -413,5 +416,23 @@
 
 	if(structurewantedtype)
 		F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/ping
+	name = "Ping"
+	desc = "Request attention from other elements of the flock."
+	icon_state = "ping"
+	cooldown = 0.1 SECONDS
+
+/datum/targetable/flockmindAbility/ping/cast(atom/target)
+	if(..())
+		return TRUE
+	var/mob/living/intangible/flock/F = holder.owner
+	if (!isturf(target.loc) && !isturf(target))
+		return TRUE
+	if(F)
+		var/datum/flock/flock = F.flock
+		flock?.ping(target, holder.owner)
 
 
