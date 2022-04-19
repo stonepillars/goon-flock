@@ -425,24 +425,6 @@
 
 /mob/living/critter/flock/drone/Move(NewLoc, direct)
 	if(!canmove) return
-	/*
-	if (isfeathertile(NewLoc) && src.client?.check_key(KEY_RUN) && src.resources)
-		if (istype(NewLoc, /turf/simulated/floor/feather))
-			var/turf/simulated/floor/feather/floor = NewLoc
-			if (!floor.broken)
-				src.resources--
-		else
-			src.resources--
-		if (!src.resources)
-			src.set_dir(get_dir(src, NewLoc))
-			src.set_loc(NewLoc)
-			src.end_floorrunning()
-			if (istype(NewLoc, /turf/simulated/floor/feather))
-				var/turf/simulated/floor/feather/floor = NewLoc
-				if (floor.on && !floor.connected)
-					floor.off()
-			return
-	*/
 	if(floorrunning)
 		// do our custom MOVE THROUGH ANYTHING stuff
 		// copypasted from intangible.dm
