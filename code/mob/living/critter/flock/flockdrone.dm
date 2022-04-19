@@ -322,6 +322,14 @@
 /mob/living/critter/flock/drone/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return 1
+	if (src.floorrunning && src.resources)
+		src.resources--
+		if (!src.resources)
+			src.end_floorrunning()
+			if (istype(src.loc, /turf/simulated/floor/feather))
+				var/turf/simulated/floor/feather/floor = src.loc
+				if (floor.on && !floor.connected)
+					floor.off()
 	var/obj/item/I = absorber.item
 
 	if(I)
@@ -376,7 +384,7 @@
 				src.antigrab_counter = 0
 	else
 		src.antigrab_counter = 0
-	if(keys & KEY_RUN)
+	if(keys & KEY_RUN && src.resources)
 		if(!src.floorrunning && isfeathertile(src.loc))
 			if(istype(src.loc, /turf/simulated/floor/feather))
 				var/turf/simulated/floor/feather/floor = src.loc
@@ -417,7 +425,24 @@
 
 /mob/living/critter/flock/drone/Move(NewLoc, direct)
 	if(!canmove) return
-
+	/*
+	if (isfeathertile(NewLoc) && src.client?.check_key(KEY_RUN) && src.resources)
+		if (istype(NewLoc, /turf/simulated/floor/feather))
+			var/turf/simulated/floor/feather/floor = NewLoc
+			if (!floor.broken)
+				src.resources--
+		else
+			src.resources--
+		if (!src.resources)
+			src.set_dir(get_dir(src, NewLoc))
+			src.set_loc(NewLoc)
+			src.end_floorrunning()
+			if (istype(NewLoc, /turf/simulated/floor/feather))
+				var/turf/simulated/floor/feather/floor = NewLoc
+				if (floor.on && !floor.connected)
+					floor.off()
+			return
+	*/
 	if(floorrunning)
 		// do our custom MOVE THROUGH ANYTHING stuff
 		// copypasted from intangible.dm
