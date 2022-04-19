@@ -2218,14 +2218,23 @@ var/list/fun_images = list()
 
 /client/proc/flock_cheat()
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
-	set name = "Flock infinite compute"
-	set desc = "Toggle infinite compute on or off on a particular flock"
+	set name = "Flock cheats"
+	set desc = "Toggle cheats on or off on a particular flock"
 
+	var/cheats = list("all_structures", "infinite_compute")
+	var/cheat = tgui_input_list(src, "Pick a chat to enable", "Flock cheats", cheats)
+	if (!(cheat in cheats))
+		return
 	var/flockname = tgui_input_list(src, "Pick a flock", "Choose flock", flocks)
 	var/datum/flock/flock = flocks[flockname]
 	if (!flock)
 		return
-	if (!flock.hasAchieved("infinite_compute"))
-		flock.achieve("infinite_compute")
+	var/toggle
+	if (!flock.hasAchieved(cheat))
+		toggle = TRUE
+		flock.achieve(cheat)
 	else
-		flock.unAchieve("infinite_compute")
+		toggle = FALSE
+		flock.unAchieve(cheat)
+	boutput(src, "[cheat] turned [toggle ? "on" : "off"] for flock [flockname]")
+	logTheThing("admin", src, flock, "has toggled [cheat] [toggle ? "on" : "off"] for flock [flockname]")
