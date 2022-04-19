@@ -1026,7 +1026,7 @@ butcher
 /datum/aiTask/timed/targeted/flockdrone_shoot/targetable
 	switched_to()
 		on_reset()
-		if (!ismob(src.target) && !iscritter(src.target))
+		if (!(ismob(src.target) || iscritter(src.target)) || isflock(src.target))
 			var/mob/living/critter/flock/drone/drone = holder.owner
 			flock_speak(drone, "Invalid elimination target provided by sentient level instruction.", drone.flock)
 			holder.interrupt()
