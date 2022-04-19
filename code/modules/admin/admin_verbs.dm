@@ -2222,7 +2222,7 @@ var/list/fun_images = list()
 	set desc = "Toggle cheats on or off on a particular flock"
 
 	var/cheats = list("all_structures", "infinite_compute")
-	var/cheat = tgui_input_list(src, "Pick a chat to enable", "Flock cheats", cheats)
+	var/cheat = tgui_input_list(src, "Pick a cheat to enable", "Flock cheats", cheats)
 	if (!(cheat in cheats))
 		return
 	var/flockname = tgui_input_list(src, "Pick a flock", "Choose flock", flocks)
