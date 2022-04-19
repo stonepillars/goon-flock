@@ -163,7 +163,7 @@
 /datum/flock/proc/total_compute()
 	. = 0
 	var/comp_provided = 0
-	if (src.hasAchieved("cheatmode"))
+	if (src.hasAchieved("infinite_compute"))
 		return 1000000
 	for(var/mob/living/critter/flock/F as anything in src.units)
 		comp_provided = F.compute_provided()

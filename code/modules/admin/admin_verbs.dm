@@ -2218,14 +2218,14 @@ var/list/fun_images = list()
 
 /client/proc/flock_cheat()
 	SET_ADMIN_CAT(ADMIN_CAT_DEBUG)
-	set name = "Flock cheatmode"
-	set desc = "Toggle cheatmode on or off on a particular flock"
+	set name = "Flock infinite compute"
+	set desc = "Toggle infinite compute on or off on a particular flock"
 
 	var/flockname = tgui_input_list(src, "Pick a flock", "Choose flock", flocks)
 	var/datum/flock/flock = flocks[flockname]
 	if (!flock)
 		return
-	if (!flock.hasAchieved("cheatmode"))
-		flock.achieve("cheatmode")
+	if (!flock.hasAchieved("infinite_compute"))
+		flock.achieve("infinite_compute")
 	else
-		flock.unAchieve("cheatmode")
+		flock.unAchieve("infinite_compute")
