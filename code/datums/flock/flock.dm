@@ -329,11 +329,11 @@
 		for(var/atom/key in src.annotations_enemies)
 			C.images -= src.annotations_enemies[key]
 
-/datum/flock/proc/addClientImage(var/image/I)
+/datum/flock/proc/addClientImage(image/I)
 	for (var/mob/M in src.annotation_viewers)
 		M.client?.images += I
 
-/datum/flock/proc/removeClientImage(var/image/I)
+/datum/flock/proc/removeClientImage(image/I)
 	for (var/mob/M in src.annotation_viewers)
 		M.client?.images -= I
 
