@@ -237,7 +237,7 @@
 /obj/lattice/flock/New()
 	..()
 	setMaterial("gnesis")
-	src.AddComponent(/datum/component/flock_protection, report_attackby=FALSE)
+	src.AddComponent(/datum/component/flock_protection, report_attack=FALSE)
 
 /obj/lattice/flock/attackby(obj/item/C as obj, mob/user as mob)
 	if (istype(C, /obj/item/tile))
