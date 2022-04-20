@@ -111,7 +111,7 @@
 /obj/storage/closet/flock/New()
 	..()
 	setMaterial("gnesis")
-	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE)
+	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE, report_attackby=FALSE)
 
 /obj/storage/closet/flock/attackby(obj/item/W as obj, mob/user as mob)
 	if (istype(W, /obj/item/grab))
@@ -123,6 +123,8 @@
 		else if (isweldingtool(W) && W:try_weld(user, 0, -1, 0, 0))
 			boutput(user, "<span class='alert'>It doesn't matter what you try, it doesn't seem to keep welded shut.</span>")
 		else if (isitem(W))
+			if(SEND_SIGNAL(src, COMSIG_FLOCK_ATTACK, user))
+				return
 			var/force = W.force
 			user.lastattacked = src
 			attack_particle(user, src)
@@ -235,17 +237,21 @@
 /obj/lattice/flock/New()
 	..()
 	setMaterial("gnesis")
-	src.AddComponent(/datum/component/flock_protection)
+	src.AddComponent(/datum/component/flock_protection, report_attackby=FALSE)
 
 /obj/lattice/flock/attackby(obj/item/C as obj, mob/user as mob)
 	if (istype(C, /obj/item/tile))
 		var/obj/item/tile/T = C
 		if (T.amount >= 1)
+			if(SEND_SIGNAL(src, COMSIG_FLOCK_ATTACK, user))
+				return
 			T.build(get_turf(src))
 			playsound(src.loc, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
 			T.add_fingerprint(user)
 			qdel(src)
 	if (isweldingtool(C) && C:try_weld(user,0,-1,0,0))
+		if(SEND_SIGNAL(src, COMSIG_FLOCK_ATTACK, user))
+			return
 		boutput(user, "<span class='notice'>The fibres burn away in the same way glass doesn't. Huh.</span>")
 		qdel(src)
 

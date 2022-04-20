@@ -419,6 +419,7 @@
 /datum/flock/proc/claimTurf(var/turf/simulated/T)
 	src.all_owned_tiles |= T
 	src.priority_tiles -= T // we have it now, it's no longer priority
+	/// TODO: DNM until Flock atom property is added so we can add /datum/component/flock_interest when its present)
 	for (var/obj/flock_structure/structure in T.contents)
 		structure.flock = src
 		src.registerStructure(structure)
