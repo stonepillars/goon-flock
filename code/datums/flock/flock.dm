@@ -447,17 +447,16 @@
 /datum/flock/proc/reserveTurf(var/turf/simulated/T, var/name)
 	if(T in all_owned_tiles)
 		return
-	if(T in src.busy_tiles)
-		return //can't reserve tiles that are already reserved
+	if(name in src.busy_tiles)
+		return
 	src.busy_tiles[name] = T
 
-	if (!(T in src.annotations_busy_tiles))
-		var/image/I = image('icons/misc/featherzone.dmi', T, "frontier")
-		I.blend_mode = BLEND_ADD
-		I.alpha = 80
-		I.plane = PLANE_ABOVE_LIGHTING
-		src.annotations_busy_tiles[T] = I
-		src.addClientImage(I)
+	var/image/I = image('icons/misc/featherzone.dmi', T, "frontier")
+	I.blend_mode = BLEND_ADD
+	I.alpha = 80
+	I.plane = PLANE_ABOVE_LIGHTING
+	src.annotations_busy_tiles[T] = I
+	src.addClientImage(I)
 
 /datum/flock/proc/unreserveTurf(var/name)
 	var/turf/simulated/T = src.busy_tiles[name]
