@@ -216,6 +216,7 @@
 	desc = "It pulses and flares to a strange rhythm."
 	icon_state = "flock_floor1"
 	base_state = "flock_floor"
+	plane = PLANE_FLOOR
 	brightness = 1.2
 	power_usage = 0
 	on = 1
@@ -319,5 +320,10 @@
 
 /obj/grille/flock/attack_hand(mob/user)
 	if (user.a_intent != INTENT_HARM)
+		return
+	..()
+
+/obj/grille/flock/bullet_act(obj/projectile/P)
+	if (istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
 		return
 	..()
