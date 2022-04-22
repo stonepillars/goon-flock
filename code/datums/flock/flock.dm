@@ -250,13 +250,7 @@
 	// highlight priority tiles
 	for(var/turf/T in src.priority_tiles)
 		if(!(T in src.annotations))
-			// create a new image and attach it to the light overlay
-			var/iloc
-			if(T.RL_MulOverlay) //if there isn't a lighting layer, fall back to just overlaying the tile
-				iloc = T.RL_MulOverlay
-			else
-				iloc = T
-			I = image('icons/misc/featherzone.dmi', iloc, "frontier", T.layer)
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier", T.layer)
 			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 180
 			I.plane = PLANE_ABOVE_LIGHTING
@@ -270,13 +264,7 @@
 	for(var/name in src.busy_tiles)
 		var/turf/T = src.busy_tiles[name]
 		if(isturf(T) && !(T in src.annotations))
-			// create a new image and attach it to the light overlay
-			var/iloc
-			if(T.RL_MulOverlay)
-				iloc = T.RL_MulOverlay
-			else
-				iloc = T
-			I = image('icons/misc/featherzone.dmi', iloc, "frontier", T.layer)
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier", T.layer)
 			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 80
 			I.plane = PLANE_ABOVE_LIGHTING
