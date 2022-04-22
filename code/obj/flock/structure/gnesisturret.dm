@@ -32,8 +32,6 @@
 		src.current_projectile = new /datum/projectile/syringe/gnesis(src)
 		src.current_projectile.cost = src.fluid_shot_amt
 
-	disposing()
-		..()
 
 	proc/ensure_reagent_holder()
 		if (!src.reagents)
