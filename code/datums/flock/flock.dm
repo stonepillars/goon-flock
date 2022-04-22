@@ -250,7 +250,7 @@
 	// highlight priority tiles
 	for(var/turf/T in src.priority_tiles)
 		if(!(T in src.annotations))
-			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier", T.layer)
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
 			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 180
 			I.plane = PLANE_ABOVE_LIGHTING
@@ -264,7 +264,7 @@
 	for(var/name in src.busy_tiles)
 		var/turf/T = src.busy_tiles[name]
 		if(isturf(T) && !(T in src.annotations))
-			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier", T.layer)
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
 			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 80
 			I.plane = PLANE_ABOVE_LIGHTING
@@ -279,7 +279,7 @@
 		var/atom/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
 			// create a new image attached to the mob
-			I = image('icons/misc/featherzone.dmi', B, "hazard", B.layer)
+			I = image('icons/misc/featherzone.dmi', B, "hazard")
 			I.blend_mode = BLEND_ADD
 			I.pixel_y = 16
 			I.plane = PLANE_ABOVE_LIGHTING
