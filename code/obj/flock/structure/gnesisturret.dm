@@ -9,10 +9,15 @@
 	flock_id = "Gnesis turret"
 	resourcecost = 300
 	health = 80
+	///maximum volume of coagualted gnesis that can be stored in the tank
 	var/fluid_level_max = 250
+	///how much gnesis is generated per-tick while there is sufficient compute
 	var/fluid_gen_amt = 3
+	///gnesis fluid ID - change this to do exciting things like having a turret that fires QGP
 	var/fluid_gen_type = "flockdrone_fluid"
+	///how much of the stored fluid should be in each shot
 	var/fluid_shot_amt = 20
+	//internals for turret targetting and accuracy
 	var/target = null
 	var/range = 8
 	var/spread = 1
@@ -40,7 +45,18 @@
 			R.my_atom = src
 
 	building_specific_info()
-		return {"<span class='bold'>Status:</span> [!powered ? "offline" : ((src.reagents.total_volume < fluid_level_max) && (src.flock.can_afford_compute(base_compute+fluid_gen_cost)) ? "replicating" : "idle")].
+		var/status = "" //this was gonna be a stack of inline conditions, but it's completely unreadable, so if chain instead
+		if(!powered)
+			status = "offline"
+		else if (src.reagents.total_volume < fluid_level_max)
+			if (src.flock.can_afford_compute(base_compute+fluid_gen_cost))
+				status =  "replicating"
+			else
+				status =  "insufficient compute for replication"
+		else
+			status = "idle"
+
+		return {"<span class='bold'>Status:</span> [status].
 	<br><span class='bold'>Gnesis Tank Level:</span> [src.reagents.total_volume]/[fluid_level_max]."}
 
 	process()
@@ -98,7 +114,7 @@
 					src.target = T
 					min_dist = target_list[T]
 
-			playsound(src.loc, "sound/vox/woofsound.ogg", 40, 1)
+			playsound(src.loc, "sound/misc/flockmind/flockdrone_door.ogg", 40, 1, pitch=0.5)
 
 		return src.target
 
@@ -106,27 +122,29 @@
 		var/distance = get_dist(get_turf(C),get_turf(src))
 
 		if(distance > src.range)
-			return 0
+			return FALSE
 		if (!C)
-			return 0
+			return FALSE
 		if(!isliving(C) || isintangible(C))
-			return 0
+			return FALSE
 		if (C.health < 0)
-			return 0
+			return FALSE
 		if (C.stat == 2)
-			return 0
+			return FALSE
 		if (!src.flock.isEnemy(C))
-			return 0
+			return FALSE
+		if (istype(C.loc,/obj/flock_structure/cage)) //already caged, stop shooting
+			return FALSE
 		if (istype(C,/mob/living/carbon/human))
 			var/mob/living/carbon/human/H = C
 			if (H.hasStatus(list("resting", "weakened", "stunned", "paralysis"))) // stops it from uselessly firing at people who are already suppressed. It's meant to be a suppression weapon!
-				return 0
+				return FALSE
 			if (H.reagents.has_reagent(fluid_gen_type,100)) //don't keep shooting at people who are already 1/3 flock
-				return 0
+				return FALSE
 		if (isflock(C))
-			return 0
+			return FALSE
 
-		return 1
+		return TRUE
 
 
 /datum/projectile/syringe/gnesis
