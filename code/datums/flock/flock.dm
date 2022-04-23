@@ -26,7 +26,7 @@
 
 /datum/flock/New()
 	..()
-	src.name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+	src.name = src.pick_name("flock")
 	flocks[src.name] = src
 	processing_items |= src
 	for(var/DT in childrentypesof(/datum/unlockable_flock_structure))
@@ -391,6 +391,40 @@
 			var/client/C = M.client
 			if(C)
 				C.images -= I
+
+// naming
+
+/datum/flock/proc/pick_name(flock_type)
+	var/name
+	switch(flock_type)
+		if ("flock")
+			while (!name || (locate(name) in flocks))
+				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+		if ("flocktrace")
+			var/trace_found = FALSE
+			while (!trace_found)
+				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
+				for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
+					if (T.name == name)
+						break
+				trace_found = TRUE
+		if ("flockdrone")
+			var/drone_found = FALSE
+			while (!drone_found)
+				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+				for (var/mob/living/critter/flock/drone/F in src.units)
+					if (F.name == name)
+						break
+				drone_found = TRUE
+		if ("flockbit")
+			var/bit_found = FALSE
+			while (!bit_found)
+				name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
+				for (var/mob/living/critter/flock/bit/F in src.units)
+					if (F.name == name)
+						break
+				bit_found = TRUE
+	return name
 
 // UNITS
 

@@ -49,7 +49,7 @@
 		src?.zone_sel?.change_hud_style('icons/mob/flock_ui.dmi')
 
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
-	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+	src.real_name = src.flock ? src.flock.pick_name("flockdrone") : src.name
 	src.update_name_tag()
 
 	if(src.dormant) // we'be been flagged as dormant in the map editor or something
