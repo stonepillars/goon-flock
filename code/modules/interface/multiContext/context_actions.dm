@@ -1131,6 +1131,7 @@
 
 /datum/contextAction/flockdrone
 	icon = 'icons/ui/context16x16.dmi'
+	icon_background = "flockbg"
 	name = "Control flockdrone"
 	desc = "You shouldn't be reading this, bug."
 	icon_state = "wrench"
@@ -1166,13 +1167,13 @@
 	move
 		name = "Move"
 		desc = "Go somwhere."
-		icon_state = "right_arrow"
+		icon_state = "flock_move"
 		task_type = /datum/aiTask/sequence/goalbased/rally
 
 	convert
 		name = "Convert"
 		desc = "Convert this thing"
-		icon_state = "pulse"
+		icon_state = "flock_convert"
 		task_type = /datum/aiTask/sequence/goalbased/build/targetable
 
 		checkRequirements(var/mob/living/critter/flock/drone/target, var/mob/living/intangible/flock/user)
@@ -1190,7 +1191,7 @@
 	barricade
 		name = "Barricade"
 		desc = "Build a barricade"
-		icon_state = "wrench"
+		icon_state = "flock_barricade"
 		task_type = /datum/aiTask/sequence/goalbased/barricade/targetable
 
 		checkRequirements(mob/living/critter/flock/drone/target, mob/living/intangible/flock/user)
@@ -1199,5 +1200,5 @@
 	shoot
 		name = "Shoot"
 		desc = "Shoot this enemy"
-		icon_state = "weapon"
+		icon_state = "flock_shoot"
 		task_type = /datum/aiTask/timed/targeted/flockdrone_shoot/targetable
