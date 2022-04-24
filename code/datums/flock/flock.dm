@@ -572,12 +572,9 @@
 		ufs.process()
 
 	//handle deconstruct targets being destroyed by other means
-	var/list/toRemove = list()
 	for(var/atom/S in src.deconstruct_targets)
 		if(S.disposed)
-			toRemove += S
-	for(var/atom/S in toRemove)
-		src.deconstruct_targets -= S
+			src.deconstruct_targets -= S
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
