@@ -164,6 +164,8 @@
 /datum/flock/proc/total_compute()
 	. = 0
 	var/comp_provided = 0
+	if (src.hasAchieved("infinite_compute"))
+		return 1000000
 	for(var/mob/living/critter/flock/F as anything in src.units)
 		comp_provided = F.compute_provided()
 		if(comp_provided>0)
@@ -585,6 +587,13 @@
 ///Unlock an achievement (string) if it isn't already unlocked
 /datum/flock/proc/achieve(var/str)
 	src.achievements |= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
+
+/datum/flock/proc/unAchieve(var/str)
+	src.achievements -= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
 
 ///Unlock an achievement (string) if it isn't already unlocked
 /datum/flock/proc/hasAchieved(var/str)
@@ -696,6 +705,7 @@
 							M.set_loc(converted)
 						qdel(O)
 						converted.set_dir(dir)
+						APPLY_ATOM_PROPERTY(converted, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 						animate_flock_convert_complete(converted)
 					break //we found and converted the type, don't convert it again
 
