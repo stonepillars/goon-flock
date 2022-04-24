@@ -10,6 +10,7 @@
 	var/list/all_owned_tiles = list()
 	var/list/busy_tiles = list()
 	var/list/priority_tiles = list()
+	var/list/deconstruct_targets = list()
 	var/list/traces = list()
 	var/list/units = list()
 	var/list/enemies = list()
@@ -165,6 +166,8 @@
 /datum/flock/proc/total_compute()
 	. = 0
 	var/comp_provided = 0
+	if (src.hasAchieved("infinite_compute"))
+		return 1000000
 	for(var/mob/living/critter/flock/F as anything in src.units)
 		comp_provided = F.compute_provided()
 		if(comp_provided>0)
@@ -254,6 +257,7 @@
 	var/const/duration = 5 SECOND
 	var/end_time = -1
 	var/obj/dummy = null
+	var/outline_color = "#00ff9d"
 
 	Initialize()
 		if (!ismovable(parent) && !isturf(parent))
@@ -274,7 +278,7 @@
 		dummy.icon_state = target.icon_state
 		target.render_target = ref(parent)
 		dummy.render_source = target.render_target
-		dummy.add_filter("outline", 1, outline_filter(size=1,color="#00ff9d"))
+		dummy.add_filter("outline", 1, outline_filter(size=1,color=src.outline_color))
 		target.vis_contents += dummy
 
 		play_animation()
@@ -451,10 +455,11 @@
 		return
 	src.busy_tiles[name] = T
 
-	var/image/I = image('icons/misc/featherzone.dmi', T, "frontier")
-	I.blend_mode = BLEND_ADD
+	var/image/I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
+	I.appearance_flags = RESET_ALPHA | RESET_COLOR
 	I.alpha = 80
 	I.plane = PLANE_ABOVE_LIGHTING
+	I.mouse_opacity = FALSE
 	src.annotations_busy_tiles[T] = I
 	src.addClientImage(I)
 
@@ -498,10 +503,11 @@
 	else
 		priority_tiles |= T
 
-		I = image('icons/misc/featherzone.dmi', T, "frontier")
-		I.blend_mode = BLEND_ADD
+		I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
+		I.appearance_flags = RESET_ALPHA | RESET_COLOR
 		I.alpha = 180
 		I.plane = PLANE_ABOVE_LIGHTING
+		I.mouse_opacity = FALSE
 		src.annotations_priority_tiles[T] = I
 		src.addClientImage(I)
 
@@ -534,6 +540,11 @@
 	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
 		ufs.process()
 
+	//handle deconstruct targets being destroyed by other means
+	for(var/atom/S in src.deconstruct_targets)
+		if(S.disposed)
+			src.deconstruct_targets -= S
+
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
 	src.claimTurf(flock_convert_turf(T))
@@ -542,6 +553,13 @@
 ///Unlock an achievement (string) if it isn't already unlocked
 /datum/flock/proc/achieve(var/str)
 	src.achievements |= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
+
+/datum/flock/proc/unAchieve(var/str)
+	src.achievements -= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
 
 ///Unlock an achievement (string) if it isn't already unlocked
 /datum/flock/proc/hasAchieved(var/str)
@@ -595,8 +613,9 @@
 			animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/simulated/wall))
-		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		var/turf/converted_wall = T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
 		animate_flock_convert_complete(T)
+		APPLY_ATOM_PROPERTY(converted_wall, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 
 	// regular and flock lattices
 	var/obj/lattice/lat = locate(/obj/lattice) in T
@@ -614,7 +633,8 @@
 	if(istype(T, /turf/space))
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
 		if(!FL)
-			new /obj/lattice/flock(T)
+			FL = new /obj/lattice/flock(T) //may as well reuse the var
+			APPLY_ATOM_PROPERTY(FL, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
@@ -653,6 +673,7 @@
 							M.set_loc(converted)
 						qdel(O)
 						converted.set_dir(dir)
+						APPLY_ATOM_PROPERTY(converted, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 						animate_flock_convert_complete(converted)
 					break //we found and converted the type, don't convert it again
 
