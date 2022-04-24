@@ -385,6 +385,12 @@
 		count++
 	return count
 
+/datum/flock/proc/toggleDeconstructionFlag(var/atom/target)
+	if(target in src.deconstruct_targets)
+		src.deconstruct_targets -= target
+	else
+		src.deconstruct_targets += target
+	src.updateAnnotations()
 // ENEMIES
 
 /datum/flock/proc/updateEnemy(atom/M)
