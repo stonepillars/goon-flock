@@ -111,7 +111,7 @@
 /obj/storage/closet/flock/New()
 	..()
 	setMaterial("gnesis")
-	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE, report_attackby=FALSE)
+	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE, report_attack=FALSE)
 
 /obj/storage/closet/flock/attackby(obj/item/W as obj, mob/user as mob)
 	if (istype(W, /obj/item/grab))
