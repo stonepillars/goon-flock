@@ -768,8 +768,8 @@
 			return
 
 	// CONVERT TURF
-	//if(!isturf(target) && !(istype(target, /obj/storage/closet/flock) || istype(target, /obj/table/flock) || istype(target, /obj/structure/girder) || istype(target, /obj/machinery/door/feather) || istype(target, /obj/flock_structure/ghost)))
-	//	target = get_turf(target)
+	if(!isturf(target) && !HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
+		target = get_turf(target)
 
 	if(istype(target, /turf) && !istype(target, /turf/simulated) && !istype(target, /turf/space))
 		boutput(user, "<span class='alert'>Something about this structure prevents it from being assimilated.</span>")
@@ -799,26 +799,11 @@
 			actions.start(new/datum/action/bar/flock_convert(target), user)
 	if(user.a_intent == INTENT_HARM)
 		//furniture
-		if(istype(target, /obj/storage/closet/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/table/flock) || istype(target, /obj/machinery/light/flock))
+		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
 			actions.start(new /datum/action/bar/flock_decon(target), user)
-		//walls
-		else if(istype(target, /turf/simulated/wall/auto/feather))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
-		//windows
-		else if(istype(target, /obj/window/feather))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
-		else if(istype(target,/obj/structure/girder))
+		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
 			if(target?.material.mat_id == "gnesis")
 				actions.start(new /datum/action/bar/flock_decon(target), user)
-		//door
-		else if(istype(target, /obj/machinery/door/feather))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
-		//structures
-		else if(istype(target, /obj/flock_structure))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
-		//lattice/grille
-		else if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
 		else
 			..()
 //help intent actions

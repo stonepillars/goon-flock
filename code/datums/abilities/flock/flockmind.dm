@@ -392,18 +392,13 @@
 	var/turf/T = get_turf(holder.owner)
 	if(!istype(T, /turf/simulated/floor/feather))
 		boutput(holder.owner, "<span class='alert'>You aren't above a flocktile.</span>")//todo maybe make this flock themed?
-		return 1
+		return TRUE
 	if(locate(/obj/flock_structure/ghost) in T)
 		boutput(holder.owner, "<span class='alert'>A tealprint has already been scheduled here!</span>")
-		return 1
+		return TRUE
 	if(locate(/obj/flock_structure) in T)
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
-		return 1
-
-/*	for (var/atom/O in T.contents)
-		if (O.density && !isflock(O))
-			boutput(holder.owner, "<span class='alert'>That tile has something that blocks tealprint creation!</span>")
-			return 1 */
+		return TRUE
 
 	var/list/friendlyNames = list()
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
@@ -456,46 +451,20 @@
 	if(..())
 		return TRUE
 	var/mob/living/intangible/flock/F = holder.owner
-	//furniture
-	if(istype(target, /obj/storage/closet/flock) || istype(target, /obj/stool/chair/comfy/flock) || istype(target, /obj/table/flock) || istype(target, /obj/machinery/light/flock))
+	//special handling for building ghosts
+	if(istype(target,/obj/flock_structure/ghost))
+		//do the tgui window instead
+		//this actually doesn't need bonus behaviour because the cancelbuild is on click, but will need to fix this if we change that in future
+		return TRUE
+	else if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING)) //it's a thing we've converted, we can deconstruct it
 		F.flock.deconstruct_targets += target
 		F.flock.updateAnnotations()
 		return FALSE
-	//walls
-	else if(istype(target, /turf/simulated/wall/auto/feather))
-		F.flock.deconstruct_targets += target
-		F.flock.updateAnnotations()
-		return FALSE
-	//windows
-	else if(istype(target, /obj/window/feather))
-		F.flock.deconstruct_targets += target
-		F.flock.updateAnnotations()
-		return FALSE
-	else if(istype(target,/obj/structure/girder))
+	else if(istype(target,/obj/structure/girder)) //special handling for partially decon'd walls - gnesis mats means its ours
 		if(target?.material.mat_id == "gnesis")
 			F.flock.deconstruct_targets += target
 			F.flock.updateAnnotations()
 			return FALSE
-	//door
-	else if(istype(target, /obj/machinery/door/feather))
-		F.flock.deconstruct_targets += target
-		F.flock.updateAnnotations()
-		return FALSE
-	//structures
-	else if(istype(target, /obj/flock_structure))
-		if(istype(target,/obj/flock_structure/ghost))
-			//do the tgui window instead
-			//this actually doesn't need bonus behaviour because the cancelbuild is on click, but will need to fix this if we change that in future
-			return TRUE
-		else
-			F.flock.deconstruct_targets += target
-			F.flock.updateAnnotations()
-			return FALSE
-	//lattice/grille
-	else if(istype(target, /obj/lattice/flock) || istype(target, /obj/grille/flock))
-		F.flock.deconstruct_targets += target
-		F.flock.updateAnnotations()
-		return FALSE
 
 	return TRUE
 
