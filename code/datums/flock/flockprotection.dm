@@ -14,17 +14,18 @@
 	RegisterSignal(parent, COMSIG_FLOCK_ATTACK, .proc/handle_flock_attack)
 
 /// If flockdrone is in our flock, deny the attack, otherwise scream and cry
-/datum/component/flock_interest/proc/handle_flock_attack(source, mob/living/critter/flock/user)
-	if(!ismob(user))
+/datum/component/flock_interest/proc/handle_flock_attack(source, mob/user)
+	if(!istype(user))
 		return FALSE
 
-	if (istype(user) && user.flock == src.flock)
+	var/mob/living/critter/flock/F = user
+	if (istype(F) && F.flock == src.flock)
 		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
 		return TRUE
 
 	var/mob/living/critter/flock/drone/snitch
 	for (var/mob/living/critter/flock/drone/FD in view(7, source))
-		if (!isdead(FD) && FD.is_npc && FD.flock == src.flock)
+		if (FD != user && !isdead(FD) && FD.is_npc && FD.flock == src.flock)
 			snitch = FD
 			break
 
