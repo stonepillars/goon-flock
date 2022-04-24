@@ -17,6 +17,7 @@
 	var/list/annotation_viewers = list()
 	var/list/annotations_busy_tiles = list()  // key is atom ref, value is image
 	var/list/annotations_priority_tiles = list()
+	var/list/annotations_deconstruct_targets = list()
 	var/list/annotations_enemies = list()
 	var/list/obj/flock_structure/structures = list()
 	var/list/datum/unlockable_flock_structure/unlockableStructures = list()
@@ -386,11 +387,24 @@
 	return count
 
 /datum/flock/proc/toggleDeconstructionFlag(var/atom/target)
+	var/image/I
 	if(target in src.deconstruct_targets)
 		src.deconstruct_targets -= target
+
+		I = src.annotations_deconstruct_targets[target]
+		src.annotations_deconstruct_targets -= target
+		src.removeClientImage(I)
 	else
 		src.deconstruct_targets += target
-	src.updateAnnotations()
+
+		I = image('icons/misc/featherzone.dmi', target, "hazard")
+		I.blend_mode = BLEND_ADD
+		I.pixel_y = 16
+		I.plane = PLANE_ABOVE_LIGHTING
+		I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+		src.annotations_deconstruct_targets[target] = I
+		src.addClientImage(I)
+
 // ENEMIES
 
 /datum/flock/proc/updateEnemy(atom/M)
@@ -549,7 +563,7 @@
 	//handle deconstruct targets being destroyed by other means
 	for(var/atom/S in src.deconstruct_targets)
 		if(S.disposed)
-			src.deconstruct_targets -= S
+			src.toggleDeconstructionFlag(S)
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
