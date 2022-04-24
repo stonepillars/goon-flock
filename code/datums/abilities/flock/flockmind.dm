@@ -151,7 +151,7 @@
 		return TRUE
 
 	var/M = target
-	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	var/mob/living/intangible/flock/F = holder.owner
 
 	if (!(isliving(M) || iscritter(M)) || isflock(M) || isintangible(M))
 		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
@@ -174,18 +174,23 @@
 	name = "Partition Mind"
 	desc = "Divide and conquer."
 	icon_state = "awaken_drone"
+	cooldown = 60 SECONDS
 	targeted = 0
+	///Are we still waiting for ghosts to respond
+	var/waiting = FALSE
 
 /datum/targetable/flockmindAbility/partitionMind/cast(atom/target)
-	if(..())
+	if(waiting || ..())
 		return TRUE
 
 	if(!holder.pointCheck(100))
 		return TRUE
 
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-
-	return F.partition()
+	waiting = TRUE
+	SPAWN(0)
+		F.partition()
+		waiting = FALSE
 
 /////////////////////////////////////////
 
@@ -193,6 +198,7 @@
 	name = "Concentrated Repair Burst"
 	desc = "Fully heal a drone through acceleration of its repair processes."
 	icon_state = "heal_drone"
+	cooldown = 20 SECONDS
 
 /datum/targetable/flockmindAbility/healDrone/cast(mob/living/critter/flock/drone/target)
 	if(..())
@@ -201,6 +207,8 @@
 		return TRUE
 	if (target.get_health_percentage() >= 1)
 		boutput(holder.owner, "<span class='notice'>[target.real_name] has no damage!</span>")
+		return TRUE
+	if (isdead(target))
 		return TRUE
 
 	playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
@@ -215,21 +223,23 @@
 	name = "Diffract Drone"
 	desc = "Split a drone into flockbits, mindless automata that only convert whatever they find."
 	icon_state = "diffract"
+	cooldown = 0
 
 /datum/targetable/flockmindAbility/splitDrone/cast(mob/living/critter/flock/drone/target)
 	if(..())
-		return 1
+		return TRUE
 	if(!istype(target))
-		return 1
-	// sanity check: don't remove our last complex drone
+		return TRUE
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(!F?.flock || F.flock != target.flock)
-		boutput(holder.owner, "<span class='notice'>The drone does not respond to your command.</span>")
-		return 1
+	if(!F.flock || F.flock != target.flock)
+		boutput(F, "<span class='notice'>The drone does not respond to your command.</span>")
+		return TRUE
+	if (isdead(target))
+		return TRUE
 	if(F.flock.getComplexDroneCount() == 1)
-		boutput(holder.owner, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
-		return 1
-	boutput(holder.owner, "<span class='notice'>You diffract the drone.</span>")
+		boutput(F, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
+		return TRUE
+	boutput(F, "<span class='notice'>You diffract the drone.</span>")
 	target.split_into_bits()
 
 
@@ -239,6 +249,7 @@
 	name = "Gatecrash"
 	desc = "Force open every door in radio range (if it can be opened by radio transmissions)."
 	icon_state = "open_door"
+	cooldown = 10 SECONDS
 	targeted = 0
 
 /datum/targetable/flockmindAbility/doorsOpen/cast(atom/target)
@@ -267,6 +278,7 @@
 	name = "Radio Stun Burst"
 	desc = "Overwhelm the radio headsets of everyone nearby. Will not work on broken or non-existent headsets."
 	icon_state = "radio_stun"
+	cooldown = 20 SECONDS
 	targeted = 0
 
 /datum/targetable/flockmindAbility/radioStun/cast(atom/target)
@@ -373,7 +385,7 @@
 	name = "Fabricate Structure"
 	desc = "Create a structure tealprint for your drones to construct onto."
 	icon_state = "fabstructure"
-	cooldown = 4 SECONDS
+	cooldown = 0
 	targeted = 0
 
 /datum/targetable/flockmindAbility/createStructure/cast()
@@ -413,5 +425,23 @@
 
 	if(structurewantedtype)
 		F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/ping
+	name = "Ping"
+	desc = "Request attention from other elements of the flock."
+	icon_state = "ping"
+	cooldown = 0.1 SECONDS
+
+/datum/targetable/flockmindAbility/ping/cast(atom/target)
+	if(..())
+		return TRUE
+	var/mob/living/intangible/flock/F = holder.owner
+	if (!isturf(target.loc) && !isturf(target))
+		return TRUE
+	if(F)
+		var/datum/flock/flock = F.flock
+		flock?.ping(target, holder.owner)
 
 

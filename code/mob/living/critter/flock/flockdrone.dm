@@ -134,6 +134,12 @@
 		// don't know how this happened but you need a controller right now
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
 	if(controller)
+		if (src.floorrunning)
+			src.end_floorrunning()
+			if (istype(src.loc, /turf/simulated/floor/feather))
+				var/turf/simulated/floor/feather/floor = src.loc
+				if (floor.on && !floor.connected)
+					floor.off()
 		// move controller out
 		controller.set_loc(get_turf(src))
 		// move us over to the controller
@@ -188,7 +194,7 @@
 			special_desc += "<br><span class='bold'>ID:</span> [src.real_name]"
 		special_desc += {"<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
 		<br><span class='bold'>Resources:</span> [src.resources]
-		<br><span class='bold'>System Integrity:</span> [round(src.get_health_percentage()*100)]%
+		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
 		<br><span class='bold'>Cognition:</span> [isalive(src) && !dormant ? src.is_npc ? "TORPID" : "SAPIENT" : "ABSENT"]"}
 		if (src.is_npc && istype(src.ai.current_task))
 			special_desc += "<br><span class='bold'>Task:</span> [uppertext(src.ai.current_task.name)]"
@@ -452,7 +458,7 @@
 	if(floorrunning)
 		return // haha fuck you i'm in the FLOOR
 	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
-		src.visible_message("<span class='notice'>[src] harmlessly absorbs the [P].</span>")
+		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
 	else
 		..()
 		var/mob/attacker = P.shooter
@@ -492,8 +498,10 @@
 // also maybe we've just had environmental damage, who knows
 /mob/living/critter/flock/drone/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
 	..()
-	var/prev_damaged = src.damaged
 	src.check_health()
+	if (brute <= 0 && burn <= 0 && tox <= 0)
+		return
+	var/prev_damaged = src.damaged
 	if(!isdead(src) && src.is_npc)
 		// if we've been damaged a new stage, call it out
 		if(prev_damaged != src.damaged && src.damaged > 0)
@@ -621,7 +629,7 @@
 	var/mob/living/critter/flock/bit/B
 	// get candidate places to move them
 	var/turf/T = get_turf(src)
-	var/list/candidate_turfs = getNeighbors(T, alldirs)
+	var/list/candidate_turfs = getneighbours(src)
 	for(var/i=1 to num_bits)
 		B = new(get_turf(src), F = src.flock)
 		src.flock?.registerUnit(B)
@@ -836,6 +844,8 @@
 	if(isflock(F))
 		if(F.get_health_percentage() >= 1.0)
 			boutput(user, "<span class='alert'>They don't need to be repaired, they're in perfect condition.</span>")
+			return
+		if (isdead(F))
 			return
 		if(user.resources < 10)
 			boutput(user, "<span class='alert'>Not enough resources to repair (you need 10).</span>")

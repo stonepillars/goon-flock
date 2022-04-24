@@ -30,7 +30,7 @@
 		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> [src.real_name]
 		<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
-		<br><span class='bold'>System Integrity:</span> [round(src.get_health_percentage()*100)]%
+		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
 		<br><span class='bold'>Cognition:</span> PREDEFINED
 		<br><span class='bold'>###=-</span></span>"}
 	else
@@ -47,6 +47,12 @@
 			..() // do ghost observes, i guess
 	else
 		..()
+
+/mob/living/critter/flock/bit/bullet_act(var/obj/projectile/P)
+	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
+		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
+		return
+	..()
 
 /mob/living/critter/flock/bit/setup_hands()
 	..()
