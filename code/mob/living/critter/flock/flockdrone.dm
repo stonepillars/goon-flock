@@ -339,9 +339,10 @@
 		playsound(src, "sound/effects/sparks[rand(1,6)].ogg", 50, 1)
 		if(I && I.health <= 0) // fix runtime Cannot read null.health
 			if(I.amount > 1)
-				I.amount--
+				I.inventory_counter.show_count()
+				I.change_stack_amount(-1)
 				I.health = initial(I.health)
-				if(isnull(I.health)) //:screm:
+				if(isnull(I.health)) // :screm:
 					if (isnull(I.health))
 						switch (I.w_class)
 							if (W_CLASS_TINY to W_CLASS_NORMAL)
