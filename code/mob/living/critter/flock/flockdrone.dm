@@ -330,17 +330,44 @@
 				var/turf/simulated/floor/feather/floor = src.loc
 				if (floor.on && !floor.connected)
 					floor.off()
-	var/obj/item/I = absorber.item
 
+	var/obj/item/I = absorber.item
 	if(I)
 		var/absorb = clamp(src.absorb_rate, 0, I.health)
 		I.health -= absorb
 		src.resources += src.absorb_per_health * absorb
 		playsound(src, "sound/effects/sparks[rand(1,6)].ogg", 50, 1)
 		if(I && I.health <= 0) // fix runtime Cannot read null.health
+			if(I.amount > 1)
+				I.amount--
+				I.health = initial(I.health)
+				if(isnull(I.health)) //:screm:
+					if (isnull(I.health))
+						switch (I.w_class)
+							if (W_CLASS_TINY to W_CLASS_NORMAL)
+								I.health = I.w_class + 1
+							else
+								I.health = I.w_class + 2
+			else //these things happen on completion of eating the stack/single item, but not on each item in the stack
+				I.dropped(src)
+				src.resources += src.absorb_completion
+				boutput(src, "<span class='notice'>You finish converting [I] into resources (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]).</span>")
+				if(istype(I, /obj/item/organ/heart/flock))
+					var/obj/item/organ/heart/flock/F = I
+					src.resources += F.resources
+					boutput(src, "<span class='notice'>You assimilate [F]'s resource cache, adding <span class='bold'>[F.resources]</span> resources to your own (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]).</span>")
+				else if(istype(I, /obj/item/flockcache))
+					var/obj/item/flockcache/C = I
+					src.resources += C.resources
+					boutput(src, "<span class='notice'>You break down the resource cache, adding <span class='bold'>[C.resources]</span> resources to your own (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]). </span>")
+				if(istype(I, /obj/item/raw_material))
+					qdel(I) //gotta pool stuff bruh
+				else
+					qdel(I)
+
 			playsound(src, "sound/impact_sounds/Energy_Hit_1.ogg", 50, 1)
-			I.dropped(src)
-			if(I.contents.len > 0)
+
+			if(length(I.contents) > 0) //not sure what item would have amount *and* contents, but I will cry if there is one
 				var/anything_tumbled = 0
 				for(var/obj/O in I.contents)
 					if(istype(O, /obj/item))
@@ -352,20 +379,7 @@
 					src.visible_message("<span class='alert'>The contents of [I] tumble out of [src].</span>",
 						"<span class='alert'>The contents of [I] tumble out of you.</span>",
 						"<span class='alert'>You hear things fall onto the floor.</span")
-			src.resources += src.absorb_completion
-			boutput(src, "<span class='notice'>You finish converting [I] into resources (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]).</span>")
-			if(istype(I, /obj/item/organ/heart/flock))
-				var/obj/item/organ/heart/flock/F = I
-				src.resources += F.resources
-				boutput(src, "<span class='notice'>You assimilate [F]'s resource cache, adding <span class='bold'>[F.resources]</span> resources to your own (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]).</span>")
-			else if(istype(I, /obj/item/flockcache))
-				var/obj/item/flockcache/C = I
-				src.resources += C.resources
-				boutput(src, "<span class='notice'>You break down the resource cache, adding <span class='bold'>[C.resources]</span> resources to your own (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]). </span>")
-			if(istype(I, /obj/item/raw_material))
-				qdel(I) //gotta pool stuff bruh
-			else
-				qdel(I)
+
 	// AI ticks are handled in mob_ai.dm, as they ought to be
 
 /mob/living/critter/flock/drone/process_move(keys)
