@@ -560,10 +560,25 @@
 	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
 		ufs.process()
 
-	//handle deconstruct targets being destroyed by other means
+	var/turf/busy_turf
+	for(var/name in src.busy_tiles)
+		busy_turf = src.busy_tiles[name]
+		if (busy_turf.disposed)
+			src.unreserveTurf(busy_turf)
+
+	for(var/turf/T in src.priority_tiles)
+		if (T.disposed)
+			src.togglePriorityTurf(T)
+
 	for(var/atom/S in src.deconstruct_targets)
 		if(S.disposed)
 			src.toggleDeconstructionFlag(S)
+
+	var/atom/M
+	for(var/enemy in src.enemies)
+		M = src.enemies[enemy]["mob"]
+		if (M.disposed)
+			src.removeEnemy(M)
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
