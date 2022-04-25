@@ -659,6 +659,8 @@ butcher
 					if(harvest_target.loc == holder.owner) //checks hand for card to allow taking from pockets/storage
 						holder.owner.u_equip(harvest_target)
 					holder.owner.put_in_hand_or_drop(harvest_target)
+				else if (istype(harvest_target, /obj/item/bell))
+					holder.owner.put_in_hand_or_drop(harvest_target)
 				else if(istype(harvest_target, /obj/item/paper_bin))
 					// special consideration because these things can empty out
 					var/obj/item/paper_bin/P = harvest_target
@@ -907,6 +909,76 @@ butcher
 	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// DECONTSTRUCT GOAL
+// targets: flock deconstruction targets
+// precondition: 10 resources
+/datum/aiTask/sequence/goalbased/deconstruct
+	name = "deconstructing"
+	weight = 8
+	can_be_adjacent_to_target = TRUE
+
+/datum/aiTask/sequence/goalbased/deconstruct/New(parentHolder, transTask)
+	..(parentHolder, transTask)
+	add_task(holder.get_instance(/datum/aiTask/succeedable/deconstruct, list(holder)))
+
+/datum/aiTask/sequence/goalbased/deconstruct/precondition()
+	. = FALSE
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(length(F?.flock?.deconstruct_targets))
+		. = TRUE
+
+/datum/aiTask/sequence/goalbased/deconstruct/on_reset()
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(F)
+		F.active_hand = 2 // nanite spray
+		F.set_a_intent(INTENT_HARM)
+		F.hud?.update_intent()
+		F.hud?.update_hands() // for observers
+
+/datum/aiTask/sequence/goalbased/deconstruct/get_targets()
+	var/mob/living/critter/flock/drone/F = holder.owner
+	. = list()
+	for(var/atom/S in F?.flock?.deconstruct_targets)
+		if(IN_RANGE(S,holder.owner,max_dist))
+			// if we can get a valid path to the target, include it for consideration
+			. += S
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
+
+//////////
+
+/datum/aiTask/succeedable/deconstruct
+	name = "deconstruct subtask"
+	var/has_started = FALSE
+
+/datum/aiTask/succeedable/deconstruct/failed()
+	var/mob/living/critter/flock/drone/F = holder.owner
+	var/atom/T = holder.target
+	if(!F || !T || BOUNDS_DIST(T, F) > 0 || !(T in F?.flock?.deconstruct_targets))
+		return TRUE
+
+/datum/aiTask/succeedable/deconstruct/succeeded()
+	. = (!actions.hasAction(holder.owner, "flock_decon")) // for whatever reason, the required action has stopped
+	if(.)
+		var/mob/living/critter/flock/drone/F = holder.owner
+		F?.flock?.deconstruct_targets -= holder.target
+
+/datum/aiTask/succeedable/deconstruct/on_tick()
+	if(!has_started)
+		var/mob/living/critter/flock/drone/F = holder.owner
+		var/atom/T = holder.target
+		if(F && T && BOUNDS_DIST(holder.owner, holder.target) == FALSE)
+			if(F.set_hand(2)) // nanite spray
+				F.set_a_intent(INTENT_HARM)
+				holder.owner.set_dir(get_dir(holder.owner, holder.target))
+				F.hand_attack(T)
+				has_started = TRUE
+
+/datum/aiTask/succeedable/deconstruct/on_reset()
+	has_started = FALSE
+
+
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // STARE AT BIRDS
 // targets: any bird critters
 // precondition: cooldown
@@ -928,10 +1000,8 @@ butcher
 	for(var/mob/living/critter/C in view(max_dist, holder.owner)) //I'm not handling obj/critter birds. i'm just not. deal with it.
 		if(istype(C,/mob/living/critter/small_animal/bird) || istype(C,/mob/living/critter/small_animal/ranch_base/chicken))
 			. += C
-
-	. = get_path_to(holder.owner, ., max_dist*2, 1)
-
-////////
+      
+/////////
 
 /datum/aiTask/succeedable/stare_at_bird
 	name = "stur at burd"

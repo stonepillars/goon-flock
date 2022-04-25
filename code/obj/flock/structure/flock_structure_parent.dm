@@ -12,7 +12,7 @@
 	var/time_started = 0
 	var/build_time = 6 // in seconds
 	var/health = 30 // fragile little thing
-	var/health_max
+	var/health_max = 30
 	var/bruteVuln = 1.2
 	/// very flame-retardant
 	var/fireVuln = 0.2
@@ -128,6 +128,17 @@
 	if(src.health <= 0)
 		src.gib()
 
+/obj/flock_structure/proc/deconstruct()
+	//you can have half your resources back
+	visible_message("<span class='alert'>[src.name] suddenly dissolves!</span>")
+	var/refund = round((src.health/src.health_max) * 0.5 * src.resourcecost) //this is floor(), depsite the name
+	if(refund >= 1)
+		var/obj/item/flockcache/cache = new(get_turf(src))
+		cache.resources = refund
+	src.flock?.removeDrone(src)
+	qdel(src)
+
+
 /obj/flock_structure/proc/gib(atom/location)
 	// no parent calling, we're going to completely override this
 	if (!location)
@@ -195,7 +206,7 @@
 
 /obj/flock_structure/ex_act(severity)
 	src.report_attack()
-	
+
 	var/damage = 0
 	var/damage_mult = 1
 	switch(severity)
@@ -210,7 +221,10 @@
 			damage_mult = 2
 	src.takeDamage("mixed", damage * damage_mult)
 
-/obj/flock_structure/bullet_act(var/obj/projectile/P)
+/obj/flock_structure/bullet_act(obj/projectile/P)
+	if (istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
+		return
+
 	src.report_attack()
 
 	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0) // stuns will do nothing
