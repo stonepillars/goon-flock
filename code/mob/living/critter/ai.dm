@@ -105,6 +105,7 @@ var/list/ai_move_scheduled = list()
 			current_task?.reset()
 			switch_to(default_task)
 			stop_move()
+			tick()
 
 	proc/die()
 		src.enabled = 0
