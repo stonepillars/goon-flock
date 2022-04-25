@@ -1182,7 +1182,7 @@
 	capture
 		name = "Capture"
 		desc = "Capture this enemy"
-		icon_state = "beepsky"
+		icon_state = "flock_capture"
 		task_type = /datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
 
 		checkRequirements(var/mob/living/critter/flock/drone/target, var/mob/living/intangible/flock/user)
