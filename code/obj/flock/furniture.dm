@@ -326,6 +326,11 @@
 		return
 	..()
 
+/obj/grille/flock/bullet_act(obj/projectile/P)
+	if (istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
+		return
+	..()
+
 /obj/grille/flock/proc/repair()
 	src.health = min(src.health + 10, src.health_max)
 	if (ruined)
