@@ -1,7 +1,3 @@
-// flock
-#define SHOW_FLOCKTRACE_TIPS(M) M.Browse(grabResource("html/traitorTips/flocktraceTips.html"), ANTAG_TIPS_WINDOW)
-#define SHOW_FLOCKMIND_TIPS(M) M.Browse(grabResource("html/traitorTips/flockmindTips.html"), ANTAG_TIPS_WINDOW)
-
 ///Singleton that handles antag popups, use get_singleton
 /datum/antagPopups
 	var/html
