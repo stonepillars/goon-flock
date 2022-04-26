@@ -775,7 +775,7 @@
 			return
 
 	// CONVERT TURF
-	if(!isturf(target) && !HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) && !istype(target, /obj/flock_structure) && !istype(target, /obj/structure/girder))
+	if(!isturf(target) && !HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) && !istype(target, /obj/structure/girder))
 		target = get_turf(target)
 
 	if(istype(target, /turf) && !istype(target, /turf/simulated) && !istype(target, /turf/space))
@@ -807,7 +807,7 @@
 	if(user.a_intent == INTENT_HARM)
 		if(istype(target, /obj/flock_structure/ghost))
 			return
-		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) || istype(target, /obj/flock_structure))
+		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
 			actions.start(new /datum/action/bar/flock_decon(target), user)
 		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
 			if(target?.material.mat_id == "gnesis")
