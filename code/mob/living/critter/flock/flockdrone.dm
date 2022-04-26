@@ -298,7 +298,7 @@
 		if ("whistle", "beep", "burp")
 			if (src.emote_check(voluntary, 50))
 				playsound(src, "sound/misc/flockmind/flockdrone_beep[pick("1","2","3","4")].ogg", 60, 1)
-				return "<b>[src]</b> [act]s."
+				return "<b>[src]</b> beeps."
 		if ("scream", "growl", "abeep", "grump")
 			if (src.emote_check(voluntary, 50))
 				playsound(src, "sound/misc/flockmind/flockdrone_grump[pick("1","2","3")].ogg", 60, 1)
