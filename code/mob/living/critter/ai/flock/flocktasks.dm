@@ -389,6 +389,7 @@ butcher
 				has_started = TRUE
 
 /datum/aiTask/succeedable/repair/on_reset()
+	..()
 	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +411,7 @@ butcher
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/deposit/on_reset()
+	..()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F)
 		F.active_hand = 2 // nanite spray
@@ -862,6 +864,7 @@ butcher
 
 
 /datum/aiTask/sequence/goalbased/butcher/on_reset()
+	..()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F)
 		F.active_hand = 2 // nanite spray
@@ -929,6 +932,7 @@ butcher
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/deconstruct/on_reset()
+	..()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F)
 		F.active_hand = 2 // nanite spray
@@ -985,6 +989,9 @@ butcher
 	name = "observing"
 	weight = 1 //same as wander
 
+/datum/aiTask/sequence/goalbased/stare/evaluate()
+	. = src.precondition() && length(src.get_targets()) ? 1 : 0  // it'd require every other task returning very small values for this to get selected
+
 /datum/aiTask/sequence/goalbased/stare/New(parentHolder, transTask)
 	..(parentHolder, transTask)
 	add_task(holder.get_instance(/datum/aiTask/succeedable/stare_at_bird, list(holder)))
@@ -999,9 +1006,10 @@ butcher
 	for(var/mob/living/critter/C in view(max_dist, holder.owner)) //I'm not handling obj/critter birds. i'm just not. deal with it.
 		if(istype(C,/mob/living/critter/small_animal/bird) || istype(C,/mob/living/critter/small_animal/ranch_base/chicken))
 			. += C
-
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
+/datum/aiTask/sequence/goalbased/stare/reset()
+	return ..()
 ////////
 
 /datum/aiTask/succeedable/stare_at_bird
@@ -1038,7 +1046,7 @@ butcher
 			if(30 to 50)
 				//attempt to communicate
 				holder.owner.set_dir(get_dir(holder.owner, holder.target))
-				F.emote("whistle", FALSE)
+				F.emote("whistle [target]", FALSE)
 				has_started = TRUE
 			if(50 to 90)
 				//watch carefully
@@ -1053,4 +1061,5 @@ butcher
 				has_started = TRUE
 
 /datum/aiTask/succeedable/stare_at_bird/on_reset()
+	..()
 	has_started = FALSE
