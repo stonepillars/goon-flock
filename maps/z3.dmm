@@ -1540,11 +1540,11 @@
 /area/mining/comms)
 "aey" = (
 /obj/table/wood/auto,
-/obj/item/storage/box/record/radio/two{
+/obj/item/storage/box/record/radio/host{
 	pixel_x = -4;
 	pixel_y = 6
 	},
-/obj/item/storage/box/record/radio/one,
+/obj/item/storage/box/record/radio/host,
 /turf/simulated/floor/carpet/grime,
 /area/radiostation/studio)
 "aez" = (
@@ -4269,6 +4269,8 @@
 	icon_state = "tile1"
 	},
 /obj/storage/crate/bloody,
+/obj/item/storage/box/record/radio/two,
+/obj/item/storage/box/record/radio/one,
 /obj/item/paper/tug/warehouse,
 /obj/item/cigpacket/cigarillo/juicer,
 /obj/item/cigpacket/cigarillo/juicer,
@@ -6993,6 +6995,10 @@
 /area/salyut)
 "asU" = (
 /obj/decal/cleanable/oil/streak,
+/obj/decal/poster/wallsign/psa_bucket{
+	pixel_x = -28;
+	pixel_y = 3
+	},
 /turf/simulated/floor,
 /area/radiostation/engineering)
 "asV" = (
@@ -21118,7 +21124,7 @@
 /obj/railing/orange/reinforced{
 	dir = 4
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "cvi" = (
 /obj/decal/fakeobjects{
@@ -21401,7 +21407,7 @@
 	network = "Mining";
 	tag = ""
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "hme" = (
 /obj/indestructible/shuttle_corner{
@@ -21628,7 +21634,7 @@
 /obj/item/device/radio/intercom/engineering{
 	dir = 4
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "jVk" = (
 /obj/decal/fakeobjects/lightbulb_broken{
@@ -21640,7 +21646,7 @@
 /obj/stool/chair/comfy{
 	dir = 4
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "jZt" = (
 /obj/machinery/door/unpowered/shuttle,
@@ -21846,7 +21852,7 @@
 /obj/stool/chair/comfy{
 	dir = 8
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "mea" = (
 /turf/simulated/floor/caution/east,
@@ -21909,7 +21915,7 @@
 /obj/item/decoration/ashtray{
 	pixel_x = -3
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "mHM" = (
 /obj/decal/tile_edge/stripe/big{
@@ -22290,7 +22296,7 @@
 	},
 /obj/table/wood/round/champagne,
 /obj/machinery/phone,
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "pfn" = (
 /obj/decal/fakeobjects{
@@ -22413,12 +22419,6 @@
 /obj/structure/woodwall,
 /turf/simulated/floor/plating/airless,
 /area/derelict_ai_sat)
-"qum" = (
-/turf/space,
-/turf/simulated/floor/stairs{
-	dir = 1
-	},
-/area/mining/hangar)
 "qyC" = (
 /obj/decal/fakeobjects{
 	anchored = 1;
@@ -22486,7 +22486,7 @@
 /turf/unsimulated/floor/white/grime,
 /area/timewarp/ship)
 "rbG" = (
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "rdq" = (
 /obj/decal/cleanable/gangtag{
@@ -22601,7 +22601,7 @@
 /area/helldrone)
 "sjy" = (
 /obj/stool/chair/comfy,
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "skQ" = (
 /obj/decal/timeplug{
@@ -22943,7 +22943,7 @@
 /obj/item/device/radio/intercom/cargo{
 	dir = 4
 	},
-/turf/simulated/floor/airless/carpet/office,
+/turf/simulated/floor/carpet/office,
 /area/mining/hangar)
 "vPx" = (
 /obj/decal/fakeobjects/lightbulb_broken,
@@ -71587,7 +71587,7 @@ vjf
 iZr
 vjf
 iZr
-qum
+vjf
 rbG
 rbG
 maw

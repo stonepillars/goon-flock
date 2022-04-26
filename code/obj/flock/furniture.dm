@@ -108,6 +108,20 @@
 	var/health_max = 100
 	var/hitsound = "sound/impact_sounds/Generic_Hit_Heavy_1.ogg"
 
+	take_damage(var/force, var/mob/user as mob)
+		if (!isnum(force) || force <= 0)
+			return
+		src.health_attack = clamp(src.health_attack - force, 0, src.health_max)
+		if (src.health_attack <= 0)
+			var/turf/T = get_turf(src)
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesisglass"))
+			src.dump_contents()
+			make_cleanable( /obj/decal/cleanable/flockdrone_debris, T)
+			qdel(src)
+
 /obj/storage/closet/flock/New()
 	..()
 	setMaterial("gnesis")
@@ -133,24 +147,13 @@
 			..()
 		else if (!issilicon(user))
 			if (istype(user, /mob/living/critter/flock/drone))
-				user.u_equip(W)
-				W?.set_loc(src.loc)
+				if (W)
+					user.u_equip(W)
+					W.set_loc(src.loc)
+				else
+					return ..()
 			else if(user.drop_item())
 				W?.set_loc(src.loc)
-
-/obj/storage/closet/flock/proc/take_damage(var/force, var/mob/user as mob)
-	if (!isnum(force) || force <= 0)
-		return
-	src.health_attack = clamp(src.health_attack - force, 0, src.health_max)
-	if (src.health_attack <= 0)
-		var/turf/T = get_turf(src)
-		playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-		var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-		S.set_loc(T)
-		S.setMaterial(getMaterial("gnesisglass"))
-		src.dump_contents()
-		make_cleanable( /obj/decal/cleanable/flockdrone_debris, T)
-		qdel(src)
 
 /obj/storage/closet/flock/attack_hand(mob/user as mob)
 	if (BOUNDS_DIST(user, src) > 0)
@@ -208,7 +211,16 @@
   else
     return null // give the standard description
 
-
+/obj/machinery/light/flock/floor
+	name = "pulsing cabochon"
+	desc = "It pulses and flares to a strange rhythm."
+	icon_state = "flock_floor1"
+	base_state = "flock_floor"
+	plane = PLANE_FLOOR
+	brightness = 1.2
+	power_usage = 0
+	on = 1
+	removable_bulb = 0
 /////////////
 // FIBRENET
 /////////////
@@ -308,5 +320,10 @@
 
 /obj/grille/flock/attack_hand(mob/user)
 	if (user.a_intent != INTENT_HARM)
+		return
+	..()
+
+/obj/grille/flock/bullet_act(obj/projectile/P)
+	if (istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
 		return
 	..()

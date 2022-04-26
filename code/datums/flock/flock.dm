@@ -10,6 +10,7 @@
 	var/list/all_owned_tiles = list()
 	var/list/busy_tiles = list()
 	var/list/priority_tiles = list()
+	var/list/deconstruct_targets = list()
 	var/list/traces = list()
 	var/list/units = list()
 	var/list/enemies = list()
@@ -23,7 +24,6 @@
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
 	var/datum/tgui/flockpanel
-
 
 /datum/flock/New()
 	..()
@@ -119,8 +119,8 @@
 	var/list/enemylist = list()
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
-		var/mob/living/M = enemy_stats["mob"]
-		if(istype(M)) // fix runtime: Cannot read null.name
+		var/atom/M = enemy_stats["mob"]
+		if(M)
 			var/list/enemy = list()
 			enemy["name"] = M.name
 			enemy["area"] = enemy_stats["last_seen"]
@@ -164,6 +164,8 @@
 /datum/flock/proc/total_compute()
 	. = 0
 	var/comp_provided = 0
+	if (src.hasAchieved("infinite_compute"))
+		return 1000000
 	for(var/mob/living/critter/flock/F as anything in src.units)
 		comp_provided = F.compute_provided()
 		if(comp_provided>0)
@@ -202,20 +204,104 @@
 		return
 	src.flockmind = F
 
+//since flocktraces need to be given their flock in New this is useful for debug
+/datum/flock/proc/spawnTrace()
+	var/mob/living/intangible/flock/trace/T = new(usr.loc, src)
+	return T
+
 /datum/flock/proc/addTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces |= T
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
-	aH.updateCompute()
+	aH?.updateCompute()
 
 /datum/flock/proc/removeTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces -= T
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
-	aH.updateCompute()
+	aH?.updateCompute()
 
+/datum/flock/proc/ping(var/atom/target, var/mob/living/intangible/flock/pinger)
+	//awful typecheck because turfs and movables have vis_contents defined seperately because god hates us
+	if (!istype(pinger) || (!istype(target, /atom/movable) && !istype(target, /turf)))
+		return
+
+	target.AddComponent(/datum/component/flock_ping)
+
+	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
+		if (F != pinger)
+			var/image/arrow = image(icon = 'icons/mob/screen1.dmi', icon_state = "arrow", loc = F, layer = HUD_LAYER)
+			arrow.color = "#00ff9dff"
+			arrow.pixel_y = 20
+			arrow.transform = matrix(arrow.transform, 2,2, MATRIX_SCALE)
+			var/angle = 180 + get_angle(F, target)
+			arrow.transform = matrix(arrow.transform, angle, MATRIX_ROTATE)
+			F.client?.images += arrow
+			animate(arrow, time = 3 SECONDS, alpha = 0)
+			SPAWN(3 SECONDS)
+				F.client?.images -= arrow
+				qdel(arrow)
+		var/class = "flocksay ping [istype(F, /mob/living/intangible/flock/flockmind) ? "flockmindsay" : ""]"
+		var/prefix = "<span class='bold'>\[[src.name]\] </span><span class='name'>[pinger.name]</span>"
+		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target];ping=[TRUE]'>[prefix]: Interrupt request, target: [target] in [get_area(target)].</a></span>")
+	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
+
+//is this a weird use case for components? probably, but it's kinda neat
+/datum/component/flock_ping
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+
+	var/const/duration = 5 SECOND
+	var/end_time = -1
+	var/obj/dummy = null
+	var/outline_color = "#00ff9d"
+
+	Initialize()
+		if (!ismovable(parent) && !isturf(parent))
+			return COMPONENT_INCOMPATIBLE
+
+	RegisterWithParent()
+		//this cast looks horribly unsafe, but we've guaranteed that parent is a type with vis_contents in Initialize
+		var/atom/movable/target = parent
+
+		src.end_time = TIME + duration
+
+		dummy = new()
+		dummy.layer = target.layer
+		dummy.plane = PLANE_FLOCKVISION
+		dummy.invisibility = INVIS_FLOCKMIND
+		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM | RESET_COLOR | PASS_MOUSE
+		dummy.icon = target.icon
+		dummy.icon_state = target.icon_state
+		target.render_target = ref(parent)
+		dummy.render_source = target.render_target
+		dummy.add_filter("outline", 1, outline_filter(size=1,color=src.outline_color))
+		target.vis_contents += dummy
+
+		play_animation()
+
+		SPAWN(0)
+			while(TIME < src.end_time)
+				var/delta = src.end_time - TIME
+				sleep(min(src.duration, delta))
+			qdel(src)
+
+	//when a new ping component is added, reset the original's duration
+	InheritComponent(datum/component/flock_ping/C, i_am_original)
+		if (i_am_original)
+			play_animation()
+			src.end_time = TIME + duration
+
+	disposing()
+		qdel(dummy)
+		. = ..()
+
+	proc/play_animation()
+		animate(dummy, time = duration/9, alpha = 100)
+		for (var/i in 1 to 4)
+			animate(time = duration/9, alpha = 255)
+			animate(time = duration/9, alpha = 100)
 // ANNOTATIONS
 
 // currently both flockmind and player units get the same annotations: what tiles are marked for conversion, and who is shitlisted
@@ -250,11 +336,11 @@
 	// highlight priority tiles
 	for(var/turf/T in src.priority_tiles)
 		if(!(T in src.annotations))
-			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier")
-			I.blend_mode = BLEND_ADD
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
+			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 180
 			I.plane = PLANE_ABOVE_LIGHTING
+			I.mouse_opacity = FALSE
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -264,11 +350,11 @@
 	for(var/name in src.busy_tiles)
 		var/turf/T = src.busy_tiles[name]
 		if(isturf(T) && !(T in src.annotations))
-			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier")
-			I.blend_mode = BLEND_ADD
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
+			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 80
 			I.plane = PLANE_ABOVE_LIGHTING
+			I.mouse_opacity = FALSE
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -276,9 +362,9 @@
 		valid_keys |= T
 	// highlight enemies
 	for(var/name in src.enemies)
-		var/mob/B = src.enemies[name]["mob"]
+		var/atom/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
-			// create a new image
+			// create a new image attached to the mob
 			I = image('icons/misc/featherzone.dmi', B, "hazard")
 			I.blend_mode = BLEND_ADD
 			I.pixel_y = 16
@@ -289,6 +375,21 @@
 			src.annotations[B] = I
 		// add key to list
 		valid_keys |= B
+	//highlight deconstruction targets
+	for(var/atom/D in src.deconstruct_targets)
+		if(!(D in src.annotations))
+			// create a new image
+			I = image('icons/misc/featherzone.dmi', D, "hazard")
+			I.blend_mode = BLEND_ADD
+			I.pixel_y = 16
+			I.plane = PLANE_ABOVE_LIGHTING
+			I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+			// add to subscribers for annotations
+			images_to_add |= I
+			src.annotations[D] = I
+		// add key to list
+		if(!D.disposed)
+			valid_keys |= D
 	var/list/to_remove = list()
 	for(var/atom/key in src.annotations)
 		if(!(key in valid_keys))
@@ -352,12 +453,20 @@
 		count++
 	return count
 
+/datum/flock/proc/toggleDeconstructionFlag(var/atom/target)
+	if(target in src.deconstruct_targets)
+		src.deconstruct_targets -= target
+	else
+		src.deconstruct_targets += target
+	src.updateAnnotations()
 // ENEMIES
 
-/datum/flock/proc/updateEnemy(var/mob/living/M)
+/datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
-	var/enemy_name = lowertext(M.name)
+	if(!isliving(M) && !iscritter(M))
+		return
+	var/enemy_name = M
 	var/list/enemy_deets
 	if(!(enemy_name in src.enemies))
 		// add new
@@ -372,16 +481,15 @@
 	// update annotations indicating enemies for flockmind and co
 	src.updateAnnotations()
 
-/datum/flock/proc/removeEnemy(var/mob/living/M)
+/datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
-	for(var/name in src.enemies)
-		var/list/enemy_stats = src.enemies[name]
-		if(enemy_stats["mob"] == M)
-			src.enemies -= name
+	if(!isliving(M) && !iscritter(M))
+		return
+	src.enemies -= M
 	src.updateAnnotations()
 
-/datum/flock/proc/isEnemy(var/mob/living/M)
-	var/enemy_name = lowertext(M.name)
+/datum/flock/proc/isEnemy(atom/M)
+	var/enemy_name = M
 	return (enemy_name in src.enemies)
 
 // DEATH
@@ -406,6 +514,8 @@
 /datum/flock/proc/reserveTurf(var/turf/simulated/T, var/name)
 	if(T in all_owned_tiles)
 		return
+	if(T in src.busy_tiles)
+		return //can't reserve tiles that are already reserved
 	src.busy_tiles[name] = T
 	src.updateAnnotations()
 
@@ -467,6 +577,11 @@
 	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
 		ufs.process()
 
+	//handle deconstruct targets being destroyed by other means
+	for(var/atom/S in src.deconstruct_targets)
+		if(S.disposed)
+			src.deconstruct_targets -= S
+
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
 	src.claimTurf(flock_convert_turf(T))
@@ -475,6 +590,13 @@
 ///Unlock an achievement (string) if it isn't already unlocked
 /datum/flock/proc/achieve(var/str)
 	src.achievements |= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
+
+/datum/flock/proc/unAchieve(var/str)
+	src.achievements -= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
 
 ///Unlock an achievement (string) if it isn't already unlocked
 /datum/flock/proc/hasAchieved(var/str)
@@ -486,6 +608,9 @@
 // made into a global proc so a reagent can use it
 // simple enough: if object path matches key, replace with instance of value
 // if value is null, just delete object
+// !!!! priority is determined by list order !!!!
+// if you have a subclass, it MUST go first in the list, or the first type that matches will take priority (ie, the superclass)
+// see /obj/machinery/light/small/floor and /obj/machinery/light for examples of this
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
 	/obj/window = /obj/window/feather,
@@ -493,6 +618,7 @@
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
 	/obj/table = /obj/table/flock/auto,
+	/obj/machinery/light/small/floor = /obj/machinery/light/flock/floor,
 	/obj/machinery/light = /obj/machinery/light/flock,
 	/obj/storage/closet = /obj/storage/closet/flock,
 	/obj/storage/secure/closet = /obj/storage/closet/flock,
@@ -524,8 +650,9 @@
 			animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/simulated/wall))
-		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		var/turf/converted_wall = T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
 		animate_flock_convert_complete(T)
+		APPLY_ATOM_PROPERTY(converted_wall, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 
 	// regular and flock lattices
 	var/obj/lattice/lat = locate(/obj/lattice) in T
@@ -543,7 +670,8 @@
 	if(istype(T, /turf/space))
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
 		if(!FL)
-			new /obj/lattice/flock(T)
+			FL = new /obj/lattice/flock(T) //may as well reuse the var
+			APPLY_ATOM_PROPERTY(FL, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
@@ -560,28 +688,32 @@
 			var/obj/machinery/door/feather/door = O
 			door.heal_damage()
 			animate_flock_convert_complete(O)
-		for(var/keyPath in flock_conversion_paths)
-			var/obj/replacementPath = flock_conversion_paths[keyPath]
-			if(istype(O, keyPath))
-				if(isnull(replacementPath))
-					qdel(O)
-				else
-					var/dir = O.dir
-					var/obj/converted = new replacementPath(T)
-					// if the object is a closet, it might not have spawned its contents yet
-					// so force it to do that first
-					if(istype(O, /obj/storage))
-						var/obj/storage/S = O
-						if(!isnull(S.spawn_contents))
-							S.make_my_stuff()
-					// if the object has contents, move them over!!
-					for (var/obj/OO in O)
-						OO.set_loc(converted)
-					for (var/mob/M in O)
-						M.set_loc(converted)
-					qdel(O)
-					converted.set_dir(dir)
-					animate_flock_convert_complete(converted)
+		else
+			for(var/keyPath in flock_conversion_paths) //types are converted with priority determined by list order
+				var/obj/replacementPath = flock_conversion_paths[keyPath] //put subclasses ahead of superclasses in the flock_conversion_paths list
+				if(istype(O, keyPath))
+					if(isnull(replacementPath))
+						qdel(O)
+					else
+						var/dir = O.dir
+						var/obj/converted = new replacementPath(T)
+						// if the object is a closet, it might not have spawned its contents yet
+						// so force it to do that first
+						if(istype(O, /obj/storage))
+							var/obj/storage/S = O
+							if(!isnull(S.spawn_contents))
+								S.make_my_stuff()
+						// if the object has contents, move them over!!
+						for (var/obj/OO in O)
+							OO.set_loc(converted)
+						for (var/mob/M in O)
+							M.set_loc(converted)
+						qdel(O)
+						converted.set_dir(dir)
+						APPLY_ATOM_PROPERTY(converted, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
+						animate_flock_convert_complete(converted)
+					break //we found and converted the type, don't convert it again
+
 
 	return T
 

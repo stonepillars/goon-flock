@@ -13,6 +13,8 @@
 /obj/machinery/door/feather/New()
 	..()
 	setMaterial("gnesis")
+	var/datum/component/C = src.GetComponent(/datum/component/mechanics_holder)
+	C?.RemoveComponent()
 	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /obj/machinery/door/feather/special_desc(dist, mob/user)
@@ -92,6 +94,11 @@
 
 /obj/machinery/door/feather/attack_hand(mob/user as mob)
 	return src.Attackby(null, user)
+
+/obj/machinery/door/feather/bullet_act(obj/projectile/P)
+	if (istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
+		return
+	..()
 
 /obj/machinery/door/feather/allowed(mob/M)
 	return isflock(M) // haha fuck you everyone else

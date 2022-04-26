@@ -51,8 +51,8 @@
 /mob/living/critter/flock/New(var/atom/L, var/datum/flock/F=null)
 	..()
 
-	// throw away the ability holder
 	qdel(abilityHolder)
+	APPLY_ATOM_PROPERTY(src, PROP_MOB_RADPROT, src, 100)
 
 	// do not automatically set up a flock if one is not provided
 	// flockless drones act differently
@@ -391,6 +391,8 @@
 					D.icon_state = "door1"//make it not look broke
 			else
 				T.HealDamage("All", T.health_brute / 3, T.health_burn / 3)
+				if (T.is_npc)
+					T.ai.interrupt()
 			F.pay_resources(10)
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -402,10 +404,10 @@
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 60
 
-	var/mob/living/target
+	var/atom/target
 	var/obj/decal/decal
 
-	New(var/mob/living/ntarg, var/duration_i)
+	New(var/atom/ntarg, var/duration_i)
 		..()
 		if (ntarg)
 			target = ntarg
@@ -428,7 +430,9 @@
 					F, "<span class='notice'>You begin imprisoning [target]. You will both need to stay still for this to work.</span>",
 					target, "<span class='alert'>[F] is forming a structure around you!</span>",
 					"You hear strange building noises.")
-				target.was_harmed(F, null, "flock", INTENT_DISARM)
+				if(istype(target,/mob/living))
+					var/mob/living/M = target
+					M.was_harmed(F, null, "flock", INTENT_DISARM)
 				// do effect
 				src.decal = new /obj/decal/flock_build_wall
 				if(src.decal)
@@ -447,7 +451,7 @@
 			qdel(src.decal)
 		var/mob/living/critter/flock/F = owner
 		if(F && target && in_interact_range(owner, target))
-			var/obj/icecube/flockdrone/cage = new /obj/icecube/flockdrone(target.loc, target, F.flock)
+			var/obj/flock_structure/cage/cage = new /obj/flock_structure/cage(target.loc, target, F.flock)
 			cage.visible_message("<span class='alert'>[cage] forms around [target], entombing them completely!</span>")
 			F.pay_resources(15)
 			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 70, 1)
@@ -477,42 +481,73 @@
 
 	onStart()
 		..()
-		owner.visible_message("<span style='color:blue'>[owner] begins deconstructing [target].</span>")
+		owner.visible_message("<span class='alert'>[owner] begins deconstructing [target].</span>")
 
 	onInterrupt()
 		..()
 
 	onEnd()
 		..()
-		switch(target.type)
-			if(/obj/storage/closet/flock)
-				var/turf/T = get_turf(target)
-				var/obj/storage/closet/flock/c = target
-				playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-				var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-				S.set_loc(T)
-				S.setMaterial(getMaterial("gnesisglass"))
-				c.dump_contents()
-				qdel(target)
-				target = null
-			if(/turf/simulated/wall/auto/feather)
-				var/turf/simulated/wall/auto/feather/f = target
-				f.destroy_resources()
-			if(/obj/machinery/door/feather)
-				var/turf/T = get_turf(target)
-				playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-				var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-				S.set_loc(T)
-				S.setMaterial(getMaterial("gnesisglass"))
-				S = new /obj/item/raw_material/shard
-				S.set_loc(T)
-				S.setMaterial(getMaterial("gnesis"))
-				qdel(target)
-				target = null
-			if(/obj/table/flock, /obj/table/flock/auto)
-				var/obj/table/flock/f = target
-				playsound(f, "sound/items/Deconstruct.ogg", 50, 1)
-				f.deconstruct()
+		//good news, switch is awful, we're doing an if chain now
+		if(istype(target, /obj/storage/closet/flock))
+			var/turf/T = get_turf(target)
+			var/obj/storage/closet/flock/c = target
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesisglass"))
+			c.dump_contents()
+			qdel(target)
+			target = null
+		if(istype(target, /turf/simulated/wall/auto/feather))
+			var/turf/simulated/wall/auto/feather/f = target
+			var/turf/T = get_turf(target)
+			f.destroy_resources()
+			make_cleanable( /obj/decal/cleanable/flockdrone_debris/fluid,T)
+		if(istype(target, /obj/machinery/door/feather))
+			var/turf/T = get_turf(target)
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesisglass"))
+			S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesis"))
+			qdel(target)
+			target = null
+		if(istype(target, /obj/table/flock))
+			var/obj/table/flock/f = target
+			playsound(f, "sound/items/Deconstruct.ogg", 50, 1)
+			f.deconstruct()
+		if(istype(target, /obj/flock_structure))
+			var/obj/flock_structure/f = target
+			f.deconstruct()
+		if(istype(target, /obj/stool/chair/comfy/flock))
+			var/obj/stool/chair/comfy/flock/c = target
+			c.deconstruct()
+		if(istype(target, /obj/machinery/light/flock))
+			var/turf/T = get_turf(target)
+			make_cleanable( /obj/decal/cleanable/flockdrone_debris/fluid,T)
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			qdel(target)
+		if(istype(target, /obj/lattice/flock))
+			qdel(target)
+		if(istype(target, /obj/grille/flock))
+			qdel(target)
+		if(istype(target, /obj/window/feather))
+			var/obj/window/the_window = target
+			//copied wholesale from the /obj/window deconstruction code
+			var/obj/item/sheet/A = new /obj/item/sheet(get_turf(the_window))
+			if(the_window.material)
+				A.setMaterial(the_window.material)
+			else
+				var/datum/material/M = getMaterial("glass")
+				A.setMaterial(M)
+			if(!(the_window.dir in cardinal)) // full window takes two sheets to make
+				A.amount += 1
+			if(the_window.reinforcement)
+				A.set_reinforcement(the_window.reinforcement)
+			qdel(the_window)
 //
 //deposit action
 //
@@ -548,7 +583,7 @@
 		amounttopay = min(F.resources, difference, 10)
 		F.pay_resources(amounttopay)
 		target.currentmats += amounttopay
-		if(F.resources && !F.is_npc) //npc check just to make sure it doesnt interfere with their ai.
+		if(F.resources)
 			src.onRestart() //restart the action akin to automenders
 
 // flock health holders

@@ -45,7 +45,8 @@
 	abilityHolder = new /datum/abilityHolder/critter/flockdrone(src)
 
 	SPAWN(3 SECONDS) // aaaaaaa
-		src.zone_sel.change_hud_style('icons/mob/flock_ui.dmi')
+		//this is terrible, but diffracting a drone immediately causes a runtime
+		src?.zone_sel?.change_hud_style('icons/mob/flock_ui.dmi')
 
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
@@ -100,6 +101,7 @@
 		return
 	src.controller = pilot
 	walk(src, 0)
+	src.ai.stop_move() //cancel any pathing that's happening
 	src.is_npc = 0
 	src.dormant = 0
 	src.anchored = 0
@@ -132,6 +134,12 @@
 		// don't know how this happened but you need a controller right now
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
 	if(controller)
+		if (src.floorrunning)
+			src.end_floorrunning()
+			if (istype(src.loc, /turf/simulated/floor/feather))
+				var/turf/simulated/floor/feather/floor = src.loc
+				if (floor.on && !floor.connected)
+					floor.off()
 		// move controller out
 		controller.set_loc(get_turf(src))
 		// move us over to the controller
@@ -186,7 +194,7 @@
 			special_desc += "<br><span class='bold'>ID:</span> [src.real_name]"
 		special_desc += {"<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
 		<br><span class='bold'>Resources:</span> [src.resources]
-		<br><span class='bold'>System Integrity:</span> [round(src.get_health_percentage()*100)]%
+		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
 		<br><span class='bold'>Cognition:</span> [isalive(src) && !dormant ? src.is_npc ? "TORPID" : "SAPIENT" : "ABSENT"]"}
 		if (src.is_npc && istype(src.ai.current_task))
 			special_desc += "<br><span class='bold'>Task:</span> [uppertext(src.ai.current_task.name)]"
@@ -314,6 +322,14 @@
 /mob/living/critter/flock/drone/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return 1
+	if (src.floorrunning && src.resources >= 1)
+		src.resources--
+		if (src.resources < 1)
+			src.end_floorrunning()
+			if (istype(src.loc, /turf/simulated/floor/feather))
+				var/turf/simulated/floor/feather/floor = src.loc
+				if (floor.on && !floor.connected)
+					floor.off()
 	var/obj/item/I = absorber.item
 
 	if(I)
@@ -368,7 +384,7 @@
 				src.antigrab_counter = 0
 	else
 		src.antigrab_counter = 0
-	if(keys & KEY_RUN)
+	if(keys & KEY_RUN && src.resources >= 1)
 		if(!src.floorrunning && isfeathertile(src.loc))
 			if(istype(src.loc, /turf/simulated/floor/feather))
 				var/turf/simulated/floor/feather/floor = src.loc
@@ -409,7 +425,6 @@
 
 /mob/living/critter/flock/drone/Move(NewLoc, direct)
 	if(!canmove) return
-
 	if(floorrunning)
 		// do our custom MOVE THROUGH ANYTHING stuff
 		// copypasted from intangible.dm
@@ -432,7 +447,7 @@
 		return ..(NewLoc, direct)
 
 // catchall for shitlisting a dude that attacks us
-/mob/living/critter/flock/drone/proc/harmedBy(var/mob/enemy)
+/mob/living/critter/flock/drone/proc/harmedBy(var/atom/enemy)
 	if(isflock(enemy))
 		return
 	if(!isdead(src) && src.is_npc && src.flock)
@@ -450,12 +465,18 @@
 	if(floorrunning)
 		return // haha fuck you i'm in the FLOOR
 	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
-		src.visible_message("<span class='notice'>[src] harmlessly absorbs the [P].</span>")
+		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
 	else
 		..()
 		var/mob/attacker = P.shooter
 		if(istype(attacker))
 			src.harmedBy(attacker)
+
+/mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
+	. = ..()
+	var/mob/attacker = thr.user
+	if(istype(attacker) && !isflock(attacker))
+		src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
 	// check whatever reagents are about to get dumped on us
@@ -484,8 +505,10 @@
 // also maybe we've just had environmental damage, who knows
 /mob/living/critter/flock/drone/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
 	..()
-	var/prev_damaged = src.damaged
 	src.check_health()
+	if (brute <= 0 && burn <= 0 && tox <= 0)
+		return
+	var/prev_damaged = src.damaged
 	if(!isdead(src) && src.is_npc)
 		// if we've been damaged a new stage, call it out
 		if(prev_damaged != src.damaged && src.damaged > 0)
@@ -613,7 +636,7 @@
 	var/mob/living/critter/flock/bit/B
 	// get candidate places to move them
 	var/turf/T = get_turf(src)
-	var/list/candidate_turfs = getNeighbors(T, alldirs)
+	var/list/candidate_turfs = getneighbours(src)
 	for(var/i=1 to num_bits)
 		B = new(get_turf(src), F = src.flock)
 		src.flock?.registerUnit(B)
@@ -745,8 +768,14 @@
 		return
 	if (user.floorrunning)
 		return // you'll need to be out of the floor to do anything
+
+	if(istype(target,/obj/critter)) //gods how I hate /obj/critter
+		if(user.a_intent == INTENT_DISARM)
+			src.disarm(target,user)
+			return
+
 	// CONVERT TURF
-	if(!isturf(target) && !(istype(target, /obj/storage/closet/flock) || istype(target, /obj/table/flock) || istype(target, /obj/structure/girder) || istype(target, /obj/machinery/door/feather) || istype(target, /obj/flock_structure/ghost)))
+	if(!isturf(target) && !HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
 		target = get_turf(target)
 
 	if(istype(target, /turf) && !istype(target, /turf/simulated) && !istype(target, /turf/space))
@@ -776,26 +805,14 @@
 		if(istype(target, /turf))
 			actions.start(new/datum/action/bar/flock_convert(target), user)
 	if(user.a_intent == INTENT_HARM)
-		switch (target.type)
-			if(/obj/table/flock, /obj/table/flock/auto)
+		//furniture
+		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
+			if(target?.material.mat_id == "gnesis")
 				actions.start(new /datum/action/bar/flock_decon(target), user)
-			if(/obj/storage/closet/flock)
-				//soap
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-			if(/turf/simulated/wall/auto/feather)
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-			if(/obj/structure/girder)
-				if(target?.material.mat_id == "gnesis")
-					var/atom/A = new /obj/item/sheet(get_turf(target))
-					if (target.material)
-						A.setMaterial(target.material)
-						qdel(target)
-				else
-					return
-			if(/obj/machinery/door/feather)
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-			else
-				..()
+		else
+			..()
 //help intent actions
 	else if(user.a_intent == INTENT_HELP)
 		switch(target.type)//making this into switches for easy of expansion later
@@ -823,6 +840,8 @@
 		if(F.get_health_percentage() >= 1.0)
 			boutput(user, "<span class='alert'>They don't need to be repaired, they're in perfect condition.</span>")
 			return
+		if (isdead(F))
+			return
 		if(user.resources < 10)
 			boutput(user, "<span class='alert'>Not enough resources to repair (you need 10).</span>")
 		else
@@ -830,8 +849,10 @@
 	else
 		..()
 
-/datum/limb/flock_converter/disarm(mob/target, var/mob/living/critter/flock/drone/user)
+/datum/limb/flock_converter/disarm(atom/target, var/mob/living/critter/flock/drone/user)
 	if(!target || !user)
+		return
+	if(!(isliving(target) || iscritter(target)))
 		return
 	if(isintangible(target))
 		return // STOP CAGING AI EYES
@@ -846,7 +867,7 @@
 		return
 	else if(user.resources < 15)
 		boutput(user, "<span class='alert'>Not enough resources to imprison (you need 15).</span>")
-	else if(istype(target.loc, /obj/icecube/flockdrone))
+	else if(istype(target.loc, /obj/flock_structure/cage))
 		boutput(user, "<span class='alert'>They're already imprisoned, you can't double-imprison them!</span>")
 	else
 		actions.start(new/datum/action/bar/flock_entomb(target), user)
