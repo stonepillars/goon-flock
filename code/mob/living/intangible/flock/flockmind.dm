@@ -91,6 +91,7 @@
 	src.addAbility(/datum/targetable/flockmindAbility/radioStun)
 	src.addAbility(/datum/targetable/flockmindAbility/directSay)
 	src.addAbility(/datum/targetable/flockmindAbility/createStructure)
+	src.addAbility(/datum/targetable/flockmindAbility/deconstruct)
 
 /mob/living/intangible/flock/flockmind/death(gibbed)
 	if(src.client)
@@ -118,7 +119,7 @@
 
 
 /mob/living/intangible/flock/flockmind/proc/partition()
-	boutput(src, "<span class='notice'>Partitioning initiated. Stand by.</span>")
+	boutput(src, "<span class='flocksay'>Partitioning initiated. Stand by.</span>")
 
 	var/ghost_confirmation_delay = 30 SECONDS
 
@@ -138,7 +139,7 @@
 	if (!length(candidates))
 		message_admins("No ghosts responded to a Flocktrace offer from [src.real_name]")
 		logTheThing("admin", null, null, "No ghosts responded to Flocktrace offer from [src.real_name]")
-		boutput(src, "<span class='alert'>Unable to partition, please try again later.</span>")
+		boutput(src, "<span class='flocksay'>Partition failure: unable to coalesce sentience.</span>")
 		return TRUE
 
 	var/mob/picked = pick(candidates)
