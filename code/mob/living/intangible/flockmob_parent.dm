@@ -207,10 +207,6 @@
 //moved from flockmind to allow traces to teleport
 /mob/living/intangible/flock/flockmind/Topic(href, href_list)
 	if(href_list["origin"])
-		if (istype(origin, /mob/living/critter/flock/drone))
-			var/mob/living/critter/flock/drone/flockdrone = origin
-			if (flockdrone.flock != src.flock)
-				return
 		var/atom/movable/origin = locate(href_list["origin"])
 		if(!QDELETED(origin))
 			if (istype(origin, /mob/living/critter/flock/drone))
