@@ -812,14 +812,16 @@
 			..()
 //help intent actions
 	else if(user.a_intent == INTENT_HELP)
+		if (istype(target, /obj/flock_structure/ghost))
+			if (user.resources <= 0)
+				boutput(user, "<span class='alert'>No resources available for construction.</span>")
+			else
+				actions.start(new /datum/action/bar/flock_deposit(target), user)
+			return
+		if (!HAS_ATOM_PROPERTY(target, PROP_ATOM_FLOCK_THING) && !istype(target, /turf/simulated/floor/feather))
+			return
 		var/found_target = FALSE
 		if (istype(target, /obj/flock_structure))
-			if (istype(target, /obj/flock_structure/ghost))
-				if (user.resources <= 0)
-					boutput(user, "<span class='alert'>No resources available for construction.</span>")
-				else
-					actions.start(new /datum/action/bar/flock_deposit(target), user)
-				return
 			var/obj/flock_structure/structure = target
 			if (structure.health < structure.health_max)
 				found_target = TRUE
@@ -849,7 +851,9 @@
 					var/obj/storage/closet/flock/closet = target
 					if (closet.health_attack < closet.health_max)
 						found_target = TRUE
-		if (found_target)
+		if (!found_target)
+			boutput(user, "<span class='alert'>The target is in perfect condition!</span>")
+		else
 			if(user.resources < 10)
 				boutput(user, "<span class='alert'>Not enough resources to repair (you need 10).</span>")
 			else
