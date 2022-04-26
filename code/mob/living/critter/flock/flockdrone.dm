@@ -159,7 +159,6 @@
 		// clear refs
 		controller = null
 
-// sometimes we want a vegetable drone, ok
 /mob/living/critter/flock/drone/proc/dormantize()
 	src.dormant = TRUE
 	src.icon_state = "drone-dormant"
