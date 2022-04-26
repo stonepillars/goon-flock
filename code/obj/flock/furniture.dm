@@ -155,20 +155,6 @@
 			else if(user.drop_item())
 				W?.set_loc(src.loc)
 
-/obj/storage/closet/flock/proc/take_damage(var/force, var/mob/user as mob)
-	if (!isnum(force) || force <= 0)
-		return
-	src.health_attack = clamp(src.health_attack - force, 0, src.health_max)
-	if (src.health_attack <= 0)
-		var/turf/T = get_turf(src)
-		playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-		var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-		S.set_loc(T)
-		S.setMaterial(getMaterial("gnesisglass"))
-		src.dump_contents()
-		make_cleanable( /obj/decal/cleanable/flockdrone_debris, T)
-		qdel(src)
-
 /obj/storage/closet/flock/proc/repair()
 	src.health_attack = min(src.health_attack + 25, src.health_max)
 
