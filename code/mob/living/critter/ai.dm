@@ -204,7 +204,6 @@ var/list/ai_move_scheduled = list()
 	proc/next_task()
 		return null
 
-	SHOULD_CALL_PARENT(TRUE)
 	proc/on_reset()
 		holder.target = null
 
