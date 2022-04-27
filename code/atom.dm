@@ -292,12 +292,12 @@
 	#endif
 	SEND_SIGNAL(src, COMSIG_ATOM_CROSSED, AM)
 
-/atom/Entered(atom/movable/AM)
+/atom/Entered(atom/movable/AM, atom/OldLoc)
 	SHOULD_CALL_PARENT(TRUE)
 	#ifdef SPACEMAN_DMM //im cargo culter
 	..()
 	#endif
-	SEND_SIGNAL(src, COMSIG_ATOM_ENTERED, AM)
+	SEND_SIGNAL(src, COMSIG_ATOM_ENTERED, AM, OldLoc)
 
 /atom/proc/ProximityLeave(atom/movable/AM as mob|obj)
 	return
@@ -339,6 +339,7 @@
 /// Call this proc inplace of update_icon(...)
 /atom/proc/UpdateIcon(...)
 	SHOULD_NOT_OVERRIDE(TRUE)
+	if (HAS_ATOM_PROPERTY(src, PROP_ATOM_NO_ICON_UPDATES)) return
 	SEND_SIGNAL(src, COMSIG_ATOM_PRE_UPDATE_ICON)
 	update_icon(arglist(args))
 	SEND_SIGNAL(src, COMSIG_ATOM_POST_UPDATE_ICON)
@@ -581,6 +582,11 @@
 
 	if (iscarbon(usr) || issilicon(usr))
 		add_fingerprint(usr)
+
+	if (istype(usr, /mob/living/critter/flock/drone))
+		var/mob/living/critter/flock/drone/flockdrone = usr
+		if (flockdrone.floorrunning)
+			return
 
 	if (istype(src,/obj/item/old_grenade/light_gimmick))
 		boutput(usr, "<span class='notice'>You feel your hand reach out and clasp the grenade.</span>")
