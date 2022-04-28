@@ -1135,7 +1135,7 @@
 	name = "Control flockdrone"
 	desc = "You shouldn't be reading this, bug."
 	icon_state = "wrench"
-	close_clicked = 1
+	close_clicked = TRUE
 	/// The flockdrone aiTask subtype we should switch to upon cast
 	var/task_type = null
 
