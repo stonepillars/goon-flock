@@ -12,7 +12,7 @@
 	var/time_started = 0
 	var/build_time = 6 // in seconds
 	var/health = 30 // fragile little thing
-	var/health_max
+	var/health_max = 30
 	var/bruteVuln = 1.2
 	/// very flame-retardant
 	var/fireVuln = 0.2
@@ -36,6 +36,7 @@
 	time_started = world.timeofday
 	processing_items |= src
 	setMaterial(getMaterial("gnesis"))
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, "flock_structure")
 
 	if(F)
 		src.flock = F
@@ -129,6 +130,17 @@
 	if(src.health <= 0)
 		src.gib()
 
+/obj/flock_structure/proc/deconstruct()
+	//you can have half your resources back
+	visible_message("<span class='alert'>[src.name] suddenly dissolves!</span>")
+	var/refund = round((src.health/src.health_max) * 0.5 * src.resourcecost) //this is floor(), depsite the name
+	if(refund >= 1)
+		var/obj/item/flockcache/cache = new(get_turf(src))
+		cache.resources = refund
+	src.flock?.removeDrone(src)
+	qdel(src)
+
+
 /obj/flock_structure/proc/gib(atom/location)
 	// no parent calling, we're going to completely override this
 	if (!location)
@@ -152,6 +164,9 @@
 			B.throw_at(get_edge_cheap(location, pick(alldirs)), rand(10), 3)
 	src.flock?.removeDrone(src)
 	qdel(src)
+
+/obj/flock_structure/proc/repair()
+	src.health = min(src.health + 50, src.health_max)
 
 /obj/flock_structure/attack_hand(var/mob/user)
 	attack_particle(user, src)
