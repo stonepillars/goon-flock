@@ -80,10 +80,11 @@
 	..()
 
 /mob/living/critter/flock/drone/disposing()
-	if (controller)
-		src.release_control_abrupt()
-	flock_speak(null, "Connection to drone [src.real_name] lost.", src.flock)
-	src.flock?.removeDrone(src)
+	if (src.flock)
+		if (controller)
+			src.release_control_abrupt()
+		flock_speak(null, "Connection to drone [src.real_name] lost.", src.flock)
+		src.flock.removeDrone(src)
 	src.remove_simple_light("drone_light")
 	..()
 
