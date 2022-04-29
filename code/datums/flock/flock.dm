@@ -355,7 +355,7 @@
 		src.units -= D
 
 		if(D:real_name && busy_tiles[D:real_name])
-			src.busy_tiles[D:real_name] = null
+			src.unreserveTurf(D:real_name)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 // STRUCTURES
