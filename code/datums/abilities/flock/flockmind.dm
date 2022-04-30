@@ -11,6 +11,11 @@
 	topBarRendered = 1
 	rendered = 1
 	notEnoughPointsMessage = "<span class='alert'>Insufficient available compute resources.</span>"
+	var/datum/targetable/flockmindAbility/droneControl/drone_controller = null
+
+	New()
+		..()
+		drone_controller = addAbility(/datum/targetable/flockmindAbility/droneControl)
 
 /datum/abilityHolder/flockmind/proc/updateCompute()
 	var/mob/living/intangible/flock/flockmind/F = owner
@@ -408,6 +413,7 @@
 
 
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
+
 	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
 
 	if (!structurewanted)
@@ -444,7 +450,7 @@
 /datum/targetable/flockmindAbility/deconstruct
 	name = "Mark for Deconstruction"
 	desc = "Mark an existing flock structure for deconstruction, refunding some resources."
-	icon_state = "ping"
+	icon_state = "destroystructure"
 	cooldown = 0.1 SECONDS
 
 /datum/targetable/flockmindAbility/deconstruct/cast(atom/target)
@@ -468,3 +474,14 @@
 
 
 
+/datum/targetable/flockmindAbility/droneControl
+	cooldown = 0
+	icon = null
+	var/task_type
+	var/mob/living/critter/flock/drone/drone = null
+
+/datum/targetable/flockmindAbility/droneControl/cast(atom/target)
+	var/datum/aiTask/task = drone.ai.get_instance(task_type, list(drone.ai, drone.ai.default_task))
+	task.target = target
+	drone.ai.priority_tasks += task
+	drone.ai.interrupt()

@@ -75,6 +75,11 @@ butcher
 	weight = 0
 	can_be_adjacent_to_target = FALSE
 	max_dist = 0
+
+	on_tick()
+		if (!holder.target)
+			holder.target = get_turf(src.target)
+		. = ..()
 // most of the functionality here is already in the base goalbased task, we only want movement
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -199,6 +204,13 @@ butcher
 		if (F.flock?.isTurfFree(T, F.real_name))
 			F.flock.reserveTurf(T, F.real_name)
 
+/datum/aiTask/sequence/goalbased/build/valid_target(var/atom/target)
+	var/mob/living/critter/flock/F = holder.owner
+	if(!isfeathertile(target))
+		if(F?.flock && !F.flock.isTurfFree(target, F.real_name))
+			return FALSE
+		return TRUE
+
 /datum/aiTask/sequence/goalbased/build/get_targets()
 	var/mob/living/critter/flock/F = holder.owner
 
@@ -222,11 +234,10 @@ butcher
 	. = list()
 	// else just go for one nearby
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
-		if(!isfeathertile(T))
-			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
-				continue // this tile's been claimed by someone else
-			// if we can get a valid path to the target, include it for consideration
-			. += T
+		if (!valid_target(T))
+			continue // this tile's been claimed by someone else
+		// if we can get a valid path to the target, include it for consideration
+		. += T
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 ////////
@@ -389,6 +400,7 @@ butcher
 				has_started = TRUE
 
 /datum/aiTask/succeedable/repair/on_reset()
+	..()
 	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -410,6 +422,7 @@ butcher
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/deposit/on_reset()
+	..()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F)
 		F.active_hand = 2 // nanite spray
@@ -784,23 +797,27 @@ butcher
 		holder.target = get_best_target(get_targets())
 	..()
 
+/datum/aiTask/sequence/goalbased/flockdrone_capture/valid_target(atom/target)
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(!F.flock.isEnemy(target))
+		return FALSE
+	if(istype(target,/mob/living))
+		var/mob/living/mob = target
+		if(!is_incapacitated(mob))
+			return FALSE
+	// mob is a valid target, check if they're not already in a cage
+	if(!istype(target.loc, /obj/flock_structure/cage))
+		return TRUE
+
 /datum/aiTask/sequence/goalbased/flockdrone_capture/get_targets()
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
 		for(var/atom/T in view(max_dist, holder.owner))
-			if(!F.flock.isEnemy(T))
-				continue
-			if(istype(T,/mob/living))
-				var/mob/living/M = T
-				if(!is_incapacitated(M))
-					continue
-
-			// mob is a valid target, check if they're not already in a cage
-			if(!istype(T.loc, /obj/flock_structure/cage))
+			if (valid_target(T))
 				// if we can get a valid path to the target, include it for consideration
 				. += T
-			F.flock.updateEnemy(T)
+				F.flock.updateEnemy(T)
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 /datum/aiTask/succeedable/capture
@@ -835,16 +852,18 @@ butcher
 				holder.interrupt() //this should basically never happen, but sanity check just in case
 				return
 			else if(!actions.hasAction(owncritter, "flock_entomb")) // let's not keep interrupting our own action
-				if(owncritter.active_hand != 2) // nanite spray
-					owncritter.set_hand(2)
-					owncritter.set_a_intent(INTENT_DISARM)
-					owncritter.hud.update_intent()
 				owncritter.set_dir(get_dir(owncritter, holder.target))
 				owncritter.hand_attack(holder.target)
 		else
 			holder.interrupt() //somehow lost target, go do something else
 			return
 /datum/aiTask/succeedable/capture/on_reset()
+	var/mob/living/critter/flock/drone/drone = holder.owner
+	if (drone)
+		drone.set_hand(2) // nanite spray
+		drone.set_a_intent(INTENT_DISARM)
+		drone.hud?.update_intent()
+		drone.hud?.update_hands()
 	has_started = FALSE
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -862,6 +881,7 @@ butcher
 
 
 /datum/aiTask/sequence/goalbased/butcher/on_reset()
+	..()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F)
 		F.active_hand = 2 // nanite spray
@@ -908,6 +928,57 @@ butcher
 /datum/aiTask/succeedable/butcher/on_reset()
 	has_started = FALSE
 
+///Since we don't want flockdrones building barricades randomly, this task only exists for the targetable version to inherit from
+/datum/aiTask/sequence/goalbased/barricade
+	name = "barricading"
+	can_be_adjacent_to_target = TRUE
+
+/datum/aiTask/sequence/goalbased/barricade/New(parentHolder, transTask)
+	..(parentHolder, transTask)
+	add_task(holder.get_instance(/datum/aiTask/succeedable/barricade, list(holder)))
+
+/datum/aiTask/sequence/goalbased/barricade/valid_target(atom/target)
+	return isfeathertile(target) && !is_blocked_turf(target)
+
+/datum/aiTask/sequence/goalbased/barricade/on_reset()
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(F)
+		F.active_hand = 2 // nanite spray
+		F.set_a_intent(INTENT_DISARM)
+		F.hud?.update_intent()
+		F.hud?.update_hands() // for observers
+
+/datum/aiTask/succeedable/barricade
+	name = "barricade subtask"
+	var/has_started = FALSE
+
+/datum/aiTask/succeedable/barricade/failed()
+	var/mob/living/critter/flock/F = holder.owner
+	if(!F)
+		return TRUE
+	if(!F.can_afford(25))
+		return TRUE
+	if(get_dist(F, holder.target) > 1) //moved away before we could finish
+		return TRUE
+
+/datum/aiTask/succeedable/barricade/succeeded()
+	return is_blocked_turf(target) || (has_started && !actions.hasAction(holder.owner, "flock_construct"))
+
+/datum/aiTask/succeedable/barricade/on_tick()
+	if (!has_started && !failed() && !succeeded())
+		var/mob/living/critter/flock/drone/drone = holder.owner
+		var/dist = get_dist(drone, holder.target)
+		if(dist > 1)
+			holder.interrupt() //this should basically never happen, but sanity check just in case
+			return
+		else if(!actions.hasAction(drone, "flock_convert")) // let's not keep interrupting our own action
+			drone.set_dir(get_dir(drone, holder.target))
+			drone.hand_attack(holder.target)
+			has_started = TRUE
+
+/datum/aiTask/succeedable/barricade/on_reset()
+	has_started = FALSE
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DECONTSTRUCT GOAL
@@ -929,6 +1000,7 @@ butcher
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/deconstruct/on_reset()
+	..()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F)
 		F.active_hand = 2 // nanite spray
@@ -976,3 +1048,150 @@ butcher
 
 /datum/aiTask/succeedable/deconstruct/on_reset()
 	has_started = FALSE
+
+///////////////////////////////////////////////////////////////////////////////////////////////////////////
+// STARE AT BIRDS
+// targets: any bird critters
+// precondition: cooldown
+/datum/aiTask/sequence/goalbased/stare
+	name = "observing"
+	weight = 1 //same as wander
+
+/datum/aiTask/sequence/goalbased/stare/evaluate()
+	. = src.precondition() && length(src.get_targets()) ? 1 : 0  // it'd require every other task returning very small values for this to get selected
+
+/datum/aiTask/sequence/goalbased/stare/New(parentHolder, transTask)
+	..(parentHolder, transTask)
+	add_task(holder.get_instance(/datum/aiTask/succeedable/stare_at_bird, list(holder)))
+
+/datum/aiTask/sequence/goalbased/stare/precondition()
+	. = FALSE
+	if(!GET_COOLDOWN(holder.owner, "bird_staring"))
+		. = TRUE
+
+/datum/aiTask/sequence/goalbased/stare/get_targets()
+	. = list()
+	for(var/mob/living/critter/C in view(max_dist, holder.owner)) //I'm not handling obj/critter birds. i'm just not. deal with it.
+		if(istype(C,/mob/living/critter/small_animal/bird) || istype(C,/mob/living/critter/small_animal/ranch_base/chicken))
+			. += C
+	. = get_path_to(holder.owner, ., max_dist*2, 1)
+
+/datum/aiTask/sequence/goalbased/stare/reset()
+	return ..()
+////////
+
+/datum/aiTask/succeedable/stare_at_bird
+	name = "stur at burd"
+	var/has_started = FALSE
+
+/datum/aiTask/succeedable/stare_at_bird/failed()
+	return !IN_RANGE(holder.owner, holder.target, 1)
+
+/datum/aiTask/succeedable/stare_at_bird/succeeded()
+	return has_started
+
+/datum/aiTask/succeedable/stare_at_bird/on_tick()
+	if(has_started)
+		return
+
+	var/mob/living/critter/target = holder.target
+	var/mob/living/critter/flock/drone/F = holder.owner
+
+	if(!target)
+		return
+	if(!IN_RANGE(holder.owner, target, 1))
+		return
+	if(!ON_COOLDOWN(holder.owner,"bird_staring",rand(60 SECONDS, 180 SECONDS))) //you can only stare at birds once every now an then. randomise for staggering
+		switch(rand(1,100))
+			if(1 to 30)
+				//pat the birb
+				if(F.set_hand(1)) // manipulator hand
+					F.empty_hand(1) //drop any item we might be holding first
+					F.set_a_intent(INTENT_HELP)
+					holder.owner.set_dir(get_dir(holder.owner, holder.target))
+					F.hand_attack(target)
+					has_started = TRUE
+			if(30 to 50)
+				//attempt to communicate
+				holder.owner.set_dir(get_dir(holder.owner, holder.target))
+				F.emote("whistle [target]", FALSE)
+				has_started = TRUE
+			if(50 to 90)
+				//watch carefully
+				holder.owner.set_dir(get_dir(holder.owner, holder.target))
+				F.emote("stare [target]", FALSE)
+				has_started = TRUE
+			if(90 to 101)
+				if(istype(holder.target, /mob/living/critter/small_animal/bird/owl/))
+					F.say("hoot hoot")
+				else
+					F.say("tweet tweet")
+				has_started = TRUE
+
+/datum/aiTask/succeedable/stare_at_bird/on_reset()
+	..()
+	has_started = FALSE
+
+/////// Targetable AI tasks, instead of looking for targets around them they just override with their own target var
+/datum/aiTask/sequence/goalbased/build/targetable
+	switched_to()
+		on_reset()
+		if (!valid_target(holder.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid conversion target provided by sentient level instruction.", drone.flock)
+			holder.interrupt()
+
+	on_reset()
+		..()
+		holder.target = get_turf(src.target)
+
+/datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
+	switched_to()
+		on_reset()
+		if (!valid_target(holder.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid capture target provided by sentient level instruction.", drone.flock)
+			holder.interrupt()
+
+	on_reset()
+		..()
+		holder.target = src.target
+
+	//broader check because we want to be able to manually tell drones to capture non-enemies
+	valid_target(atom/target)
+		if (!ismob(target) && !iscritter(target) || isintangible(target))
+			return FALSE
+		if(istype(target,/mob/living))
+			var/mob/living/mob = target
+			if(!is_incapacitated(mob))
+				return FALSE
+		// mob is a valid target, check if they're not already in a cage
+		if(!istype(target.loc, /obj/flock_structure/cage))
+			return TRUE
+
+/datum/aiTask/sequence/goalbased/barricade/targetable
+	switched_to()
+		on_reset()
+		if (!valid_target(holder.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid construction target provided by sentient level instruction.", drone.flock)
+			holder.interrupt()
+
+	on_reset()
+		..()
+		holder.target = get_turf(src.target)
+
+/datum/aiTask/timed/targeted/flockdrone_shoot/targetable
+	switched_to()
+		on_reset()
+		if (!(ismob(src.target) || iscritter(src.target)) || isflock(src.target))
+			var/mob/living/critter/flock/drone/drone = holder.owner
+			flock_speak(drone, "Invalid elimination target provided by sentient level instruction.", drone.flock)
+			holder.interrupt()
+			return
+		var/mob/living/critter/flock/drone/drone = holder.owner
+		drone.flock.updateEnemy(src.target)
+
+	on_reset()
+		..()
+		holder.target = src.target

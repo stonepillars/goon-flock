@@ -121,16 +121,34 @@
 	// HAAAAA
 	src.visible_message("<span class='alert'>[src] is not a ghost, and is therefore unaffected by [P]!</span>","<span class='notice'>You feel a little [pick("less", "more")] [pick("fuzzy", "spooky", "glowy", "flappy", "bouncy")].</span>")
 
-// C&P'd from dead.dm until I think of something better to do
 /mob/living/intangible/flock/click(atom/target, params)
+	src.closeContextActions()
+
 	if (targeting_ability)
 		..()
-	else
-		if (get_dist(src, target) > 0)
-			set_dir(get_dir(src, target))
-		if (abilityHolder.click(target, params))
-			return
+		return
+
+	if (get_dist(src, target) > 0)
+		set_dir(get_dir(src, target))
+
+	if (abilityHolder.click(target, params)) //check the abilityholder
+		return
+
+	if (params["alt"]) //explicit examine
 		src.examine_verb(target)
+		return
+
+	var/mob/living/critter/flock/drone/drone = target
+	if (istype(drone))
+		//we have to do this manually in order to handle the input properly
+		var/datum/contextAction/active_actions = list()
+		for (var/datum/contextAction/action as anything in drone.contexts)
+			if (action.checkRequirements(target, src))
+				active_actions += action
+		src.showContextActions(active_actions, drone)
+		return
+
+	src.examine_verb(target) //default to examine
 
 /mob/living/intangible/flock/say_quote(var/text)
 	var/speechverb = pick("sings", "clicks", "whistles", "intones", "transmits", "submits", "uploads")
@@ -209,6 +227,10 @@
 	if(href_list["origin"])
 		var/atom/movable/origin = locate(href_list["origin"])
 		if(!QDELETED(origin))
+			if (istype(origin, /mob/living/critter/flock/drone))
+				var/mob/living/critter/flock/drone/flockdrone = origin
+				if (flockdrone.flock != src.flock)
+					return
 			src.set_loc(get_turf(origin))
 			if (href_list["ping"])
 				origin.AddComponent(/datum/component/flock_ping)

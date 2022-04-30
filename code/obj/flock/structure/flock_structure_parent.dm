@@ -36,6 +36,8 @@
 	time_started = world.timeofday
 	processing_items |= src
 	setMaterial(getMaterial("gnesis"))
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, "flock_structure")
+
 	if(F)
 		src.flock = F
 		src.flock.registerStructure(src)
@@ -162,6 +164,9 @@
 			B.throw_at(get_edge_cheap(location, pick(alldirs)), rand(10), 3)
 	src.flock?.removeDrone(src)
 	qdel(src)
+
+/obj/flock_structure/proc/repair()
+	src.health = min(src.health + 50, src.health_max)
 
 /obj/flock_structure/attack_hand(var/mob/user)
 	attack_particle(user, src)
