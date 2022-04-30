@@ -1,4 +1,10 @@
-
+(t)sat apr 30 22
+(e)🆕|feature
+(u)Amylizzle, LeahTheTech, FlameArrow57, Stonepillar
+(*)Re-work the Flockmind admin gimmick to a fully playable state, including new abilities, features, bugfixes and more.
+(*)Thanks to all of the coders for Goonstation for making the project possible and for providing much needed help and support.
+(*)This wouldn't be possible without our spriters too! Thank them for being awesome cookies.
+(+)Flock will be merged upstream soon.. maybe? Have fun!
 (t)fri apr 29 22
 (u)pali
 (*)GardenGear vending machines in hydroponics now have two brand new smoke-shield generators to contain your hotboxing into a safe area! Hotbox responsibly!

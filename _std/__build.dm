@@ -108,7 +108,7 @@ o+`        `-` ``..-:yooos-..----------..`
 //#define MAP_OVERRIDE_ATLAS			// gannetmap OR IS IT KUBIUSGANNETMAP??
 //#define MAP_OVERRIDE_MANTA			// manta map
 //#define MAP_OVERRIDE_DENSITY
-//#define MAP_OVERRIDE_KONDARU
+#define MAP_OVERRIDE_KONDARU
 //#define MAP_OVERRIDE_OZYMANDIAS
 //#define MAP_OVERRIDE_FLEET
 //#define MAP_OVERRIDE_ICARUS
@@ -142,20 +142,20 @@ o+`        `-` ``..-:yooos-..----------..`
 #define I_KNOW_WHAT_IM_DOING_PROBABLY
 #endif
 
-var/global/vcs_revision = "1"
-var/global/vcs_author = "bob"
+var/global/vcs_revision = "d4938629707bb644142f99ab90b72ed2b623a9eb"
+var/global/vcs_author = "goon-flock team"
 
 // The following describe when the server was compiled
-#define BUILD_TIME_TIMEZONE_ALPHA "EST" // Server is EST
-#define BUILD_TIME_TIMEZONE_OFFSET -0500
-#define BUILD_TIME_FULL "2009-02-13 18:31:30"
-#define BUILD_TIME_YEAR 2053
-#define BUILD_TIME_MONTH 01
-#define BUILD_TIME_DAY 13 //SET ME TO 13 TO TEST YOUR ASS_JAM CONTENT!!
-#define BUILD_TIME_HOUR 18
-#define BUILD_TIME_MINUTE 31
-#define BUILD_TIME_SECOND 30
-#define BUILD_TIME_UNIX 1234567890 // Unix epoch, second precision
+#define BUILD_TIME_TIMEZONE_ALPHA "EDT" // Server is EST
+#define BUILD_TIME_TIMEZONE_OFFSET -0400
+#define BUILD_TIME_FULL "2022-04-30 12:00:00"
+#define BUILD_TIME_YEAR 2022
+#define BUILD_TIME_MONTH 4
+#define BUILD_TIME_DAY 30 //SET ME TO 13 TO TEST YOUR ASS_JAM CONTENT!!
+#define BUILD_TIME_HOUR 12
+#define BUILD_TIME_MINUTE 00
+#define BUILD_TIME_SECOND 00
+#define BUILD_TIME_UNIX 1651334400 // Unix epoch, second precision
 
 // Uncomment and set to a URL with a zip of the RSC to offload RSC sending to an external webserver/CDN.
-//#define PRELOAD_RSC_URL ""
+#define PRELOAD_RSC_URL "https://dl.dropboxusercontent.com/s/4vpq99h29cvryxd/goonstation.zip"
