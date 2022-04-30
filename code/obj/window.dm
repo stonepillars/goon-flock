@@ -1059,7 +1059,6 @@
 
 /obj/window/feather/New()
 	..()
-	setMaterial(getMaterial("gnesis"))
 	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /obj/window/feather/special_desc(dist, mob/user)
