@@ -27,8 +27,7 @@
 	butcherable = 1
 
 	var/absorb_rate = 2 // how much item health is removed per tick when absorbing
-	var/absorb_per_health = 3 // how much resources we get per item health
-	var/absorb_completion = 6 // how much resources we get after the item is totally eaten
+	var/absorb_per_health = 1 // how much resources we get per item health
 
 	// dormancy means do nothing
 
@@ -401,7 +400,6 @@
 							I.health = I.w_class + 2
 			else //these things happen on completion of eating the stack/single item, but not on each item in the stack
 				I.dropped(src)
-				src.resources += src.absorb_completion
 				boutput(src, "<span class='notice'>You finish converting [I] into resources (you now have [src.resources] resource[src.resources == 1 ? "" : "s"]).</span>")
 				if(istype(I, /obj/item/organ/heart/flock))
 					var/obj/item/organ/heart/flock/F = I
