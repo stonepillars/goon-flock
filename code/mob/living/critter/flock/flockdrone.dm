@@ -388,6 +388,19 @@
 		src.resources += src.absorb_per_health * absorb
 		playsound(src, "sound/effects/sparks[rand(1,6)].ogg", 50, 1)
 		if(I && I.health <= 0) // fix runtime Cannot read null.health
+			if(length(I.contents) > 0) //not sure what item would have amount *and* contents, but I will cry if there is one - this should at least not duplicate contents
+				var/anything_tumbled = 0
+				for(var/obj/O in I.contents)
+					if(istype(O, /obj/item))
+						O.set_loc(src.loc)
+						anything_tumbled = 1
+					else
+						qdel(O)
+				if(anything_tumbled)
+					src.visible_message("<span class='alert'>The contents of [I] tumble out of [src].</span>",
+						"<span class='alert'>The contents of [I] tumble out of you.</span>",
+						"<span class='alert'>You hear things fall onto the floor.</span")
+
 			if(I.amount > 1)
 				I.inventory_counter.show_count()
 				I.change_stack_amount(-1)
@@ -416,18 +429,7 @@
 
 			playsound(src, "sound/impact_sounds/Energy_Hit_1.ogg", 50, 1)
 
-			if(length(I.contents) > 0) //not sure what item would have amount *and* contents, but I will cry if there is one
-				var/anything_tumbled = 0
-				for(var/obj/O in I.contents)
-					if(istype(O, /obj/item))
-						O.set_loc(src.loc)
-						anything_tumbled = 1
-					else
-						qdel(O)
-				if(anything_tumbled)
-					src.visible_message("<span class='alert'>The contents of [I] tumble out of [src].</span>",
-						"<span class='alert'>The contents of [I] tumble out of you.</span>",
-						"<span class='alert'>You hear things fall onto the floor.</span")
+
 
 	// AI ticks are handled in mob_ai.dm, as they ought to be
 
