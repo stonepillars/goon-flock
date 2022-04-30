@@ -383,9 +383,6 @@
 		return
 
 	var/obj/item/I = absorber.item
-
-
-	var/obj/item/I = absorber.item
 	if(I)
 		var/absorb = clamp(src.absorb_rate, 0, I.health)
 		I.health -= absorb
