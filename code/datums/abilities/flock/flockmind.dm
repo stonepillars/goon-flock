@@ -3,8 +3,34 @@
 ///////////////////////
 
 /datum/abilityHolder/flockmind
+	tabName = "Flockmind"
+	usesPoints = 1
+	points = 0 //total compute - used compute
+	var/totalCompute = 0
+	regenRate = 0
 	topBarRendered = 1
 	rendered = 1
+	notEnoughPointsMessage = "<span class='alert'>Insufficient available compute resources.</span>"
+	var/datum/targetable/flockmindAbility/droneControl/drone_controller = null
+
+	New()
+		..()
+		drone_controller = addAbility(/datum/targetable/flockmindAbility/droneControl)
+
+/datum/abilityHolder/flockmind/proc/updateCompute()
+	var/mob/living/intangible/flock/flockmind/F = owner
+	if(!F?.flock)
+		return //someone made a flockmind without a flock, or gave this ability holder to something else.
+	src.totalCompute = F.flock.total_compute()
+	var/usedCompute = F.flock.used_compute()
+	src.points = src.totalCompute - usedCompute
+
+/datum/abilityHolder/flockmind/onAbilityStat()
+	..()
+	.= list()
+	.["Compute:"] = "[round(src.points)]/[round(src.totalCompute)]"
+	//.["Total Compute:"] = round(F.flock?.total_compute())
+	return
 
 /atom/movable/screen/ability/topBar/flockmind
 	tens_offset_x = 19
@@ -57,10 +83,39 @@
 
 /datum/targetable/flockmindAbility/spawnEgg/cast(atom/target)
 	if(..())
-		return 1
+		return TRUE
+
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(F)
-		F.spawnEgg()
+
+	var/turf/T = get_turf(F)
+
+	if (istype(T, /turf/space/) || istype(T.loc, /area/station/solar) || istype(T.loc, /area/station/mining/magnet))
+		boutput(F, "<span class='alert'>Space and exposed areas are unsuitable for rift placement!</span>")
+		return TRUE
+
+	if (!isadmin(F))
+		if(IS_ARRIVALS(T.loc))
+			boutput(F, "<spawn class='alert'>Your rift can't be placed inside arrivals!</span>")
+			return TRUE
+
+		if (!istype(T.loc, /area/station/))
+			boutput(F, "<spawn class='alert'>Your rift needs to be placed on the [station_or_ship()]!</span>")
+			return TRUE
+
+		if (istype(T, /turf/unsimulated/))
+			boutput(F, "<span class='alert'>This kind of tile cannot support rift placement.</span>")
+			return TRUE
+
+		if (T.density)
+			boutput(F, "<span class='alert'>Your rift cannot be placed inside a wall!</span>")
+			return TRUE
+
+		for (var/atom/O in T.contents)
+			if (O.density)
+				boutput(F, "<span class='alert'>That tile is blocked by [O].</span>")
+				return TRUE
+
+	F.spawnEgg()
 
 /////////////////////////////////////////
 
@@ -75,8 +130,8 @@
 	if(..())
 		return 1
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	var/turf/simulated/T = get_turf(target)
-	if(!istype(T))
+	var/turf/T = get_turf(target)
+	if(!(istype(T, /turf/simulated) || istype(T, /turf/space)))
 		boutput(holder.owner, "<span class='alert'>The flock can't convert this.</span>")
 		return 1
 	if(isfeathertile(T))
@@ -91,24 +146,32 @@
 
 /datum/targetable/flockmindAbility/designateEnemy
 	name = "Designate Enemy"
-	desc = "Mark someone as an enemy."
+	desc = "Mark or unmark someone as an enemy."
 	icon_state = "designate_enemy"
 	cooldown = 0
 	//sticky = 1
 
 /datum/targetable/flockmindAbility/designateEnemy/cast(atom/target)
 	if(..())
-		return 1
-	var/mob/living/M = target
-	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(isliving(M))
-		if(F)
-			var/datum/flock/flock = F.flock
-			if(flock)
-				flock.updateEnemy(M)
-	else
-		boutput(holder.owner, "<span class='alert'>That isn't a valid target.</span>")
-		return 1
+		return TRUE
+
+	var/M = target
+	var/mob/living/intangible/flock/F = holder.owner
+
+	if (!(isliving(M) || iscritter(M)) || isflock(M) || isintangible(M))
+		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
+		return TRUE
+
+	var/datum/flock/flock = F.flock
+
+	if (!flock)
+		return TRUE
+
+	if (flock.isEnemy(M))
+		flock.removeEnemy(M)
+		return
+
+	flock.updateEnemy(M)
 
 /////////////////////////////////////////
 
@@ -116,16 +179,23 @@
 	name = "Partition Mind"
 	desc = "Divide and conquer."
 	icon_state = "awaken_drone"
+	cooldown = 60 SECONDS
 	targeted = 0
+	///Are we still waiting for ghosts to respond
+	var/waiting = FALSE
 
 /datum/targetable/flockmindAbility/partitionMind/cast(atom/target)
-	if(..())
-		return 1
+	if(waiting || ..())
+		return TRUE
+
+	if(!holder.pointCheck(100))
+		return TRUE
+
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(F)
+	waiting = TRUE
+	SPAWN(0)
 		F.partition()
-	else
-		return 1 // not sure what happened here
+		waiting = FALSE
 
 /////////////////////////////////////////
 
@@ -133,12 +203,19 @@
 	name = "Concentrated Repair Burst"
 	desc = "Fully heal a drone through acceleration of its repair processes."
 	icon_state = "heal_drone"
+	cooldown = 20 SECONDS
 
 /datum/targetable/flockmindAbility/healDrone/cast(mob/living/critter/flock/drone/target)
 	if(..())
-		return 1
+		return TRUE
 	if(!istype(target))
-		return 1
+		return TRUE
+	if (target.get_health_percentage() >= 1)
+		boutput(holder.owner, "<span class='notice'>[target.real_name] has no damage!</span>")
+		return TRUE
+	if (isdead(target))
+		return TRUE
+
 	playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
 	boutput(holder.owner, "<span class='notice'>You focus the flock's efforts on fixing [target.real_name]</span>")
 	sleep(1.5 SECONDS)
@@ -151,21 +228,23 @@
 	name = "Diffract Drone"
 	desc = "Split a drone into flockbits, mindless automata that only convert whatever they find."
 	icon_state = "diffract"
+	cooldown = 0
 
 /datum/targetable/flockmindAbility/splitDrone/cast(mob/living/critter/flock/drone/target)
 	if(..())
-		return 1
+		return TRUE
 	if(!istype(target))
-		return 1
-	// sanity check: don't remove our last complex drone
+		return TRUE
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	if(!F?.flock || F.flock != target.flock)
-		boutput(holder.owner, "<span class='notice'>The drone does not respond to your command.</span>")
-		return 1
+	if(!F.flock || F.flock != target.flock)
+		boutput(F, "<span class='notice'>The drone does not respond to your command.</span>")
+		return TRUE
+	if (isdead(target))
+		return TRUE
 	if(F.flock.getComplexDroneCount() == 1)
-		boutput(holder.owner, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
-		return 1
-	boutput(holder.owner, "<span class='notice'>You diffract the drone.</span>")
+		boutput(F, "<span class='alert'>That's your last complex drone. Diffracting it would be suicide.</span>")
+		return TRUE
+	boutput(F, "<span class='notice'>You diffract the drone.</span>")
 	target.split_into_bits()
 
 
@@ -175,6 +254,7 @@
 	name = "Gatecrash"
 	desc = "Force open every door in radio range (if it can be opened by radio transmissions)."
 	icon_state = "open_door"
+	cooldown = 10 SECONDS
 	targeted = 0
 
 /datum/targetable/flockmindAbility/doorsOpen/cast(atom/target)
@@ -203,6 +283,7 @@
 	name = "Radio Stun Burst"
 	desc = "Overwhelm the radio headsets of everyone nearby. Will not work on broken or non-existent headsets."
 	icon_state = "radio_stun"
+	cooldown = 20 SECONDS
 	targeted = 0
 
 /datum/targetable/flockmindAbility/radioStun/cast(atom/target)
@@ -291,21 +372,17 @@
 /////////////////////////////////////////
 
 /datum/targetable/flockmindAbility/controlPanel
-	name = "Flock Control"
-	desc = "(TEMPORARY) Open flock control panel."
+	name = "Flock Control Panel"
+	desc = "Open the Flock control panel."
 	icon_state = "radio_stun"
 	targeted = 0
 	cooldown = 0
 
 /datum/targetable/flockmindAbility/controlPanel/cast(atom/target)
 	if(..())
-		return 1
-	var/client/user = holder.owner.client
+		return TRUE
 	var/mob/living/intangible/flock/flockmind/F = holder.owner
-	var/chui/window/flockpanel/panel = F.flock.panel
-	if(isnull(user) || isnull(F) || isnull(panel))
-		return 1
-	panel.Subscribe(user)
+	F.flock.ui_interact(F, F.flock.flockpanel)
 
 ////////////////////////////////
 
@@ -313,28 +390,98 @@
 	name = "Fabricate Structure"
 	desc = "Create a structure tealprint for your drones to construct onto."
 	icon_state = "fabstructure"
-	cooldown = 4 SECONDS
+	cooldown = 0
 	targeted = 0
 
 /datum/targetable/flockmindAbility/createStructure/cast()
-	var/resourcecost = null
-	var/structurewantedtype = null
 	var/turf/T = get_turf(holder.owner)
 	if(!istype(T, /turf/simulated/floor/feather))
 		boutput(holder.owner, "<span class='alert'>You aren't above a flocktile.</span>")//todo maybe make this flock themed?
-		return 1
+		return TRUE
+	if(locate(/obj/flock_structure/ghost) in T)
+		boutput(holder.owner, "<span class='alert'>A tealprint has already been scheduled here!</span>")
+		return TRUE
 	if(locate(/obj/flock_structure) in T)
 		boutput(holder.owner, "<span class='alert'>There is already a flock structure on this flocktile!</span>")
-		return 1
+		return TRUE
+
+	var/list/friendlyNames = list()
+	var/mob/living/intangible/flock/flockmind/F = holder.owner
+	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
+		if(ufs.check_unlocked())
+			friendlyNames += ufs.friendly_name
+
+
 	//todo: replace with FANCY tgui/chui window with WHEELS and ICONS and stuff!
-	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", list("Collector", "Sentinel"))
-	switch(structurewanted)
-		if("Collector")
-			structurewantedtype = /obj/flock_structure/collector
-			resourcecost = 200
-		if("Sentinel")
-			structurewantedtype = /obj/flock_structure/sentinel
-			resourcecost = 300
+
+	var/structurewanted = tgui_input_list(holder.owner, "Select which structure you would like to create", "Tealprint selection", friendlyNames)
+
+	if (!structurewanted)
+		return TRUE
+	var/obj/flock_structure/structurewantedtype = null
+	for(var/datum/unlockable_flock_structure/ufs as anything in F.flock.unlockableStructures)
+		if(ufs.friendly_name == structurewanted)
+			structurewantedtype = ufs.structType
+			break
+
 	if(structurewantedtype)
-		var/mob/living/intangible/flock/F = holder.owner
-		F.createstructure(structurewantedtype, resourcecost)
+		return F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/ping
+	name = "Ping"
+	desc = "Request attention from other elements of the flock."
+	icon_state = "ping"
+	cooldown = 0.1 SECONDS
+
+/datum/targetable/flockmindAbility/ping/cast(atom/target)
+	if(..())
+		return TRUE
+	var/mob/living/intangible/flock/F = holder.owner
+	if (!isturf(target.loc) && !isturf(target))
+		return TRUE
+	if(F)
+		var/datum/flock/flock = F.flock
+		flock?.ping(target, holder.owner)
+
+/////////////////////////////////////////
+
+/datum/targetable/flockmindAbility/deconstruct
+	name = "Mark for Deconstruction"
+	desc = "Mark an existing flock structure for deconstruction, refunding some resources."
+	icon_state = "destroystructure"
+	cooldown = 0.1 SECONDS
+
+/datum/targetable/flockmindAbility/deconstruct/cast(atom/target)
+	if(..())
+		return TRUE
+	var/mob/living/intangible/flock/F = holder.owner
+	//special handling for building ghosts
+	if(istype(target,/obj/flock_structure/ghost))
+		//do the tgui window instead
+		//this actually doesn't need bonus behaviour because the cancelbuild is on click, but will need to fix this if we change that in future
+		return TRUE
+	else if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING)) //it's a thing we've converted, we can deconstruct it
+		F.flock.toggleDeconstructionFlag(target)
+		return FALSE
+	else if(istype(target,/obj/structure/girder)) //special handling for partially decon'd walls - gnesis mats means its ours
+		if(target?.material.mat_id == "gnesis")
+			F.flock.toggleDeconstructionFlag(target)
+			return FALSE
+
+	return TRUE
+
+
+
+/datum/targetable/flockmindAbility/droneControl
+	cooldown = 0
+	icon = null
+	var/task_type
+	var/mob/living/critter/flock/drone/drone = null
+
+/datum/targetable/flockmindAbility/droneControl/cast(atom/target)
+	var/datum/aiTask/task = drone.ai.get_instance(task_type, list(drone.ai, drone.ai.default_task))
+	task.target = target
+	drone.ai.priority_tasks += task
+	drone.ai.interrupt()

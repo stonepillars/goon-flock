@@ -1,9 +1,10 @@
 /// # Collector structure
 /obj/flock_structure/collector
-	name = "Some weird lookin' pulsing thing"
+	name = "weird lookin' pulsing thing"
 	desc = "Seems to be pulsing."
 	flock_id = "Collector"
 	health = 60
+	resourcecost = 200
 	/// does it draw from the local apc if its strong enough.
 	var/drawfromgrid = 0
 	/// is it active?
@@ -17,7 +18,6 @@
 	// drones can pass through this, might change this later, as balance point
 	passthrough = TRUE
 
-	poweruse = 0
 	usesgroups = TRUE
 	icon_state = "collector"
 
@@ -26,7 +26,7 @@
 
 /obj/flock_structure/collector/building_specific_info()
 	return {"<span class='bold'>Connections:</span> Currently Connected to [length(connectedto)] tile[length(connectedto) == 1 ? "" : "s"].
-	<br><span class='bold'>Power generation:</span> Currently generating [abs(poweruse)]."}
+	<br><span class='bold'>Compute generation:</span> Currently generating [src.compute_provided()]."}
 
 /obj/flock_structure/collector/process()
 	..()
@@ -35,7 +35,8 @@
 		icon_state = "collectoron"
 	else
 		icon_state = "collector"
-	src.poweruse = ((length(connectedto) * 5) / -1) //(5 power per tile)
+	//TODO: Rebalance this when we do the proper compute strucutres and computers pass
+	src.compute = (length(connectedto) * 5) //(5 power per tile)
 
 /obj/flock_structure/collector/disposing()
 	for(var/turf/simulated/floor/feather/flocktile as anything in connectedto)

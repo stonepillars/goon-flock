@@ -7,9 +7,11 @@
 	desc = "The collective machine consciousness of a bunch of glass peacock things."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flockmind"
+	layer = NOLIGHT_EFFECTS_LAYER_BASE
 
 	var/started = 0
 	var/last_time // when i say per second I MEAN PER SECOND DAMMIT
+
 
 /mob/living/intangible/flock/flockmind/New()
 	..()
@@ -21,10 +23,11 @@
 	src.flock = new /datum/flock()
 	src.real_name = "Flockmind [src.flock.name]"
 	src.name = src.real_name
+	src.update_name_tag()
 	src.flock.registerFlockmind(src)
 	src.flock.showAnnotations(src)
-	src.addAbility(/datum/targetable/flockmindAbility/controlPanel)
 	src.addAbility(/datum/targetable/flockmindAbility/spawnEgg)
+	src.addAbility(/datum/targetable/flockmindAbility/ping)
 
 /mob/living/intangible/flock/flockmind/special_desc(dist, mob/user)
   if(isflock(user))
@@ -32,6 +35,7 @@
     <br><span class='bold'>ID:</span> [src.real_name]
     <br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none, somehow"]
     <br><span class='bold'>Resources:</span> [src.flock.total_resources()]
+	<br><span class='bold'>Total Compute:</span> [src.flock.total_compute()]
     <br><span class='bold'>System Integrity:</span> [round(src.flock.total_health_percentage()*100)]%
     <br><span class='bold'>Cognition:</span> COMPUTATIONAL NEXUS
     <br>###=-</span></span>"}
@@ -55,9 +59,14 @@
 
 /mob/living/intangible/flock/flockmind/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
-		return 1
-	if (src.started && src.flock && src.flock.units && src.flock.units.len <= 0)
-		src.death() // get rekt
+		return TRUE
+	if (src.started && src.flock)
+		if (src.flock.getComplexDroneCount())
+			return
+		for (var/obj/flock_structure/s in src.flock.structures)
+			if (istype(s, /obj/flock_structure/egg) || istype(s, /obj/flock_structure/rift))
+				return
+		src.death()
 
 /mob/living/intangible/flock/flockmind/proc/spawnEgg()
 	if(src.flock)
@@ -72,6 +81,7 @@
 	src.addAllAbilities()
 
 /mob/living/intangible/flock/flockmind/proc/addAllAbilities()
+	src.addAbility(/datum/targetable/flockmindAbility/controlPanel)
 	src.addAbility(/datum/targetable/flockmindAbility/designateTile)
 	src.addAbility(/datum/targetable/flockmindAbility/designateEnemy)
 	src.addAbility(/datum/targetable/flockmindAbility/partitionMind)
@@ -81,10 +91,11 @@
 	src.addAbility(/datum/targetable/flockmindAbility/radioStun)
 	src.addAbility(/datum/targetable/flockmindAbility/directSay)
 	src.addAbility(/datum/targetable/flockmindAbility/createStructure)
+	src.addAbility(/datum/targetable/flockmindAbility/deconstruct)
 
 /mob/living/intangible/flock/flockmind/death(gibbed)
 	if(src.client)
-		boutput(src, "<span class='alert'>With the last of your drones dying, nothing is left to compute your consciousness. You abruptly cease to exist.</span>")
+		boutput(src, "<span class='alert'>With no drones left in your Flock, nothing is left to compute your consciousness. You abruptly cease to exist.</span>")
 	src.flock?.perish()
 	REMOVE_ATOM_PROPERTY(src, PROP_MOB_INVISIBILITY, src)
 	src.icon_state = "blank"
@@ -106,13 +117,39 @@
 	O.alpha = 160
 	return O
 
-/mob/living/intangible/flock/flockmind/Topic(href, href_list)
-	if(href_list["origin"])
-		var/atom/movable/origin = locate(href_list["origin"])
-		if(origin)
-			src.set_loc(get_turf(origin))
 
-// receive volunteers to be a promoted flockdrone
+/mob/living/intangible/flock/flockmind/proc/partition()
+	boutput(src, "<span class='flocksay'>Partitioning initiated. Stand by.</span>")
+
+	var/ghost_confirmation_delay = 30 SECONDS
+
+	var/list/text_messages = list()
+	text_messages.Add("Would you like to respawn as a Flocktrace? Your name will be added to the list of eligible candidates.")
+	text_messages.Add("You are eligible to be respawned as a Flocktrace. You have [ghost_confirmation_delay / 10] seconds to respond to the offer.")
+	text_messages.Add("You have been added to the list of eligible candidates. The game will pick a player soon. Good luck!")
+
+	message_admins("Sending Flocktrace offer to eligible ghosts. They have [ghost_confirmation_delay / 10] seconds to respond.")
+	var/list/candidates = dead_player_list(FALSE, ghost_confirmation_delay, text_messages)
+
+	if (!src) // doesnt work yet
+		message_admins("[src.real_name] has died during a Flocktrace respawn offer event.")
+		logTheThing("admin", null, null, "No Flocktraces were created for [src.real_name] due to their death.")
+		return TRUE
+
+	if (!length(candidates))
+		message_admins("No ghosts responded to a Flocktrace offer from [src.real_name]")
+		logTheThing("admin", null, null, "No ghosts responded to Flocktrace offer from [src.real_name]")
+		boutput(src, "<span class='flocksay'>Partition failure: unable to coalesce sentience.</span>")
+		return TRUE
+
+	var/mob/picked = pick(candidates)
+
+	message_admins("[picked.key] respawned as a Flocktrace under [src.real_name].")
+	logTheThing("admin", picked.key, null, "respawned as a Flocktrace under [src.real_name].")
+
+	picked.make_flocktrace(get_turf(src), src.flock)
+
+// old code for flocktrace respawns
 /datum/ghost_notification/respawn/flockdrone
 	respawn_explanation = "flockmind partition"
 	icon = 'icons/misc/featherzone.dmi'
@@ -137,9 +174,3 @@
 		message_admins("[key_name(src)] made [key_name(trace)] a flocktrace via ghost volunteer respawn.")
 		logTheThing("admin", src, trace, "made [key_name(trace)] a flocktrace via ghost volunteer respawn.")
 		flock_speak(null, "Trace partition \[ [trace.real_name] \] has been instantiated.", src.flock)
-
-/mob/living/intangible/flock/flockmind/proc/partition()
-	// send out a request to ghosts
-	ghost_notifier.send_notification(src, src, /datum/ghost_notification/respawn/flockdrone)
-	boutput(src, "<span class='notice'>Partitioning initiated. Stand by.</span>")
-

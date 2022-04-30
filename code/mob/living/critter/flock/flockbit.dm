@@ -21,17 +21,26 @@
 
 	src.name = "[pick_string("flockmind.txt", "flockbit_name_adj")] [pick_string("flockmind.txt", "flockbit_name_noun")]"
 	src.real_name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
+	src.update_name_tag()
+
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /mob/living/critter/flock/bit/special_desc(dist, mob/user)
 	if(isflock(user))
 		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> [src.real_name]
 		<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
-		<br><span class='bold'>System Integrity:</span> [round(src.get_health_percentage()*100)]%
-		<br><span class='bold'>Cognition:</span> PREDEFINED
+		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
+		<br><span class='bold'>Cognition:</span> [src.dormant ? "ABSENT" : "PREDEFINED"]
 		<br><span class='bold'>###=-</span></span>"}
 	else
 		return null // give the standard description
+
+/mob/living/critter/flock/bit/Life(datum/controller/process/mobs/parent)
+	if (..(parent))
+		return 1
+	if (!src.dormant && src.z != Z_LEVEL_STATION)
+		src.dormantize()
 
 /mob/living/critter/flock/bit/MouseDrop_T(mob/living/target, mob/user)
 	if(!target || !user)
@@ -44,6 +53,12 @@
 			..() // do ghost observes, i guess
 	else
 		..()
+
+/mob/living/critter/flock/bit/bullet_act(var/obj/projectile/P)
+	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
+		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
+		return
+	..()
 
 /mob/living/critter/flock/bit/setup_hands()
 	..()
@@ -66,6 +81,18 @@
 	HH.can_hold_items = 0
 	HH.can_attack = 1
 	HH.can_range_attack = 0
+
+/mob/living/critter/flock/bit/proc/dormantize()
+	src.dormant = TRUE
+	src.icon_state = "bit-dormant"
+	src.ai.die()
+	animate(src) // doesnt work right now
+
+	if (!src.flock)
+		return
+
+	src.flock.removeDrone(src)
+	src.flock = null
 
 /mob/living/critter/flock/bit/death(var/gibbed)
 	walk(src, 0)

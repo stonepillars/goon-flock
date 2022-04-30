@@ -8,6 +8,7 @@
 	desc = "I don't like the looks of that whatever-it-is."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "floor"
+	flags = USEDELAY
 	mat_appearances_to_ignore = list("steel","gnesis")
 	mat_changename = 0
 	mat_changedesc = 0
@@ -35,6 +36,7 @@
 	src.checknearby() //check for nearby groups
 	if(!group)//if no group found
 		initializegroup() //make a new one
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, TRUE)
 
 /turf/simulated/floor/feather/special_desc(dist, mob/user)
   if(isflock(user))
@@ -61,11 +63,12 @@
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C], shattering it!</span>")
 		src.name = "weird broken floor"
 		src.desc = "It's broken. You could probably use a crowbar to pull the remnants out."
-		playsound(src.loc, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
+		playsound(src, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
 		break_tile()
 	else
 		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C]!</span>")
-		playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
+		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 25, 1)
+	user.lastattacked = src
 
 /turf/simulated/floor/feather/break_tile_to_plating()
 	// if the turf's on, turn it off
@@ -82,7 +85,26 @@
 		if(f.usesgroups)
 			f.group?.removestructure(f)
 			f.group = null
+	for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+		if (flockdrone.floorrunning)
+			flockdrone.end_floorrunning()
 
+/turf/simulated/floor/feather/proc/repair()
+	if (src.broken)
+		src.name = initial(src.name)
+		src.desc = initial(src.desc)
+		src.icon_state = initial(src.icon_state)
+		src.broken = FALSE
+		if(!src.group)
+			checknearby() //check for groups to join
+		for(var/obj/flock_structure/f in get_turf(src))
+			if(f.usesgroups)
+				f.group = src.group
+				f.group.addstructure(f)
+	src.health = min(src.health + 10, initial(src.health))
+
+/turf/simulated/floor/feather/burn_tile()
+	return
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 // stuff to make floorrunning possible (god i wish i could think of a better verb than "floorrunning")
@@ -90,25 +112,37 @@
 	..()
 	if(!istype(F) || !oldloc)
 		return
-	if(F.client && F.client.check_key(KEY_RUN) && !broken && !F.floorrunning)
+	if(F.client && F.client.check_key(KEY_RUN) && !broken && !F.floorrunning && F.can_floorrun && F.resources >= 1)
 		F.start_floorrunning()
+
 	if(F.floorrunning && !broken)
-		if(!on)
+		F.resources--
+		if (F.resources < 1)
+			F.end_floorrunning()
+		else if(!on)
 			on()
 
 /turf/simulated/floor/feather/Exited(var/mob/living/critter/flock/drone/F, atom/newloc)
 	..()
 	if(!istype(F) || !newloc)
 		return
-	if(on && !connected)
-		off()
+	if(F.floorrunning && !connected)
+		if (locate(/mob/living/critter/flock/drone) in src.contents)
+			var/floorrunning_flockdrone = FALSE
+			for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+				if (flockdrone.floorrunning)
+					floorrunning_flockdrone = TRUE
+			if (!floorrunning_flockdrone)
+				off()
+		else
+			off()
 	if(F.floorrunning)
 		if(istype(newloc, /turf/simulated/floor/feather))
 			var/turf/simulated/floor/feather/T = newloc
 			if(T.broken)
-				F.end_floorrunning() // broken tiles won't let you continue floorrunning
+				F.end_floorrunning()
 		else if(!isfeathertile(newloc))
-			F.end_floorrunning() // you left flocktile territory, boyo
+			F.end_floorrunning()
 
 /turf/simulated/floor/feather/proc/on()
 	if(src.broken)
@@ -117,7 +151,7 @@
 	src.name = "weird glowing floor"
 	src.desc = "Looks like disco's not dead after all."
 	on = 1
-	playsound(src.loc, "sound/machines/ArtifactFea3.ogg", 25, 1)
+	//playsound(src.loc, "sound/machines/ArtifactFea3.ogg", 25, 1)
 	src.light.enable()
 
 /turf/simulated/floor/feather/proc/off()
@@ -129,19 +163,6 @@
 		src.desc = initial(desc)
 	src.light.disable()
 	on = 0
-
-/turf/simulated/floor/feather/proc/repair()
-	src.icon_state = "floor"
-	src.broken = 0
-	src.health = initial(health)
-	src.name = initial(name)
-	src.desc = initial(desc)
-	if(isnull(src.group))
-		checknearby() //check for groups to join
-	for(var/obj/flock_structure/f in get_turf(src))
-		if(f.usesgroups)
-			f.group = src.group
-			f.group.addstructure(f)
 
 /turf/simulated/floor/feather/broken
 	name = "weird broken floor"
@@ -172,8 +193,6 @@
 	else if(length(groups_found) > 1) //if there is more then one, then join the largest (add merging functionality here later)
 		for(var/datum/flock_tile_group/oldgroup in groups_found)
 			if(oldgroup == largestgroup) continue
-			largestgroup.powergen += oldgroup.powergen
-			largestgroup.poweruse += oldgroup.poweruse
 			for(var/turf/simulated/floor/feather/F in oldgroup.members)
 				F.group = largestgroup
 				largestgroup.addtile(F)
@@ -252,29 +271,165 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	desc = "You can feel it thrumming and pulsing."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "0"
-	mat_appearances_to_ignore = list("steel","gnesis")
+	health = 250
+	var/max_health = 250
+	flags = USEDELAY
+	mat_appearances_to_ignore = list("steel", "gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather)
+
+	var/broken = FALSE
+
+	update_icon()
+		..()
+		if (src.broken)
+			icon_state = icon_state + "b"
 
 /turf/simulated/wall/auto/feather/New()
 	..()
 	setMaterial(getMaterial("gnesis"))
+	src.health = src.max_health
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /turf/simulated/wall/auto/feather/special_desc(dist, mob/user)
   if(isflock(user))
     return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
     <br><span class='bold'>ID:</span> Nanite Block
-    <br><span class='bold'>System Integrity:</span> 100%
+    <br><span class='bold'>System Integrity:</span> [round((src.health/src.max_health)*100)]%
     <br><span class='bold'>###=-</span></span>"}
-    // todo: damageable walls
   else
-    return null // give the standard description
+    return null
+
+/turf/simulated/wall/auto/feather/attack_hand(mob/user)
+	if (user.a_intent == INTENT_HARM)
+		if(src.broken)
+			boutput(user, "<span class='hint'>It's already broken, you need to take the pieces apart with a crowbar.</span>")
+		else
+			src.takeDamage("brute", 1)
+			if (src.broken)
+				user.visible_message("<span class='alert'><b>[user]</b> punches the [initial(src.name)], shattering it!</span>")
+			else
+				user.visible_message("<span class='alert'><b>[user]</b> punches [src]! Ouch!</span>")
+			user.lastattacked = src
+			attack_particle(user, src)
+
+/turf/simulated/wall/auto/feather/attackby(obj/item/C as obj, mob/user as mob)
+	if(!C || !user)
+		return
+	if(ispryingtool(C) && src.broken)
+		playsound(src, "sound/items/Crowbar.ogg", 80, 1)
+		src.destroy()
+		return
+	if(src.broken)
+		boutput(user, "<span class='hint'>It's already broken, you need to take the pieces apart with a crowbar.</span>")
+		return
+	if (src.health > 0)
+		src.takeDamage("brute", C.force)
+	if(src.health <= 0)
+		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks the [initial(src.name)] with [C], shattering it!</span>")
+	else
+		src.visible_message("<span class='alert'><span class='bold'>[user]</span> smacks [src] with [C]!</span>")
+	user.lastattacked = src
+	attack_particle(user, src)
+
+/turf/simulated/wall/auto/feather/burn_down()
+	src.takeDamage("fire", 1)
+	if (src.health <= 0)
+		src.destroy()
+
+/turf/simulated/wall/auto/feather/ex_act(severity)
+	var/damage = 0
+	var/damage_mult = 1
+
+	switch(severity)
+		if(1)
+			damage = rand(30,50)
+			damage_mult = 8
+		if(2)
+			damage = rand(25,40)
+			damage_mult = 4
+		if(3)
+			damage = rand(10,20)
+			damage_mult = 2
+	src.takeDamage("mixed", damage * damage_mult)
+
+	if (src.health <= 0)
+		src.destroy()
+
+/turf/simulated/wall/auto/feather/blob_act(power)
+	var/modifier = power / 20
+	var/damage = rand(modifier, 12 + 8 * modifier)
+
+	src.takeDamage("mixed", damage, FALSE)
+	src.visible_message("<span class='alert'>[initial(src.name)] is hit by the blob!/span>")
+
+	if (src.health <= 0)
+		src.destroy()
+
+/turf/simulated/wall/auto/feather/proc/takeDamage(damageType, amount, playAttackSound = TRUE)
+	src.health = max(src.health - amount, 0)
+	if (src.health > 0 && playAttackSound)
+		playsound(src, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+
+	if (!src.broken && src.health <= 0)
+		src.name = "weird broken wall"
+		src.desc = "It's broken. You could probably use a crowbar to break the pieces apart."
+		src.broken = TRUE
+		src.UpdateIcon()
+		src.material.setProperty("reflective", 25)
+		if (playAttackSound)
+			playsound(src, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
+
+		for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+			if (flockdrone.floorrunning)
+				flockdrone.end_floorrunning()
+
+/turf/simulated/wall/auto/feather/proc/destroy()
+	var/turf/T = get_turf(src)
+
+	var/atom/movable/B
+	for (var/i = 1 to rand(3, 6))
+		if (prob(70))
+			B = new /obj/item/raw_material/scrap_metal(T)
+			B.setMaterial(getMaterial("gnesis"))
+		else
+			B = new /obj/item/raw_material/shard(T)
+			B.setMaterial(getMaterial("gnesisglass"))
+
+	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
+
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1))
+			W.UpdateIcon()
+
+/turf/simulated/wall/auto/feather/proc/destroy_resources()
+	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
+
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1, src))
+			W.UpdateIcon()
+
+/turf/simulated/wall/auto/feather/proc/repair()
+	if (src.broken)
+		src.name = initial(src.name)
+		src.desc = initial(src.desc)
+		src.broken = FALSE
+		src.UpdateIcon()
+		src.setMaterial(getMaterial("gnesis"))
+	src.health = min(src.health + 50, src.max_health)
 
 /turf/simulated/wall/auto/feather/Entered(var/mob/living/critter/flock/drone/F, atom/oldloc)
 	..()
 	if(!istype(F) || !oldloc)
 		return
-	if(F.client && F.client.check_key(KEY_RUN) && !F.floorrunning)
+	if(F.client && F.client.check_key(KEY_RUN) && !F.floorrunning && F.resources >= 1)
 		F.start_floorrunning()
+
+	if(F.floorrunning)
+		F.resources--
+		if (F.resources < 1)
+			F.end_floorrunning()
 
 /turf/simulated/wall/auto/feather/Exited(var/mob/living/critter/flock/drone/F, atom/newloc)
 	..()

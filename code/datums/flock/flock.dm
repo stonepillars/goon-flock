@@ -10,22 +10,88 @@
 	var/list/all_owned_tiles = list()
 	var/list/busy_tiles = list()
 	var/list/priority_tiles = list()
+	var/list/deconstruct_targets = list()
 	var/list/traces = list()
 	var/list/units = list()
 	var/list/enemies = list()
 	var/list/annotation_viewers = list()
 	var/list/annotations = list() // key is atom ref, value is image
+	var/list/obj/flock_structure/structures = list()
+	var/list/datum/unlockable_flock_structure/unlockableStructures = list()
+	///list of strings that lets flock record achievements for structure unlocks
+	var/list/achievements = list()
 	var/mob/living/intangible/flock/flockmind/flockmind
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
 	var/snooping = 0 //are both sides of communication currently accessible?
-	var/chui/window/flockpanel/panel
+	var/datum/tgui/flockpanel
 
 /datum/flock/New()
 	..()
 	src.name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	flocks[src.name] = src
 	processing_items |= src
-	panel = new(src)
+	for(var/DT in childrentypesof(/datum/unlockable_flock_structure))
+		src.unlockableStructures += new DT(src)
+
+/datum/flock/ui_status(mob/user)
+	// only flockminds and admins allowed
+	return istype(user, /mob/living/intangible/flock/flockmind) || tgui_admin_state.can_use_topic(src, user)
+
+/datum/flock/ui_data(mob/user)
+	return describe_state()
+
+/datum/flock/ui_interact(mob/user, datum/tgui/ui)
+	ui = tgui_process.try_update_ui(user, src, ui)
+	if(!ui)
+		ui = new(user, src, "FlockPanel")
+		ui.open()
+
+/datum/flock/ui_act(action, list/params, datum/tgui/ui)
+	var/mob/user = ui.user;
+	if (!istype(user, /mob/living/intangible/flock/flockmind)) //no humans allowed
+		return
+	switch(action)
+		if("jump_to")
+			var/atom/movable/origin = locate(params["origin"])
+			if(origin)
+				var/turf/T = get_turf(origin)
+				if(T.z != Z_LEVEL_STATION)
+					// make sure they're not trying to spoof data and jump into a z-level they ought not to go
+					boutput(user, "<span class='alert'>They seem to be beyond your capacity to reach.</span>")
+				else
+					user.set_loc(T)
+		if("rally")
+			var/mob/living/critter/flock/C = locate(params["origin"])
+			if(C?.flock == src) // no ordering other flocks' drones around
+				C.rally(get_turf(user))
+		if("remove_enemy")
+			var/mob/living/E = locate(params["origin"])
+			if(E)
+				src.removeEnemy(E)
+		if("eject_trace")
+			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
+			if(T)
+				var/mob/living/critter/flock/drone/host = T.loc
+				if(istype(host))
+					// kick them out of the drone
+					boutput(host, "<span class='flocksay'><b>\[SYSTEM: The flockmind has removed you from your previous corporeal shell.\]</b></span>")
+					host.release_control()
+		if("delete_trace")
+			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
+			if(T)
+				if(tgui_alert(user, "This will destroy the Flocktrace. Are you sure you want to do this?", "Confirmation", list("Yes", "No")) == "Yes")
+					// if they're in a drone, kick them out
+					var/mob/living/critter/flock/drone/host = T.loc
+					if(istype(host))
+						host.release_control()
+					// DELETE
+					flock_speak(null, "Partition [T.real_name] has been reintegrated into flock background processes.", src)
+					boutput(T, "<span class='flocksay'><b>\[SYSTEM: Your higher cognition has been forcibly reintegrated into the collective will of the flock.\]</b></span>")
+					T.death()
+		if ("cancel_tealprint")
+			var/obj/flock_structure/ghost/tealprint = locate(params["origin"])
+			if (tealprint)
+				tealprint.cancelBuild()
 
 /datum/flock/proc/describe_state()
 	var/list/state = list()
@@ -33,37 +99,41 @@
 
 	// DESCRIBE TRACES
 	var/list/tracelist = list()
-	for(var/mob/living/intangible/flock/trace/T in src.traces)
-		tracelist[++tracelist.len] = T.describe_state()
+	for(var/mob/living/intangible/flock/trace/T as anything in src.traces)
+		tracelist += list(T.describe_state())
 	state["partitions"] = tracelist
 
 	// DESCRIBE DRONES
 	var/list/dronelist = list()
 	for(var/mob/living/critter/flock/drone/F in src.units)
-		dronelist[++dronelist.len] = F.describe_state()
+		dronelist += list(F.describe_state())
 	state["drones"] = dronelist
+
+	// DESCRIBE STRUCTURES
+	var/list/structureList = list()
+	for(var/obj/flock_structure/structure as anything in src.structures)
+		structureList += list(structure.describe_state())
+	state["structures"] = structureList
 
 	// DESCRIBE ENEMIES
 	var/list/enemylist = list()
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
-		var/mob/living/M = enemy_stats["mob"]
-		if(istype(M)) // fix runtime: Cannot read null.name
+		var/atom/M = enemy_stats["mob"]
+		if(M)
 			var/list/enemy = list()
 			enemy["name"] = M.name
 			enemy["area"] = enemy_stats["last_seen"]
 			enemy["ref"] = "\ref[M]"
-			enemylist[++enemylist.len] = enemy
+			enemylist += list(enemy)
 		else
 			// enemy no longer exists, let's do something about that
 			src.enemies -= name
 	state["enemies"] = enemylist
 
-	// DESCRIBE VITALS (do this last so we can report list lengths)
+	// DESCRIBE VITALS
 	var/list/vitals = list()
 	vitals["name"] = src.name
-	vitals["drones"] = length(dronelist)
-	vitals["partitions"] = length(tracelist)
 	state["vitals"] = vitals
 
 	return state
@@ -76,7 +146,7 @@
 /datum/flock/proc/total_health_percentage()
 	var/hp = 0
 	var/max_hp = 0
-	for(var/mob/living/critter/flock/F in src.units)
+	for(var/mob/living/critter/flock/F as anything in src.units)
 		F.count_healths()
 		hp += F.health
 		max_hp += F.max_health
@@ -86,40 +156,152 @@
 		return 0
 
 /datum/flock/proc/total_resources()
-	var/res = 0
-	for(var/mob/living/critter/flock/F in src.units)
-		res += F.resources
-	return res
+	. = 0
+	for(var/mob/living/critter/flock/F as anything in src.units)
+		. += F.resources
+
+
+/datum/flock/proc/total_compute()
+	. = 0
+	var/comp_provided = 0
+	if (src.hasAchieved("infinite_compute"))
+		return 1000000
+	for(var/mob/living/critter/flock/F as anything in src.units)
+		comp_provided = F.compute_provided()
+		if(comp_provided>0)
+			. += comp_provided
+
+	for(var/obj/flock_structure/S as anything in src.structures)
+		comp_provided = S.compute_provided()
+		if(comp_provided>0)
+			. += comp_provided
+
+
+/datum/flock/proc/used_compute()
+	. = 0
+	var/comp_provided = 0
+	for(var/mob/living/critter/flock/F as anything in src.units)
+		comp_provided = F.compute_provided()
+		if(comp_provided<0)
+			. += abs(comp_provided)
+
+	for(var/obj/flock_structure/S as anything in src.structures)
+		comp_provided = S.compute_provided()
+		if(comp_provided<0)
+			. += abs(comp_provided)
+
+	//not strictly necessary, but maybe future traces can provide compute in some way or cost more when doing stuff?
+	for(var/mob/living/intangible/flock/trace/T as anything in src.traces)
+		comp_provided = T.compute_provided()
+		if(comp_provided<0)
+			. += abs(comp_provided)
+
+/datum/flock/proc/can_afford_compute(var/cost)
+	return (cost <= src.total_compute() - src.used_compute())
 
 /datum/flock/proc/registerFlockmind(var/mob/living/intangible/flock/flockmind/F)
 	if(!F)
 		return
 	src.flockmind = F
 
+//since flocktraces need to be given their flock in New this is useful for debug
+/datum/flock/proc/spawnTrace()
+	var/mob/living/intangible/flock/trace/T = new(usr.loc, src)
+	return T
+
 /datum/flock/proc/addTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces |= T
-
-	// update the flock control panel
-	var/list/update = T.describe_state()
-	update["update"] = "add"
-	update["key"] = "partitions"
-	// ref is already provided
-	panel.PushUpdate(update)
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
 
 /datum/flock/proc/removeTrace(var/mob/living/intangible/flock/trace/T)
 	if(!T)
 		return
 	src.traces -= T
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
 
-	// update the flock control panel
-	var/list/update = list()
-	update["update"] = "remove"
-	update["key"] = "partitions"
-	update["ref"] = "\ref[T]"
-	panel.PushUpdate(update)
+/datum/flock/proc/ping(var/atom/target, var/mob/living/intangible/flock/pinger)
+	//awful typecheck because turfs and movables have vis_contents defined seperately because god hates us
+	if (!istype(pinger) || (!istype(target, /atom/movable) && !istype(target, /turf)))
+		return
 
+	target.AddComponent(/datum/component/flock_ping)
+
+	for (var/mob/living/intangible/flock/F in (src.traces + src.flockmind))
+		if (F != pinger)
+			var/image/arrow = image(icon = 'icons/mob/screen1.dmi', icon_state = "arrow", loc = F, layer = HUD_LAYER)
+			arrow.color = "#00ff9dff"
+			arrow.pixel_y = 20
+			arrow.transform = matrix(arrow.transform, 2,2, MATRIX_SCALE)
+			var/angle = 180 + get_angle(F, target)
+			arrow.transform = matrix(arrow.transform, angle, MATRIX_ROTATE)
+			F.client?.images += arrow
+			animate(arrow, time = 3 SECONDS, alpha = 0)
+			SPAWN(3 SECONDS)
+				F.client?.images -= arrow
+				qdel(arrow)
+		var/class = "flocksay ping [istype(F, /mob/living/intangible/flock/flockmind) ? "flockmindsay" : ""]"
+		var/prefix = "<span class='bold'>\[[src.name]\] </span><span class='name'>[pinger.name]</span>"
+		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target];ping=[TRUE]'>[prefix]: Interrupt request, target: [target] in [get_area(target)].</a></span>")
+	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
+
+//is this a weird use case for components? probably, but it's kinda neat
+/datum/component/flock_ping
+	dupe_mode = COMPONENT_DUPE_UNIQUE
+
+	var/const/duration = 5 SECOND
+	var/end_time = -1
+	var/obj/dummy = null
+	var/outline_color = "#00ff9d"
+
+	Initialize()
+		if (!ismovable(parent) && !isturf(parent))
+			return COMPONENT_INCOMPATIBLE
+
+	RegisterWithParent()
+		//this cast looks horribly unsafe, but we've guaranteed that parent is a type with vis_contents in Initialize
+		var/atom/movable/target = parent
+
+		src.end_time = TIME + duration
+
+		dummy = new()
+		dummy.layer = target.layer
+		dummy.plane = PLANE_FLOCKVISION
+		dummy.invisibility = INVIS_FLOCKMIND
+		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM | RESET_COLOR | PASS_MOUSE
+		dummy.icon = target.icon
+		dummy.icon_state = target.icon_state
+		target.render_target = ref(parent)
+		dummy.render_source = target.render_target
+		dummy.add_filter("outline", 1, outline_filter(size=1,color=src.outline_color))
+		target.vis_contents += dummy
+
+		play_animation()
+
+		SPAWN(0)
+			while(TIME < src.end_time)
+				var/delta = src.end_time - TIME
+				sleep(min(src.duration, delta))
+			qdel(src)
+
+	//when a new ping component is added, reset the original's duration
+	InheritComponent(datum/component/flock_ping/C, i_am_original)
+		if (i_am_original)
+			play_animation()
+			src.end_time = TIME + duration
+
+	disposing()
+		qdel(dummy)
+		. = ..()
+
+	proc/play_animation()
+		animate(dummy, time = duration/9, alpha = 100)
+		for (var/i in 1 to 4)
+			animate(time = duration/9, alpha = 255)
+			animate(time = duration/9, alpha = 100)
 // ANNOTATIONS
 
 // currently both flockmind and player units get the same annotations: what tiles are marked for conversion, and who is shitlisted
@@ -154,11 +336,11 @@
 	// highlight priority tiles
 	for(var/turf/T in src.priority_tiles)
 		if(!(T in src.annotations))
-			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier")
-			I.blend_mode = BLEND_ADD
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
+			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 180
 			I.plane = PLANE_ABOVE_LIGHTING
+			I.mouse_opacity = FALSE
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -168,11 +350,11 @@
 	for(var/name in src.busy_tiles)
 		var/turf/T = src.busy_tiles[name]
 		if(isturf(T) && !(T in src.annotations))
-			// create a new image
-			I = image('icons/misc/featherzone.dmi', T, "frontier")
-			I.blend_mode = BLEND_ADD
+			I = image('icons/misc/featherzone.dmi', T.RL_MulOverlay ? T.RL_MulOverlay : T, "frontier")
+			I.appearance_flags = RESET_ALPHA | RESET_COLOR
 			I.alpha = 80
 			I.plane = PLANE_ABOVE_LIGHTING
+			I.mouse_opacity = FALSE
 			// add to subscribers for annotations
 			images_to_add |= I
 			src.annotations[T] = I
@@ -180,9 +362,9 @@
 		valid_keys |= T
 	// highlight enemies
 	for(var/name in src.enemies)
-		var/mob/B = src.enemies[name]["mob"]
+		var/atom/B = src.enemies[name]["mob"]
 		if(!(B in src.annotations))
-			// create a new image
+			// create a new image attached to the mob
 			I = image('icons/misc/featherzone.dmi', B, "hazard")
 			I.blend_mode = BLEND_ADD
 			I.pixel_y = 16
@@ -193,6 +375,21 @@
 			src.annotations[B] = I
 		// add key to list
 		valid_keys |= B
+	//highlight deconstruction targets
+	for(var/atom/D in src.deconstruct_targets)
+		if(!(D in src.annotations))
+			// create a new image
+			I = image('icons/misc/featherzone.dmi', D, "hazard")
+			I.blend_mode = BLEND_ADD
+			I.pixel_y = 16
+			I.plane = PLANE_ABOVE_LIGHTING
+			I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+			// add to subscribers for annotations
+			images_to_add |= I
+			src.annotations[D] = I
+		// add key to list
+		if(!D.disposed)
+			valid_keys |= D
 	var/list/to_remove = list()
 	for(var/atom/key in src.annotations)
 		if(!(key in valid_keys))
@@ -215,33 +412,40 @@
 // UNITS
 
 /datum/flock/proc/registerUnit(var/atom/movable/D)
-	if(isflock(D) || isflockstructure(D))
+	if(isflock(D))
 		src.units |= D
-
-		if(src.panel && istype(D, /mob/living/critter/flock/drone))
-			var/mob/living/critter/flock/drone/drone = D
-
-			// update the flock control panel
-			var/list/update = drone.describe_state()
-			update["update"] = "add"
-			update["key"] = "drones"
-			// ref is already provided
-			panel.PushUpdate(update)
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH.updateCompute()
 
 /datum/flock/proc/removeDrone(var/atom/movable/D)
-	if(isflock(D) || isflockstructure(D))
+	if(isflock(D))
 		src.units -= D
-
-		if(src.panel && istype(D, /mob/living/critter/flock/drone))
-			// update the flock control panel
-			var/list/update = list()
-			update["update"] = "remove"
-			update["key"] = "drones"
-			update["ref"] = "\ref[D]"
-			panel.PushUpdate(update)
 
 		if(D:real_name && busy_tiles[D:real_name])
 			src.busy_tiles[D:real_name] = null
+		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+		aH.updateCompute()
+// STRUCTURES
+
+///This function only notifies the flock of the unlock, actual unlock logic is handled in the datum
+/datum/flock/proc/notifyUnlockStructure(var/datum/unlockable_flock_structure/SD)
+	flock_speak(null, "New structure devised: [SD.friendly_name]", src)
+
+///This function only notifies the flock of the relock, actual unlock logic is handled in the datum
+/datum/flock/proc/notifyRelockStructure(var/datum/unlockable_flock_structure/SD)
+	flock_speak(null, "Alert, structure tealprint disabled: [SD.friendly_name]", src)
+
+/datum/flock/proc/registerStructure(var/atom/movable/S)
+	if(isflockstructure(S))
+		src.structures |= S
+		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+		aH.updateCompute()
+
+/datum/flock/proc/removeStructure(var/atom/movable/S)
+	if(isflockstructure(S))
+		src.structures -= S
+		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+		aH.updateCompute()
 
 /datum/flock/proc/getComplexDroneCount()
 	var/count = 0
@@ -249,12 +453,20 @@
 		count++
 	return count
 
+/datum/flock/proc/toggleDeconstructionFlag(var/atom/target)
+	if(target in src.deconstruct_targets)
+		src.deconstruct_targets -= target
+	else
+		src.deconstruct_targets += target
+	src.updateAnnotations()
 // ENEMIES
 
-/datum/flock/proc/updateEnemy(var/mob/living/M)
+/datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
-	var/enemy_name = lowertext(M.name)
+	if(!isliving(M) && !iscritter(M))
+		return
+	var/enemy_name = M
 	var/list/enemy_deets
 	if(!(enemy_name in src.enemies))
 		// add new
@@ -263,37 +475,21 @@
 		enemy_deets["mob"] = M
 		enemy_deets["last_seen"] = enemy_area
 		src.enemies[enemy_name] = enemy_deets
-
-		// update the flock control panel
-		var/list/update = list()
-		update["update"] = "add"
-		update["key"] = "enemies"
-		update["ref"] = "\ref[M]"
-		update["name"] = M.name
-		update["area"] = enemy_area
-		panel.PushUpdate(update)
 	else
 		enemy_deets = src.enemies[enemy_name]
 		enemy_deets["last_seen"] = get_area(M)
 	// update annotations indicating enemies for flockmind and co
 	src.updateAnnotations()
 
-/datum/flock/proc/removeEnemy(var/mob/living/M)
+/datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
-	for(var/name in src.enemies)
-		var/list/enemy_stats = src.enemies[name]
-		if(enemy_stats["mob"] == M)
-			src.enemies -= name
-			// update the flock control panel
-			var/list/update = list()
-			update["update"] = "remove"
-			update["key"] = "enemies"
-			update["ref"] = "\ref[M]"
-			panel.PushUpdate(update)
+	if(!isliving(M) && !iscritter(M))
+		return
+	src.enemies -= M
 	src.updateAnnotations()
 
-/datum/flock/proc/isEnemy(var/mob/living/M)
-	var/enemy_name = lowertext(M.name)
+/datum/flock/proc/isEnemy(atom/M)
+	var/enemy_name = M
 	return (enemy_name in src.enemies)
 
 // DEATH
@@ -318,6 +514,8 @@
 /datum/flock/proc/reserveTurf(var/turf/simulated/T, var/name)
 	if(T in all_owned_tiles)
 		return
+	if(T in src.busy_tiles)
+		return //can't reserve tiles that are already reserved
 	src.busy_tiles[name] = T
 	src.updateAnnotations()
 
@@ -328,6 +526,9 @@
 /datum/flock/proc/claimTurf(var/turf/simulated/T)
 	src.all_owned_tiles |= T
 	src.priority_tiles -= T // we have it now, it's no longer priority
+	for (var/obj/flock_structure/structure in T.contents)
+		structure.flock = src
+		src.registerStructure(structure)
 	src.updateAnnotations()
 
 /datum/flock/proc/isTurfFree(var/turf/simulated/T, var/queryName) // provide the drone's name here: if they own the turf it's free _to them_
@@ -338,7 +539,7 @@
 			return 0
 	return 1
 
-/datum/flock/proc/togglePriorityTurf(var/turf/simulated/T)
+/datum/flock/proc/togglePriorityTurf(var/turf/T)
     if(!T)
         return 1 // error!!
     if(T in priority_tiles)
@@ -369,24 +570,37 @@
 			// tile got killed, remove it
 			floors_no_longer_existing |= T
 			continue
-		// check adjacent tiles to see if we've been surrounded and can start generating, or if we're no longer surrounded and can't generate
-		// var/validNeighbors = 0
-		// var/list/neighbors = getNeighbors(T, cardinal)
-		// for(var/turf/simulated/floor/feather/F in neighbors)
-		// 	validNeighbors += 1
-		// if(validNeighbors < 4 && T.generating)
-		// 	T.off()
-		// else if(validNeighbors >= 4 && !T.generating)
-		// 	T.on()
 
 	if(floors_no_longer_existing.len > 0)
 		src.all_owned_tiles -= floors_no_longer_existing
+
+	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
+		ufs.process()
+
+	//handle deconstruct targets being destroyed by other means
+	for(var/atom/S in src.deconstruct_targets)
+		if(S.disposed)
+			src.deconstruct_targets -= S
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
 	src.unreserveTurf(converterName)
 	src.claimTurf(flock_convert_turf(T))
 	playsound(T, "sound/items/Deconstruct.ogg", 70, 1)
 
+///Unlock an achievement (string) if it isn't already unlocked
+/datum/flock/proc/achieve(var/str)
+	src.achievements |= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
+
+/datum/flock/proc/unAchieve(var/str)
+	src.achievements -= str
+	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
+	aH?.updateCompute()
+
+///Unlock an achievement (string) if it isn't already unlocked
+/datum/flock/proc/hasAchieved(var/str)
+	return (str in src.achievements)
 ////////////////////
 // GLOBAL PROCS!!
 ////////////////////
@@ -394,18 +608,25 @@
 // made into a global proc so a reagent can use it
 // simple enough: if object path matches key, replace with instance of value
 // if value is null, just delete object
+// !!!! priority is determined by list order !!!!
+// if you have a subclass, it MUST go first in the list, or the first type that matches will take priority (ie, the superclass)
+// see /obj/machinery/light/small/floor and /obj/machinery/light for examples of this
 /var/list/flock_conversion_paths = list(
-	/obj/grille = /obj/grille/flock,
+	/obj/grille/steel = /obj/grille/flock,
 	/obj/window = /obj/window/feather,
 	/obj/machinery/door/airlock = /obj/machinery/door/feather,
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
 	/obj/table = /obj/table/flock/auto,
-	/obj/lattice = /obj/lattice/flock,
+	/obj/machinery/light/small/floor = /obj/machinery/light/flock/floor,
 	/obj/machinery/light = /obj/machinery/light/flock,
 	/obj/storage/closet = /obj/storage/closet/flock,
-	/obj/storage/secure/closet = /obj/storage/closet/flock
+	/obj/storage/secure/closet = /obj/storage/closet/flock,
+	/obj/machinery/computer3 = /obj/flock_structure/compute,
+	/obj/machinery/computer = /obj/flock_structure/compute,
+	/obj/machinery/networked/teleconsole = /obj/flock_structure/compute,
 	)
+
 /proc/flock_convert_turf(var/turf/T)
 	if(!T)
 		return
@@ -418,61 +639,33 @@
 	var/RL_AddLumG = T.RL_AddLumG
 	var/RL_AddLumB = T.RL_AddLumB
 
-	for(var/obj/O in T)
-		if(istype(O, /obj/machinery/door/feather))
-			// repair door
-			var/obj/machinery/door/feather/door = O
-			door.heal_damage()
-			animate_flock_convert_complete(O)
-		for(var/keyPath in flock_conversion_paths)
-			var/obj/replacementPath = flock_conversion_paths[keyPath]
-			if(istype(O, keyPath))
-				if(isnull(replacementPath))
-					qdel(O)
-				else
-					var/dir = O.dir
-					var/obj/converted = new replacementPath(T)
-					// if the object is a closet, it might not have spawned its contents yet
-					// so force it to do that first
-					if(istype(O, /obj/storage))
-						var/obj/storage/S = O
-						if(!isnull(S.spawn_contents))
-							S.make_my_stuff()
-					// if the object has contents, move them over!!
-					for (var/obj/OO in O)
-						OO.set_loc(converted)
-					for (var/mob/M in O)
-						M.set_loc(converted)
-					qdel(O)
-					converted.set_dir(dir)
-					animate_flock_convert_complete(converted)
-
-	// if floor, turn to floor, if wall, turn to wall
 	if(istype(T, /turf/simulated/floor))
-		if(istype(T, /turf/simulated/floor/feather))
-			// fix instead of replace
-			var/turf/simulated/floor/feather/TF = T
-			TF.repair()
-			animate_flock_convert_complete(T)
-		else
-			T.ReplaceWith("/turf/simulated/floor/feather", 0)
-			animate_flock_convert_complete(T)
-	if(istype(T, /turf/simulated/wall))
-		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		T.ReplaceWith("/turf/simulated/floor/feather", 0)
 		animate_flock_convert_complete(T)
 
+	if(istype(T, /turf/simulated/wall))
+		var/turf/converted_wall = T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		animate_flock_convert_complete(T)
+		APPLY_ATOM_PROPERTY(converted_wall, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
+
+	// regular and flock lattices
+	var/obj/lattice/lat = locate(/obj/lattice) in T
+	if(lat)
+		qdel(lat)
+		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		animate_flock_convert_complete(T)
+
+	var/obj/grille/catwalk/catw = locate(/obj/grille/catwalk) in T
+	if(catw)
+		qdel(catw)
+		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/space))
-		// if we have a fibrenet, make it a floor
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
-		if(istype(FL))
-			qdel(FL)
-			T.ReplaceWith("/turf/simulated/floor/feather", 0)
-			animate_flock_convert_complete(T)
-		// if we have no fibrenet, make one
-		else
-			FL = new(T)
-			animate_flock_convert_complete(FL)
+		if(!FL)
+			FL = new /obj/lattice/flock(T) //may as well reuse the var
+			APPLY_ATOM_PROPERTY(FL, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
@@ -482,6 +675,39 @@
 		T.RL_AddLumG = RL_AddLumG
 		T.RL_AddLumB = RL_AddLumB
 		if (RL_Started) RL_UPDATE_LIGHT(T)
+
+	for(var/obj/O in T)
+		if(istype(O, /obj/machinery/door/feather))
+			// repair door
+			var/obj/machinery/door/feather/door = O
+			door.heal_damage()
+			animate_flock_convert_complete(O)
+		else
+			for(var/keyPath in flock_conversion_paths) //types are converted with priority determined by list order
+				var/obj/replacementPath = flock_conversion_paths[keyPath] //put subclasses ahead of superclasses in the flock_conversion_paths list
+				if(istype(O, keyPath))
+					if(isnull(replacementPath))
+						qdel(O)
+					else
+						var/dir = O.dir
+						var/obj/converted = new replacementPath(T)
+						// if the object is a closet, it might not have spawned its contents yet
+						// so force it to do that first
+						if(istype(O, /obj/storage))
+							var/obj/storage/S = O
+							if(!isnull(S.spawn_contents))
+								S.make_my_stuff()
+						// if the object has contents, move them over!!
+						for (var/obj/OO in O)
+							OO.set_loc(converted)
+						for (var/mob/M in O)
+							M.set_loc(converted)
+						qdel(O)
+						converted.set_dir(dir)
+						APPLY_ATOM_PROPERTY(converted, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
+						animate_flock_convert_complete(converted)
+					break //we found and converted the type, don't convert it again
+
 
 	return T
 

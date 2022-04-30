@@ -4,11 +4,14 @@
 // Unlike the flockmind, when player drones exit their corporeal body to jump into another one,
 // they're tiny little flickers of thought.
 /mob/living/intangible/flock/trace
-	name = "weird radio ghost bird"
+	name = "Flocktrace"
 	real_name = "Flocktrace"
 	desc = "The representation of a partition of the will of the flockmind."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flocktrace"
+	layer = NOLIGHT_EFFECTS_LAYER_BASE
+
+	compute = -100 //it is expensive to run more threads
 
 /mob/living/intangible/flock/trace/New(atom/loc, datum/flock/F)
 	..()
@@ -16,13 +19,16 @@
 	src.abilityHolder = new /datum/abilityHolder/flockmind(src)
 
 	src.real_name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
+	src.name = src.real_name
+	src.update_name_tag()
 
 	if(istype(F))
 		src.flock = F
 		src.flock.addTrace(src)
 	else
 		src.death() // f u
-	src.abilityHolder.addAbility(/datum/targetable/flockmindAbility/createStructure)
+	src.addAbility(/datum/targetable/flockmindAbility/designateEnemy)
+	src.addAbility(/datum/targetable/flockmindAbility/ping)
 
 /mob/living/intangible/flock/trace/proc/describe_state()
 	var/state = list()
@@ -65,8 +71,10 @@
 /mob/living/intangible/flock/trace/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return 1
-	if (src.flock && src.flock.units && src.flock.units.len <= 0)
-		boutput(src, "<span class='alert'>There are no more drones left in the flock to compute your consciousness!</span>")
+	var/datum/abilityHolder/flockmind/aH = src.abilityHolder
+	aH?.updateCompute()
+	if (src.flock && src.flock.total_compute() < src.flock.used_compute())
+		boutput(src, "<span class='alert'>The Flock has insufficient compute to sustain your consciousness!</span>")
 		src.death() // get rekt
 
 /mob/living/intangible/flock/trace/death(gibbed)
