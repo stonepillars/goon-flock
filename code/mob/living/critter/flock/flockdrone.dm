@@ -397,12 +397,11 @@
 				I.change_stack_amount(-1)
 				I.health = initial(I.health)
 				if(isnull(I.health)) // :screm:
-					if (isnull(I.health))
-						switch (I.w_class)
-							if (W_CLASS_TINY to W_CLASS_NORMAL)
-								I.health = I.w_class + 1
-							else
-								I.health = I.w_class + 2
+					switch (I.w_class)
+						if (W_CLASS_TINY to W_CLASS_NORMAL)
+							I.health = I.w_class + 1
+						else
+							I.health = I.w_class + 2
 			else //these things happen on completion of eating the stack/single item, but not on each item in the stack
 				I.dropped(src)
 				src.resources += src.absorb_completion
