@@ -758,13 +758,24 @@ butcher
 	if(!F?.flock)
 		return
 	for(var/atom/T in view(target_range, holder.owner))
+		//handle vehicles first
+		if (isvehicle(T))
+			var/enemy_found = FALSE
+			for (var/mob/occupant in T)
+				if (!F.flock.isEnemy(occupant))
+					continue
+				F.flock.updateEnemy(occupant)
+				enemy_found = TRUE
+				break
+			if (enemy_found) //bad guy in pod
+				. += T
+				continue
 		if(!F.flock.isEnemy(T))
 			continue
 		if(isliving(T))
 			var/mob/living/M = T
 			if(is_incapacitated(M))
 				continue
-
 		// mob is a valid target, check if they're not already in a cage
 		if(!istype(T.loc.type, /obj/flock_structure/cage))
 			// if we can get a valid path to the target, include it for consideration
@@ -1184,7 +1195,7 @@ butcher
 /datum/aiTask/timed/targeted/flockdrone_shoot/targetable
 	switched_to()
 		on_reset()
-		if (!(ismob(src.target) || iscritter(src.target)) || isflock(src.target))
+		if (!(ismob(src.target) || iscritter(src.target) || isvehicle(src.target)) || isflock(src.target))
 			var/mob/living/critter/flock/drone/drone = holder.owner
 			flock_speak(drone, "Invalid elimination target provided by sentient level instruction.", drone.flock)
 			holder.interrupt()

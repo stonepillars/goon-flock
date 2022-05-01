@@ -464,6 +464,9 @@
 /datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
+	if (isvehicle(M))
+		for (var/mob/occupant in M) //yes we are blaming the passenger
+			src.updateEnemy(occupant)
 	if(!isliving(M) && !iscritter(M))
 		return
 	var/enemy_name = M
