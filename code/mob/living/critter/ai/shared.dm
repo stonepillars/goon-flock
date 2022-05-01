@@ -161,6 +161,11 @@
 		. = (get_dist(holder.owner, src.move_target) == 0)
 		return
 
+/datum/aiTask/succeedable/move/failed()
+	if(!move_target || !src.found_path)
+		fails++
+	return fails >= max_fails
+
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WAIT TASK
 // uh, yeah. spend a couple ticks waiting, whatever
