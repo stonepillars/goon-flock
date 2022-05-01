@@ -33,12 +33,38 @@
 	else
 		flock_speak(null, "ERROR: No Structure Tealprint Assigned, Deleting", flock)
 		qdel(src) //no exist if building null
+		return
+
+	//bounds checking goes here
+	var/blocked = FALSE
+	for(var/turf/T in src.locs)
+		if(flock_is_blocked_turf(T))
+			blocked = TRUE
+			T.AddComponent(/datum/component/flock_ping/obstruction)
+
+	if(blocked)
+		qdel(src)
+		flock_speak(null, "ERROR: Build area is blocked by an obstruction.", flock)
+		return
+
+/obj/flock_structure/ghost/proc/flock_is_blocked_turf(var/turf/T)
+	// nicked from is_blocked_turf
+	if (!T) return 0
+	if(T.density) return 1
+	for(var/atom/A in T)
+		if(A?.density && !isflock(A))//ignores flockdrones/flockbits
+			return 1
+	return 0
+
 
 /obj/flock_structure/ghost/Click(location, control, params)
 	if (("alt" in params2list(params)) || !istype(usr, /mob/living/intangible/flock/flockmind))
 		return ..()
 	if (tgui_alert(usr, "Cancel tealprint construction?", "Tealprint", list("Yes", "No")) == "Yes")
 		cancelBuild()
+
+/obj/flock_structure/ghost/deconstruct()
+	cancelBuild()
 
 /obj/flock_structure/ghost/process()
 	if(currentmats > goal)
@@ -50,6 +76,14 @@
 		src.completebuild()
 		//not enough resources = do nothin
 	updatealpha()
+
+/obj/flock_structure/ghost/gib()
+	visible_message("<span class='alert'>[src] suddenly dissolves!</span>")
+	playsound(src.loc, 'sound/impact_sounds/Glass_Shatter_2.ogg', 80, 1)
+	if (currentmats > 0)
+		var/obj/item/flockcache/cache = new(get_turf(src))
+		cache.resources = src.currentmats
+	qdel(src)
 
 /obj/flock_structure/ghost/proc/updatealpha()
 	alpha = lerp(104, 255, currentmats / goal)
@@ -64,5 +98,11 @@
 		var/obj/item/flockcache/cache = new(get_turf(src))
 		cache.resources = currentmats
 	flock_speak(src, "Tealprint derealizing", flock)
-	playsound(src, 'sound/misc/flockmind/flockdrone_door_deny.ogg', 50, 1)
+	playsound(src, 'sound/misc/flockmind/flockdrone_door_deny.ogg', 40, 1)
 	qdel(src)
+
+
+////////////////////////////////////////////////////////////////////////
+
+/datum/component/flock_ping/obstruction
+	outline_color = "#910707"

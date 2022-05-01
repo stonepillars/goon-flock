@@ -5,6 +5,8 @@
 	name = "weird imposing wall"
 	desc = "It sounds like it's hollow."
 	mat_appearances_to_ignore = list("steel","gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	autoclose = 1
 	var/broken = 0
 	health = 80
@@ -14,6 +16,9 @@
 	..()
 	setMaterial("gnesis")
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE)
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1, src))
+			W.UpdateIcon()
 	var/datum/component/C = src.GetComponent(/datum/component/mechanics_holder)
 	C?.RemoveComponent()
 
@@ -66,6 +71,14 @@
 	src.name = initial(name)
 	src.desc = initial(desc)
 
+/obj/machinery/door/feather/proc/repair()
+	src.health = min(20, src.health_max - src.health) + src.health
+	if (src.broken && src.health_max / 2 < src.health)
+		src.name = initial(src.name)
+		src.desc = initial(src.desc)
+		src.broken = FALSE
+		src.icon_state = initial(src.icon_state)
+
 /obj/machinery/door/feather/play_animation(animation)
 	if(broken)
 		return
@@ -113,6 +126,12 @@
 
 /obj/machinery/door/feather/isblocked()
 	return 0 // this door will not lock or be inaccessible to flockdrones
+
+/obj/machinery/door/feather/disposing()
+	..()
+	if (map_settings?.auto_walls)
+		for (var/turf/simulated/wall/auto/feather/W in orange(1))
+			W.UpdateIcon()
 
 ////////////////////
 // friendly variant

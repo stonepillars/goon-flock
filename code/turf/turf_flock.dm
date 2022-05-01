@@ -85,6 +85,23 @@
 		if(f.usesgroups)
 			f.group?.removestructure(f)
 			f.group = null
+	for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+		if (flockdrone.floorrunning)
+			flockdrone.end_floorrunning()
+
+/turf/simulated/floor/feather/proc/repair()
+	if (src.broken)
+		src.name = initial(src.name)
+		src.desc = initial(src.desc)
+		src.icon_state = initial(src.icon_state)
+		src.broken = FALSE
+		if(!src.group)
+			checknearby() //check for groups to join
+		for(var/obj/flock_structure/f in get_turf(src))
+			if(f.usesgroups)
+				f.group = src.group
+				f.group.addstructure(f)
+	src.health = min(src.health + 10, initial(src.health))
 
 /turf/simulated/floor/feather/burn_tile()
 	return
@@ -95,25 +112,37 @@
 	..()
 	if(!istype(F) || !oldloc)
 		return
-	if(F.client && F.client.check_key(KEY_RUN) && !broken && !F.floorrunning)
+	if(F.client && F.client.check_key(KEY_RUN) && !broken && !F.floorrunning && F.can_floorrun && F.resources >= 1)
 		F.start_floorrunning()
+
 	if(F.floorrunning && !broken)
-		if(!on)
+		F.resources--
+		if (F.resources < 1)
+			F.end_floorrunning()
+		else if(!on)
 			on()
 
 /turf/simulated/floor/feather/Exited(var/mob/living/critter/flock/drone/F, atom/newloc)
 	..()
 	if(!istype(F) || !newloc)
 		return
-	if(on && !connected)
-		off()
+	if(F.floorrunning && !connected)
+		if (locate(/mob/living/critter/flock/drone) in src.contents)
+			var/floorrunning_flockdrone = FALSE
+			for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+				if (flockdrone.floorrunning)
+					floorrunning_flockdrone = TRUE
+			if (!floorrunning_flockdrone)
+				off()
+		else
+			off()
 	if(F.floorrunning)
 		if(istype(newloc, /turf/simulated/floor/feather))
 			var/turf/simulated/floor/feather/T = newloc
 			if(T.broken)
-				F.end_floorrunning() // broken tiles won't let you continue floorrunning
+				F.end_floorrunning()
 		else if(!isfeathertile(newloc))
-			F.end_floorrunning() // you left flocktile territory, boyo
+			F.end_floorrunning()
 
 /turf/simulated/floor/feather/proc/on()
 	if(src.broken)
@@ -134,19 +163,6 @@
 		src.desc = initial(desc)
 	src.light.disable()
 	on = 0
-
-/turf/simulated/floor/feather/proc/repair()
-	src.icon_state = "floor"
-	src.broken = 0
-	src.health = initial(health)
-	src.name = initial(name)
-	src.desc = initial(desc)
-	if(isnull(src.group))
-		checknearby() //check for groups to join
-	for(var/obj/flock_structure/f in get_turf(src))
-		if(f.usesgroups)
-			f.group = src.group
-			f.group.addstructure(f)
 
 /turf/simulated/floor/feather/broken
 	name = "weird broken floor"
@@ -259,6 +275,8 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	var/max_health = 250
 	flags = USEDELAY
 	mat_appearances_to_ignore = list("steel", "gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather)
 
 	var/broken = FALSE
@@ -363,6 +381,10 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 		if (playAttackSound)
 			playsound(src, "sound/impact_sounds/Crystal_Shatter_1.ogg", 25, 1)
 
+		for (var/mob/living/critter/flock/drone/flockdrone in src.contents)
+			if (flockdrone.floorrunning)
+				flockdrone.end_floorrunning()
+
 /turf/simulated/wall/auto/feather/proc/destroy()
 	var/turf/T = get_turf(src)
 
@@ -388,12 +410,26 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 		for (var/turf/simulated/wall/auto/feather/W in orange(1, src))
 			W.UpdateIcon()
 
+/turf/simulated/wall/auto/feather/proc/repair()
+	if (src.broken)
+		src.name = initial(src.name)
+		src.desc = initial(src.desc)
+		src.broken = FALSE
+		src.UpdateIcon()
+		src.setMaterial(getMaterial("gnesis"))
+	src.health = min(src.health + 50, src.max_health)
+
 /turf/simulated/wall/auto/feather/Entered(var/mob/living/critter/flock/drone/F, atom/oldloc)
 	..()
 	if(!istype(F) || !oldloc)
 		return
-	if(F.client && F.client.check_key(KEY_RUN) && !F.floorrunning)
+	if(F.client && F.client.check_key(KEY_RUN) && !F.floorrunning && F.resources >= 1)
 		F.start_floorrunning()
+
+	if(F.floorrunning)
+		F.resources--
+		if (F.resources < 1)
+			F.end_floorrunning()
 
 /turf/simulated/wall/auto/feather/Exited(var/mob/living/critter/flock/drone/F, atom/newloc)
 	..()

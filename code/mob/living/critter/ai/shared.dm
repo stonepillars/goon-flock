@@ -36,6 +36,10 @@
 	// obviously a specific goal will have specific requirements for targets
 	. = list()
 
+///Is the target VALID?
+/datum/aiTask/sequence/goalbased/proc/valid_target(var/atom/target)
+	return FALSE
+
 /datum/aiTask/sequence/goalbased/proc/score_target(var/atom/target)
 	. = 0
 	if(target)
@@ -70,9 +74,6 @@
 					if(M.move_target)
 						return
 			M.move_target = target_turf
-
-/datum/aiTask/sequence/goalbased/on_reset()
-	holder.target = null
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WANDER TASK

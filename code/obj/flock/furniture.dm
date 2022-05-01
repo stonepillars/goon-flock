@@ -18,6 +18,13 @@
 	icon = 'icons/obj/furniture/table_flock.dmi'
 	auto_type = /obj/table/flock/auto
 	parts_type = /obj/item/furniture_parts/table/flock
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+
+/obj/table/flock/New()
+	..()
+	setMaterial(getMaterial("gnesis"))
 
 /obj/table/flock/special_desc(dist, mob/user)
   if(isflock(user))
@@ -35,6 +42,13 @@
 	desc = "An extendable... <i>thing</i> that can be stretched out to make, uh, probably a table of some kind? Where's the goddamn instructions?!"
 	icon = 'icons/obj/furniture/table_flock.dmi'
 	furniture_type = /obj/table/flock/auto
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+
+/obj/item/furniture_parts/table/flock/New()
+	..()
+	setMaterial(getMaterial("gnesis"))
 
 /obj/item/furniture_parts/table/flock/special_desc(dist, mob/user)
   if(isflock(user))
@@ -59,6 +73,13 @@
 	climbable = 0
 	parts_type = /obj/item/furniture_parts/flock_chair
 	scoot_sounds = list( 'sound/misc/chair/glass/scoot1.ogg', 'sound/misc/chair/glass/scoot2.ogg', 'sound/misc/chair/glass/scoot3.ogg', 'sound/misc/chair/glass/scoot4.ogg', 'sound/misc/chair/glass/scoot5.ogg' )
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+
+/obj/stool/chair/comfy/flock/New()
+	..()
+	setMaterial(getMaterial("gnesis"))
 
 /obj/stool/chair/comfy/flock/special_desc(dist, mob/user)
   if(isflock(user))
@@ -78,6 +99,13 @@
 	stamina_cost = 10
 	furniture_type = /obj/stool/chair/comfy/flock
 	furniture_name = "thrumming alcove"
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+
+/obj/item/furniture_parts/flock_chair/New()
+	..()
+	setMaterial(getMaterial("gnesis"))
 
 /obj/item/furniture_parts/flock_chair/special_desc(dist, mob/user)
   if(isflock(user))
@@ -107,6 +135,20 @@
 	var/health_attack = 100
 	var/health_max = 100
 	var/hitsound = "sound/impact_sounds/Generic_Hit_Heavy_1.ogg"
+
+	take_damage(var/force, var/mob/user as mob)
+		if (!isnum(force) || force <= 0)
+			return
+		src.health_attack = clamp(src.health_attack - force, 0, src.health_max)
+		if (src.health_attack <= 0)
+			var/turf/T = get_turf(src)
+			playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+			var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
+			S.set_loc(T)
+			S.setMaterial(getMaterial("gnesisglass"))
+			src.dump_contents()
+			make_cleanable( /obj/decal/cleanable/flockdrone_debris, T)
+			qdel(src)
 
 /obj/storage/closet/flock/New()
 	..()
@@ -143,19 +185,8 @@
 			else if(user.drop_item())
 				W?.set_loc(src.loc)
 
-/obj/storage/closet/flock/proc/take_damage(var/force, var/mob/user as mob)
-	if (!isnum(force) || force <= 0)
-		return
-	src.health_attack = clamp(src.health_attack - force, 0, src.health_max)
-	if (src.health_attack <= 0)
-		var/turf/T = get_turf(src)
-		playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
-		var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard
-		S.set_loc(T)
-		S.setMaterial(getMaterial("gnesisglass"))
-		src.dump_contents()
-		make_cleanable( /obj/decal/cleanable/flockdrone_debris, T)
-		qdel(src)
+/obj/storage/closet/flock/proc/repair()
+	src.health_attack = min(src.health_attack + 25, src.health_max)
 
 /obj/storage/closet/flock/attack_hand(mob/user as mob)
 	if (BOUNDS_DIST(user, src) > 0)
@@ -192,9 +223,13 @@
 	power_usage = 0
 	on = 1
 	removable_bulb = 0
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = 0
+	mat_changedesc = 0
 
 /obj/machinery/light/flock/New()
 	..()
+	setMaterial(getMaterial("gnesis"))
 	light.set_color(0.45, 0.75, 0.675)
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE)
 
@@ -331,3 +366,10 @@
 	if (istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
 		return
 	..()
+
+/obj/grille/flock/proc/repair()
+	src.health = min(src.health + 10, src.health_max)
+	if (ruined)
+		src.set_density(TRUE)
+		src.ruined = FALSE
+	src.UpdateIcon()
