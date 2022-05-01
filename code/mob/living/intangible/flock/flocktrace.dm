@@ -27,6 +27,12 @@
 		src.flock.addTrace(src)
 	else
 		src.death() // f u
+
+	if (!src.mind.special_role) // Preserve existing antag role (if any).
+		src.mind.special_role = ROLE_FLOCKTRACE
+	if (!(src.mind in ticker.mode.Agimmicks))
+		ticker.mode.Agimmicks += src.mind
+
 	src.addAbility(/datum/targetable/flockmindAbility/designateEnemy)
 	src.addAbility(/datum/targetable/flockmindAbility/ping)
 
