@@ -14,14 +14,15 @@
 	RegisterSignal(parent, COMSIG_FLOCK_ATTACK, .proc/handle_flock_attack)
 
 /// If flockdrone is in our flock, deny the attack, otherwise scream and cry
-/datum/component/flock_interest/proc/handle_flock_attack(source, mob/user)
+/datum/component/flock_interest/proc/handle_flock_attack(source, mob/user, var/intentional)
 	if(!istype(user))
-		return FALSE
+		return
 
 	var/mob/living/critter/flock/F = user
 	if (istype(F) && F.flock == src.flock)
-		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
-		return TRUE
+		if(intentional)
+			boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
+		return intentional
 
 	var/mob/living/critter/flock/drone/snitch
 	for (var/mob/living/critter/flock/drone/FD in view(7, source))
@@ -32,9 +33,9 @@
 	if(!snitch)
 		return
 
-	if (!snitch.flock.isEnemy(user))
+	if (!snitch.flock.isEnemy(user) && snitch != source)
 		flock_speak(snitch, "Damage sighted on [source], [pick_string("flockmind.txt", "flockdrone_enemy")] [user]", snitch.flock)
-		snitch.flock.updateEnemy(user)
+	snitch.flock.updateEnemy(user)
 
 
 /// Raise COMSIG_FLOCK_ATTACK on common sources of damage (projectiles, items, fists, etc.)
@@ -65,18 +66,18 @@
 
 /// Protect against punches/kicks/etc.
 /datum/component/flock_protection/proc/handle_attackhand(atom/source, mob/user)
-	return user.a_intent == INTENT_HARM && src.report_unarmed && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, user)
+	return user.a_intent == INTENT_HARM && src.report_unarmed && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, user, TRUE)
 
 /// Protect against being hit by something.
 /datum/component/flock_protection/proc/handle_attackby(atom/source, obj/item/W, mob/user)
-	return W && src.report_attack && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, user)
+	return W && src.report_attack && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, user, TRUE)
 
 /// Protect against someone chucking stuff at the parent.
-/datum/component/flock_protection/proc/handle_hitby_thrown(atom/source, atom/hit_atom, datum/thrown_thing/thr)
+/datum/component/flock_protection/proc/handle_hitby_thrown(atom/source, atom/thrown_thing, datum/thrown_thing/thr)
 	var/mob/attacker = thr.user
-	return istype(attacker) && src.report_thrown && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker)
+	return istype(attacker) && src.report_thrown && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker, FALSE)
 
 /// Protect against someone shooting the parent.
 /datum/component/flock_protection/proc/handle_hitby(atom/source, obj/projectile/P)
 	var/mob/attacker = P.shooter
-	return istype(attacker) && src.report_thrown && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker)
+	return istype(attacker) && src.report_thrown && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker, FALSE)

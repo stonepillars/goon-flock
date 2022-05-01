@@ -627,10 +627,12 @@
 			animate_flock_convert_complete(T)
 		else
 			T.ReplaceWith("/turf/simulated/floor/feather", 0)
+			APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 			animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/simulated/wall))
 		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 		animate_flock_convert_complete(T)
 
 	// regular and flock lattices
@@ -638,18 +640,21 @@
 	if(lat)
 		qdel(lat)
 		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 		animate_flock_convert_complete(T)
 
 	var/obj/grille/catwalk/catw = locate(/obj/grille/catwalk) in T
 	if(catw)
 		qdel(catw)
 		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/space))
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
 		if(!FL)
-			new /obj/lattice/flock(T)
+			FL = new(T)
+		APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
