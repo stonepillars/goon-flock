@@ -1091,9 +1091,3 @@
 	if(temp)
 		animate(temp) // cancel animation
 	..()
-
-/datum/equipmentHolder/flockAbsorption/drop(var/force = 0)
-	var/obj/item/temp = item
-	if(temp)
-		animate(temp) // cancel animation
-	..()
