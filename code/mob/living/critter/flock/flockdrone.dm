@@ -56,6 +56,7 @@
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	src.update_name_tag()
+	src.update_health_icon()
 
 	if(src.dormant) // we'be been flagged as dormant in the map editor or something
 		src.dormantize()
@@ -84,6 +85,7 @@
 		if (controller)
 			src.release_control_abrupt()
 		flock_speak(null, "Connection to drone [src.real_name] lost.", src.flock)
+		src.update_health_icon()
 		src.flock.removeDrone(src)
 	src.remove_simple_light("drone_light")
 	..()
@@ -141,6 +143,7 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
+	src.update_health_icon()
 	boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
 /mob/living/critter/flock/drone/proc/release_control()
@@ -176,6 +179,7 @@
 		flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
 		controller = null
+		src.update_health_icon()
 
 /mob/living/critter/flock/drone/proc/release_control_abrupt()
 	src.flock?.hideAnnotations(src)
@@ -204,6 +208,7 @@
 		ticker.minds += controller.mind
 	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	controller = null
+	src.update_health_icon()
 
 /mob/living/critter/flock/drone/proc/dormantize()
 	src.dormant = TRUE
@@ -214,6 +219,7 @@
 	if (!src.flock)
 		return
 
+	src.update_health_icon()
 	src.flock.hideAnnotations(src)
 	src.flock.removeDrone(src)
 
@@ -634,6 +640,7 @@
 /mob/living/critter/flock/drone/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
 	..()
 	src.check_health()
+	src.update_health_icon()
 	if (brute <= 0 && burn <= 0 && tox <= 0)
 		return
 	var/prev_damaged = src.damaged
@@ -674,6 +681,28 @@
 				src.icon_state = "drone-d2"
 	return
 
+/mob/living/critter/flock/drone/proc/update_health_icon()
+	if (!src.flock)
+		return
+	var/image/I
+	if (src.real_name in src.flock.annotations_health)
+		I = src.flock.annotations_health[src.real_name]
+		src.flock.annotations_health -= src.real_name
+		src.flock.removeClientImage(I)
+
+	if (isdead(src) || src.dormant || src.disposed)
+		return
+
+	I = image('icons/misc/featherzone.dmi', src, "hp-[round(src.get_health_percentage() * 10) * 10]")
+	I.blend_mode = BLEND_ADD
+	I.pixel_x = 10
+	I.pixel_y = 16
+	I.plane = PLANE_ABOVE_LIGHTING
+	I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+	src.flock.annotations_health[src.real_name] = I
+	src.flock.addClientImage(I)
+	src.client?.images -= I
+
 /mob/living/critter/flock/drone/proc/reduce_lifeprocess_on_death() //used for AI mobs we dont give a dang about them after theyre dead
 	remove_lifeprocess(/datum/lifeprocess/blood)
 	remove_lifeprocess(/datum/lifeprocess/canmove)
@@ -706,6 +735,7 @@
 		src.resources = 0 // just in case any weirdness happens let's pre-empt the dupe bug
 	if(src.controller)
 		src.release_control()
+	src.update_health_icon()
 	src.flock?.removeDrone(src)
 	..()
 	src.icon_state = "drone-dead"
