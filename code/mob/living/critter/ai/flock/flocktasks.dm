@@ -760,16 +760,18 @@ butcher
 	for(var/atom/T in view(target_range, holder.owner))
 		//handle vehicles first
 		if (isvehicle(T))
+			var/vehicle_is_enemy = F.flock.isEnemy(T) //if someone gets in an enemy pod, attack
 			var/enemy_found = FALSE
 			for (var/mob/occupant in T)
-				if (!F.flock.isEnemy(occupant))
+				if (!F.flock.isEnemy(occupant) && !vehicle_is_enemy)
 					continue
 				F.flock.updateEnemy(occupant)
 				enemy_found = TRUE
 				break
 			if (enemy_found) //bad guy in pod
 				. += T
-				continue
+			//continue regardless of whether we find an enemy or not, since we don't want to attack empty pods
+			continue
 		if(!F.flock.isEnemy(T))
 			continue
 		if(isliving(T))
@@ -811,6 +813,8 @@ butcher
 /datum/aiTask/sequence/goalbased/flockdrone_capture/valid_target(atom/target)
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(!F.flock.isEnemy(target))
+		return FALSE
+	if (!ismob(target) && !iscritter(target)) //no caging vehicles
 		return FALSE
 	if(istype(target,/mob/living))
 		var/mob/living/mob = target

@@ -413,7 +413,8 @@
 	if (isvehicle(M))
 		for (var/mob/occupant in M) //yes we are blaming the passenger
 			src.updateEnemy(occupant)
-	if(!isliving(M) && !iscritter(M))
+	//vehicles can be enemies but drones will only attack them if they are occupied
+	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
 		return
 	var/enemy_name = M
 	var/list/enemy_deets
@@ -438,7 +439,7 @@
 
 /datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
-	if(!isliving(M) && !iscritter(M))
+	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
 		return
 	src.enemies -= M
 
