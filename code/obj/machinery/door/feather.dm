@@ -15,6 +15,7 @@
 /obj/machinery/door/feather/New()
 	..()
 	setMaterial("gnesis")
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE)
 	if (map_settings?.auto_walls)
 		for (var/turf/simulated/wall/auto/feather/W in orange(1, src))

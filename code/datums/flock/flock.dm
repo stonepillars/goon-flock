@@ -652,28 +652,24 @@
 	if(istype(T, /turf/simulated/wall))
 		var/turf/converted_wall = T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
 		animate_flock_convert_complete(T)
-		APPLY_ATOM_PROPERTY(converted_wall, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 
 	// regular and flock lattices
 	var/obj/lattice/lat = locate(/obj/lattice) in T
 	if(lat)
 		qdel(lat)
 		T.ReplaceWith("/turf/simulated/floor/feather", 0)
-		APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 		animate_flock_convert_complete(T)
 
 	var/obj/grille/catwalk/catw = locate(/obj/grille/catwalk) in T
 	if(catw)
 		qdel(catw)
 		T.ReplaceWith("/turf/simulated/floor/feather", 0)
-		APPLY_ATOM_PROPERTY(T, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/space))
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
 		if(!FL)
 			FL = new /obj/lattice/flock(T) //may as well reuse the var
-			APPLY_ATOM_PROPERTY(FL, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
@@ -712,7 +708,6 @@
 							M.set_loc(converted)
 						qdel(O)
 						converted.set_dir(dir)
-						APPLY_ATOM_PROPERTY(converted, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 						animate_flock_convert_complete(converted)
 					break //we found and converted the type, don't convert it again
 

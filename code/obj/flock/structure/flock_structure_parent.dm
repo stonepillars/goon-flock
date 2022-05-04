@@ -48,7 +48,7 @@
 		grouptile = f
 		group = f.group
 		f.group.addstructure(src)
-
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection)
 
 /obj/flock_structure/disposing()

@@ -153,6 +153,7 @@
 /obj/storage/closet/flock/New()
 	..()
 	setMaterial("gnesis")
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE, report_attack=FALSE)
 
 /obj/storage/closet/flock/attackby(obj/item/W as obj, mob/user as mob)
@@ -231,6 +232,7 @@
 	..()
 	setMaterial(getMaterial("gnesis"))
 	light.set_color(0.45, 0.75, 0.675)
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE)
 
 /obj/machinery/light/flock/attack_hand(mob/user)
@@ -273,6 +275,7 @@
 /obj/lattice/flock/New()
 	..()
 	setMaterial("gnesis")
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection, report_attack=FALSE)
 
 /obj/lattice/flock/attackby(obj/item/C as obj, mob/user as mob)
@@ -336,6 +339,7 @@
 	..()
 	setMaterial("gnesis")
 	src.UpdateIcon()
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection)
 
 
