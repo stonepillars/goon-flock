@@ -25,7 +25,7 @@
 		return intentional
 
 	var/mob/living/critter/flock/drone/snitch
-	for (var/mob/living/critter/flock/drone/FD in view(7, source))
+	for (var/mob/living/critter/flock/drone/FD in viewers(user))
 		if (FD != user && !isdead(FD) && FD.is_npc && FD.flock == src.flock)
 			snitch = FD
 			break

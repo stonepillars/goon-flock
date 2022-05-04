@@ -650,7 +650,7 @@
 		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/simulated/wall))
-		var/turf/converted_wall = T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
 		animate_flock_convert_complete(T)
 
 	// regular and flock lattices
