@@ -4,7 +4,6 @@
 
 	shuttle_available = 2
 	shuttle_available_threshold = 12000 // 20 min, default value, probably change this
-	shuttle_unavailable_msg = "CentCom reports extreme anomalous radio signals originating from your station. The shuttle has been returned to base as a precaution."
 
 	//NOTE: if you need to track something, put it here
 	var/list/flockminds = list()

@@ -7,7 +7,6 @@
 
 	var/shuttle_available = 1 // 0: Won't dock. | 1: Normal. | 2: Won't dock if called too early.
 	var/shuttle_available_threshold = 12000 // 20 min. Only works when shuttle_available == 2.
-	var/shuttle_unavailable_msg = "CentCom has received reports of unusual activity on the station. The shuttle has been returned to base as a precaution, and will not be usable."
 	var/shuttle_auto_call_time = 90 MINUTES // 120 minutes.  Shuttle auto-called at this time and then again at this time + 1/2 this time, then every 1/2 this time after that. Set to 0 to disable.
 	var/shuttle_last_auto_call = 0
 	var/shuttle_initial_auto_call_done = 0 // set to 1 after first call so we know to start checking shuttle_auto_call_time/2

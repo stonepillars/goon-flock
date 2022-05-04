@@ -95,7 +95,7 @@ datum/shuttle_controller
 						location = SHUTTLE_LOC_STATION
 						if (ticker?.mode)
 							if (ticker.mode.shuttle_available == 0)
-								command_alert(ticker.mode.shuttle_unavailable_msg);
+								command_alert("CentCom has received reports of unusual activity on the station. The shuttle has been returned to base as a precaution, and will not be usable.");
 								online = 0
 								direction = 1
 								endtime = null
