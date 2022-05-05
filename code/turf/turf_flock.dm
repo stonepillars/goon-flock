@@ -3,6 +3,79 @@
 // -----
 // FLOOR
 // -----
+/turf/simulated/floor/feather_plating
+	name = "weird plating"
+	desc = "A strange Flock under-plating. It looks rough enough that it could support tile placement."
+	icon = 'icons/misc/featherzone.dmi'
+	icon_state = "floor-plating"
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+	step_material = "step_plating"
+	step_priority = STEP_PRIORITY_MED
+
+/turf/simulated/floor/feather_plating/New()
+	..()
+	setMaterial(getMaterial("gnesis"))
+	setIntact(FALSE)
+
+/turf/simulated/floor/feather_plating/special_desc(dist, mob/user)
+	if (isflock(user) && !intact)
+		return {"<span class='flocksay'><span class='bold'>###=-Ident unknown. No data packet received</span>
+			<br><br><span class='bold'>###=-</span></span>"}
+	else
+		return null
+
+/turf/simulated/floor/feather_plating/to_plating()
+	if (!intact)
+		return
+	setIntact(FALSE)
+
+	icon = initial(icon)
+	icon_state = initial(icon_state)
+	src.UpdateIcon()
+
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+	setMaterial(getMaterial("gnesis"))
+
+	name = initial(name)
+	desc = initial(desc)
+
+	levelupdate()
+
+/turf/simulated/floor/feather_plating/restore_tile(datum/material/mat)
+	if (intact)
+		return
+	setIntact(TRUE)
+
+	icon = 'icons/turf/floors.dmi'
+	icon_state = "floor"
+	src.UpdateIcon()
+
+	mat_appearances_to_ignore = list("steel")
+	mat_changename = TRUE
+	mat_changedesc = TRUE
+	if (mat)
+		setMaterial(mat)
+	else
+		setMaterial(getMaterial("steel"))
+
+	src.name = replacetext(src.name, initial(src.name), "floor")
+	src.desc = replacetext(src.desc, initial(src.desc), "")
+
+	levelupdate()
+
+/turf/simulated/floor/feather_plating/break_tile_to_plating()
+	return
+
+/turf/simulated/floor/feather_plating/break_tile()
+	return
+
+/turf/simulated/floor/feather_plating/burn_tile()
+	return
+
 /turf/simulated/floor/feather
 	name = "weird floor"
 	desc = "I don't like the looks of that whatever-it-is."
@@ -13,6 +86,7 @@
 	mat_changename = 0
 	mat_changedesc = 0
 	broken = 0
+	flock_plating_under = TRUE
 	step_material = "step_plating"
 	step_priority = STEP_PRIORITY_MED
 	var/health = 50
@@ -73,8 +147,7 @@
 /turf/simulated/floor/feather/break_tile_to_plating()
 	// if the turf's on, turn it off
 	off()
-	var/turf/simulated/floor/F = src.ReplaceWithFloor()
-	F.to_plating()
+	src.ReplaceWithFeatherPlating()
 
 /turf/simulated/floor/feather/break_tile()
 	off()

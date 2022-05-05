@@ -46,6 +46,7 @@
 	var/tmp/allow_unrestricted_hotbox = 0
 	var/wet = 0
 	var/sticky = FALSE
+	var/flock_plating_under = FALSE
 	throw_unlimited = 0 //throws cannot stop on this tile if true (also makes space drift)
 
 	var/step_material = 0
@@ -488,6 +489,7 @@ proc/generate_space_color()
 /turf/proc/ReplaceWith(var/what, var/keep_old_material = 1, var/handle_air = 1, handle_dir = 1, force = 0)
 	var/turf/simulated/new_turf
 	var/old_dir = dir
+	var/flock_plating_is_under = src.flock_plating_under || istype(src, /turf/simulated/floor/feather_plating)
 
 	var/oldmat = src.material
 
@@ -567,17 +569,25 @@ proc/generate_space_color()
 			new_turf = new /turf/space/fluid(src)
 		if ("Floor")
 			new_turf = new /turf/simulated/floor(src)
+			if (flock_plating_is_under)
+				new_turf.flock_plating_under = TRUE
 		if ("MetalFoam")
 			new_turf = new /turf/simulated/floor/metalfoam(src)
 		if ("EngineFloor")
 			new_turf = new /turf/simulated/floor/engine(src)
+			if (flock_plating_is_under)
+				new_turf.flock_plating_under = TRUE
 		if ("Circuit")
 			new_turf = new /turf/simulated/floor/circuit(src)
+			if (flock_plating_is_under)
+				new_turf.flock_plating_under = TRUE
 		if ("RWall")
 			if (map_settings)
 				new_turf = new map_settings.rwalls (src)
 			else
 				new_turf = new /turf/simulated/wall/r_wall(src)
+			if (flock_plating_is_under)
+				new_turf.flock_plating_under = TRUE
 		if("Concrete")
 			new_turf = new /turf/simulated/floor/concrete(src)
 		if ("Wall")
@@ -585,6 +595,10 @@ proc/generate_space_color()
 				new_turf = new map_settings.walls (src)
 			else
 				new_turf = new /turf/simulated/wall(src)
+			if (flock_plating_is_under)
+				new_turf.flock_plating_under = TRUE
+		if ("FeatherPlating")
+			new_turf = new /turf/simulated/floor/feather_plating(src)
 		if ("Unsimulated Floor")
 			new_turf = new /turf/unsimulated/floor(src)
 		else
@@ -741,6 +755,9 @@ proc/generate_space_color()
 	if(icon_old)
 		floor.icon_state = icon_old
 	return floor
+
+/turf/proc/ReplaceWithFeatherPlating()
+	return src.ReplaceWith("FeatherPlating", FALSE)
 
 //This is for admin replacements (deletions) ONLY. I swear to god if any actual in-game code uses this I will be pissed - Wire
 /turf/proc/ReplaceWithSpaceForce()
