@@ -21,8 +21,8 @@
 
 /turf/simulated/floor/feather_plating/special_desc(dist, mob/user)
 	if (isflock(user) && !intact)
-		return {"<span class='flocksay'><span class='bold'>###=-Ident unknown. No data packet received</span>
-			<br><br><span class='bold'>###=-</span></span>"}
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident unknown. No data packet received.
+			<br><span class='bold'>###=-</span></span>"}
 	else
 		return null
 
