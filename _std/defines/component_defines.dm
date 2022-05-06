@@ -373,5 +373,5 @@
 #define COMSIG_SEND_TO_MOB "send_to_mob"
 
 // ---- Flockmind ----
-/// Action that could potentially harm the flock. (/mob)
+/// Action by a thing (/atom) that harms the flock, that can be intentional (boolean)
 #define COMSIG_FLOCK_ATTACK "flock_attack"
