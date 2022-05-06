@@ -137,10 +137,12 @@
 	if(isfeathertile(T))
 		boutput(holder.owner, "<span class='alert'>This tile has already been converted.</span>")
 		return 1
-	if(F)
-		var/datum/flock/flock = F.flock
-		if(flock)
-			flock.togglePriorityTurf(T)
+	if (!(T in F.flock.priority_tiles))
+		for (var/name in F.flock.busy_tiles)
+			if (T == F.flock.busy_tiles[name])
+				boutput(holder.owner, "<span class='alert'>This tile is already scheduled for conversion!</span>")
+				return TRUE
+	F.flock?.togglePriorityTurf(T)
 
 /////////////////////////////////////////
 
@@ -158,7 +160,7 @@
 	var/M = target
 	var/mob/living/intangible/flock/F = holder.owner
 
-	if (!(isliving(M) || iscritter(M)) || isflock(M) || isintangible(M))
+	if (!(isliving(M) || iscritter(M) || isvehicle(M)) || isflock(M) || isintangible(M))
 		boutput(F, "<span class='alert'>That isn't a valid target.</span>")
 		return TRUE
 

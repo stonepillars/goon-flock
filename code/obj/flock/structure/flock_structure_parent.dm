@@ -7,6 +7,8 @@
 	name = "uh oh"
 	desc = "CALL A CODER THIS SHOULDN'T BE SEEN"
 	flags = USEDELAY
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	var/flock_id = "ERROR"
 	/// when did we get created?
 	var/time_started = 0
@@ -146,7 +148,7 @@
 	if (!location)
 		location = get_turf(src)
 	visible_message("<span class='alert'>[src.name] violently breaks apart!</span>")
-	playsound(location, 'sound/impact_sounds/Glass_Shatter_2.ogg', 80, 1)
+	playsound(location, 'sound/impact_sounds/Glass_Shatter_2.ogg', 50, 1)
 	flockdronegibs(location)
 	var/num_pieces = rand(2,8)
 	var/atom/movable/B
@@ -179,7 +181,7 @@
 			user.visible_message("<span class='alert'><b>[user]</b> punches [src]! It's very ineffective!</span>")
 			src.report_attack()
 			src.takeDamage("brute", 1)
-			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+			playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 50, 1)
 
 	else
 		var/action = ""
@@ -203,7 +205,7 @@
 		damtype = "fire"
 
 	takeDamage(damtype, W.force)
-	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 80, 1)
+	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 50, 1)
 
 /obj/flock_structure/proc/report_attack()
 	if (!ON_COOLDOWN(src, "attack_alert", 10 SECONDS))

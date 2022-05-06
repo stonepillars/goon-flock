@@ -6,7 +6,6 @@
 	density = 0
 	say_language = "feather"
 	voice_name = "synthetic chirps"
-	see_invisible = INVIS_FLOCKMIND
 	speechverb_say = "chirps"
 	speechverb_exclaim = "screeches"
 	speechverb_ask = "inquires"
@@ -14,6 +13,9 @@
 	speechverb_stammer = "buzzes"
 	custom_gib_handler = /proc/flockdronegibs
 	custom_vomit_type = /obj/decal/cleanable/flockdrone_debris/fluid
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	// HEALTHS
 	var/health_brute = 1
 	var/health_burn = 1
@@ -52,7 +54,10 @@
 	..()
 
 	qdel(abilityHolder)
+	setMaterial(getMaterial("gnesis"))
+	src.material.setProperty("reflective", 45)
 	APPLY_ATOM_PROPERTY(src, PROP_MOB_RADPROT, src, 100)
+	src.see_invisible = INVIS_CLOAK
 
 	// do not automatically set up a flock if one is not provided
 	// flockless drones act differently
@@ -184,7 +189,7 @@
 		..()
 		if(owner && target)
 			boutput(owner, "<span class='notice'>You begin spraying nanite strands onto the structure. You need to stay still for this.</span>")
-			playsound(target, "sound/misc/flockmind/flockdrone_convert.ogg", 50, 1)
+			playsound(target, "sound/misc/flockmind/flockdrone_convert.ogg", 40, 1)
 
 			// do effect
 			var/flick_anim = "spawn-floor"
@@ -259,9 +264,9 @@
 		if(owner && target)
 			boutput(owner, "<span class='notice'>You begin weaving nanite strands into a solid structure. You need to stay still for this.</span>")
 			if(duration <= 30)
-				playsound(target, "sound/misc/flockmind/flockdrone_quickbuild.ogg", 50, 1)
+				playsound(target, "sound/misc/flockmind/flockdrone_quickbuild.ogg", 40, 1)
 			else
-				playsound(target, "sound/misc/flockmind/flockdrone_build.ogg", 50, 1)
+				playsound(target, "sound/misc/flockmind/flockdrone_build.ogg", 40, 1)
 
 			// do effect
 			var/flick_anim = "spawn-wall"
@@ -284,7 +289,7 @@
 			F.pay_resources(cost)
 			var/obj/O = new structurepath(target)
 			animate_flock_convert_complete(O)
-			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 70, 1)
+			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 40, 1)
 
 /////////////////////////////////////////////////////////////////////////////////
 // EGG ACTION
@@ -324,7 +329,7 @@
 			F.canmove = 1
 			F.visible_message("<span class='alert'>[owner] deploys some sort of device!</span>", "<span class='notice'>You deploy a second-stage assembler.</span>")
 			new /obj/flock_structure/egg(get_turf(F), F.flock)
-			playsound(F, "sound/impact_sounds/Metal_Clang_1.ogg", 60, 1)
+			playsound(F, "sound/impact_sounds/Metal_Clang_1.ogg", 50, 1)
 			F.pay_resources(100)
 
 /////////////////////////////////////////////////////////////////////////////////
