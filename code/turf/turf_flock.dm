@@ -269,8 +269,9 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 /turf/simulated/wall/auto/feather
 	name = "weird glowing wall"
 	desc = "You can feel it thrumming and pulsing."
-	icon = 'icons/misc/featherzone.dmi'
-	icon_state = "0"
+	icon = 'icons/turf/walls_flock.dmi'
+	icon_state = "flock0"
+	mod = "flock"
 	health = 250
 	var/max_health = 250
 	flags = USEDELAY
@@ -284,10 +285,10 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 
 	update_icon()
 		..()
-		if (src.broken)
-			icon_state = icon_state + "b"
-		else
-			icon_state = icon_state + (src.on ? "on" : "")
+		//if (src.broken)
+		//	icon_state = icon_state + "b"
+		//else
+		//	icon_state = icon_state + (src.on ? "on" : "")
 
 /turf/simulated/wall/auto/feather/New()
 	..()
