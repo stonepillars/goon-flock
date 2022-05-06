@@ -11,6 +11,7 @@
 	var/broken = 0
 	health = 80
 	health_max = 80
+	alien = TRUE
 
 /obj/machinery/door/feather/New()
 	..()
