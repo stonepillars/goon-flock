@@ -58,7 +58,7 @@
 	src.material.setProperty("reflective", 45)
 	APPLY_ATOM_PROPERTY(src, PROP_MOB_RADPROT, src, 100)
 	src.see_invisible = INVIS_CLOAK
-
+	src.mob_flags |= HEAVYWEIGHT_AI_MOB
 	// do not automatically set up a flock if one is not provided
 	// flockless drones act differently
 	src.flock = F

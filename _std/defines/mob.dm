@@ -17,6 +17,7 @@
 #define USR_DIALOG_UPDATES_RANGE 8192	//updateusrdialog will consider this mob as being able to 'attack_ai' and update its ui at range
 #define UNUSED_16384 16384
 #define SHOULD_HAVE_A_TAIL 32768 //Would we miss our tail if it comes off?
+#define HEAVYWEIGHT_AI_MOB 65536 //ai gets ticked every 0.16 seconds instead of the usual 1.6 seconds - gotta go fast
 
 //mob intent type defines
 #define INTENT_HARM "harm"
