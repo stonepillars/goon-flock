@@ -139,6 +139,7 @@
 ////////////////////
 /obj/machinery/door/feather/friendly
 	// whee
+	alien = FALSE //non flock are allowed
 
 /obj/machinery/door/feather/friendly/allowed(mob/M)
 	return 1 // everyone welcome
