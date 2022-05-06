@@ -141,6 +141,8 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
+	var/image/icon = flock.add_overhead_image('icons/misc/featherzone16x16.dmi', src, pilot.control_icon)
+	flock.annotations_control_icons[src] = icon
 	boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
 /mob/living/critter/flock/drone/proc/release_control()
@@ -173,6 +175,9 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
+		var/image/I = flock.annotations_control_icons[src]
+		flock.annotations_control_icons -= src
+		flock.removeClientImage(I)
 		flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
 		controller = null
