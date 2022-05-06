@@ -33,7 +33,7 @@
 	if(!snitch)
 		return
 
-	if (!snitch.flock.isEnemy(user) && snitch != source)
+	if (!snitch.flock.isEnemy(user))
 		flock_speak(snitch, "Damage sighted on [source], [pick_string("flockmind.txt", "flockdrone_enemy")] [user]", snitch.flock)
 	snitch.flock.updateEnemy(user)
 
@@ -49,7 +49,7 @@
 	/// Do we get mad if someone shoots it?
 	var/report_proj
 
-/datum/component/flock_protection/Initialize(flock_immune=TRUE, report_unarmed=TRUE, report_attack=TRUE, report_thrown=TRUE, report_proj=TRUE)
+/datum/component/flock_protection/Initialize(report_unarmed=TRUE, report_attack=TRUE, report_thrown=TRUE, report_proj=TRUE)
 	if(!isatom(parent))
 		return COMPONENT_INCOMPATIBLE
 
@@ -79,5 +79,5 @@
 
 /// Protect against someone shooting the parent.
 /datum/component/flock_protection/proc/handle_hitby(atom/source, obj/projectile/P)
-	var/mob/attacker = P.shooter
-	return istype(attacker) && src.report_thrown && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker, FALSE)
+	var/attacker = P.shooter
+	return attacker && src.report_thrown && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker, FALSE)

@@ -72,7 +72,7 @@
 	for (var/type as anything in childrentypesof(/datum/contextAction/flockdrone))
 		src.contexts += new type
 	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
-	src.AddComponent(/datum/component/flock_protection)
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE, FALSE)
 
 /mob/living/critter/flock/drone/click(atom/target, list/params)
 	if (src.floorrunning)
