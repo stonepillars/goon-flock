@@ -763,6 +763,9 @@
 	// get candidate places to move them
 	var/turf/T = get_turf(src)
 	var/list/candidate_turfs = getneighbours(src)
+	for(var/turf/n in candidate_turfs)
+		if(is_blocked_turf(n))
+			candidate_turfs -= n
 	for(var/i=1 to num_bits)
 		B = new(get_turf(src), F = src.flock)
 		src.flock?.registerUnit(B)
