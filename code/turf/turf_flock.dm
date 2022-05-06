@@ -278,7 +278,7 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	mat_appearances_to_ignore = list("steel", "gnesis")
 	mat_changename = FALSE
 	mat_changedesc = FALSE
-	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather, /turf/simulated/wall/auto, /obj/machinery/door, /obj/window/auto)
+	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather, /obj/window/auto)
 
 	var/broken = FALSE
 	var/on = FALSE
