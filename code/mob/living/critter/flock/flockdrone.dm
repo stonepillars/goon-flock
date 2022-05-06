@@ -154,11 +154,7 @@
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
 	if(controller)
 		if (src.floorrunning)
-			src.end_floorrunning()
-			if (istype(src.loc, /turf/simulated/floor/feather))
-				var/turf/simulated/floor/feather/floor = src.loc
-				if (floor.on && !floor.connected)
-					floor.off()
+			src.end_floorrunning(TRUE)
 		// move controller out
 		controller.set_loc(get_turf(src))
 		// move us over to the controller
@@ -187,11 +183,7 @@
 	if(!controller)
 		return
 	if (src.floorrunning)
-		src.end_floorrunning()
-		if (istype(src.loc, /turf/simulated/floor/feather))
-			var/turf/simulated/floor/feather/floor = src.loc
-			if (floor.on && !floor.connected)
-				floor.off()
+		src.end_floorrunning(TRUE)
 	controller.set_loc(get_turf(src))
 	var/datum/mind/mind = src.mind
 	if (mind)
@@ -407,11 +399,7 @@
 	if (src.floorrunning && src.resources >= 1)
 		src.resources--
 		if (src.resources < 1)
-			src.end_floorrunning()
-			if (istype(src.loc, /turf/simulated/floor/feather))
-				var/turf/simulated/floor/feather/floor = src.loc
-				if (floor.on && !floor.connected)
-					floor.off()
+			src.end_floorrunning(TRUE)
 	if (!src.dormant && src.z != Z_LEVEL_STATION)
 		src.dormantize()
 		return
@@ -489,14 +477,12 @@
 				var/turf/simulated/wall/auto/feather/wall = src.loc
 				if (wall.broken)
 					return ..()
+				if (!wall.on)
+					wall.on()
 
 			src.start_floorrunning()
 	else if(keys && src.floorrunning)
-		src.end_floorrunning()
-		if (istype(src.loc, /turf/simulated/floor/feather))
-			var/turf/simulated/floor/feather/floor = src.loc
-			if (floor.on && !floor.connected)
-				floor.off()
+		src.end_floorrunning(TRUE)
 	return ..()
 
 /mob/living/critter/flock/drone/proc/start_floorrunning()
@@ -521,13 +507,22 @@
 				qdel(grab_grabbed_by)
 	animate_flock_floorrun_start(src)
 
-/mob/living/critter/flock/drone/proc/end_floorrunning()
+/mob/living/critter/flock/drone/proc/end_floorrunning(check_lights = FALSE)
 	if(!src.floorrunning)
 		return
 	playsound(src, "sound/misc/flockmind/flockdrone_floorrun.ogg", 50, 1, -3)
 	src.floorrunning = 0
 	src.set_density(1)
 	src.throws_can_hit_me = TRUE
+	if (check_lights)
+		if (istype(src.loc, /turf/simulated/floor/feather))
+			var/turf/simulated/floor/feather/floor = src.loc
+			if (floor.on && !floor.connected)
+				floor.off()
+		else if (istype(src.loc, /turf/simulated/wall/auto/feather))
+			var/turf/simulated/wall/auto/feather/wall = src.loc
+			if (wall.on)
+				wall.off()
 	animate_flock_floorrun_end(src)
 
 /mob/living/critter/flock/drone/movement_delay()
@@ -598,8 +593,8 @@
 		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
 	else
 		..()
-		var/mob/attacker = P.shooter
-		if(istype(attacker))
+		var/attacker = P.shooter
+		if(attacker)
 			src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
