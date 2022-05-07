@@ -1048,6 +1048,7 @@
 	default_material = "gnesisglass"
 
 /obj/window/auto/feather/New()
+	connects_to += /turf/simulated/wall/auto/feather
 	..()
 	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 

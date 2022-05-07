@@ -274,12 +274,14 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	mod = "flock"
 	health = 250
 	var/max_health = 250
-	flags = USEDELAY
+	flags = USEDELAY | ALWAYS_SOLID_FLUID | IS_PERSPECTIVE_FLUID
 	mat_appearances_to_ignore = list("steel", "gnesis")
 	mat_changename = FALSE
 	mat_changedesc = FALSE
-	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door/feather, /obj/window/auto, /obj/window/feather)
-
+	connect_overlay = TRUE
+	connect_diagonal = TRUE
+	connects_to = list(/turf/simulated/wall/auto/feather, /obj/machinery/door, /obj/window)
+	connects_with_overlay = list(/obj/machinery/door, /obj/window)
 	var/broken = FALSE
 	var/on = FALSE
 
