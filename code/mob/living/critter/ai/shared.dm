@@ -139,7 +139,7 @@
 	if(!move_target)
 		fails++
 		return
-	src.found_path = get_path_to(holder.owner, move_target, 60, 0)
+	src.found_path = get_path_to(holder.owner, move_target, 300, 0) //this could get expensive, please limit your max_dist in the target search
 	if(!src.found_path) // no path :C
 		fails++
 
@@ -151,7 +151,7 @@
 	if(!src.move_target)
 		fails++
 		return
-	if(!src.found_path)
+	if(!src.found_path || !length(src.found_path))
 		get_path()
 	if(length(src.found_path))
 		holder.move_to_with_path(move_target,src.found_path,0)
@@ -160,6 +160,11 @@
 	if(move_target)
 		. = (get_dist(holder.owner, src.move_target) == 0)
 		return
+
+/datum/aiTask/succeedable/move/failed()
+	if(!move_target || !src.found_path)
+		fails++
+	return fails >= max_fails
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // WAIT TASK

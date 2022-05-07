@@ -22,7 +22,7 @@
 	plane = PLANE_NOSHADOW_ABOVE
 	var/last_time_sound_played_in_seconds = 0
 	var/sound_length_in_seconds = 27
-	var/charge_time_length = 600 // also in seconds
+	var/charge_time_length = 360 // also in seconds
 	var/final_charge_time_length = 18
 	var/col_r = 0.1
 	var/col_g = 0.7
@@ -32,11 +32,25 @@
 
 /obj/flock_structure/relay/New()
 	..()
+	// no shuttle for you, either destroy the relay or flee when it unleashes
+	if (emergency_shuttle.online && emergency_shuttle.direction == 1 && emergency_shuttle.location != SHUTTLE_LOC_STATION && emergency_shuttle.location != SHUTTLE_LOC_TRANSIT)
+		emergency_shuttle.recall()
+		command_alert("Emergency shuttle approach aborted due to anomalous radio signal interference. The shuttle has been returned to base as a precaution.")
+	emergency_shuttle.disabled = TRUE
 	// start playing sound
 	play_sound()
 	flock_speak(null, "RELAY CONSTRUCTED! DEFEND THE RELAY!!", src.flock)
 	SPAWN(1 SECOND)
 		radial_flock_conversion(src, 20)
+	SPAWN(10 SECONDS)
+		var/msg = "Overwhelming anomalous power signatures detected on station. This is an existential threat to the station. All personnel must contain this event."
+		msg = radioGarbleText(msg, 7)
+		command_alert(msg, sound_to_play = "sound/misc/announcement_1.ogg", alert_origin = ALERT_ANOMALY)
+
+/obj/flock_structure/relay/disposing()
+	..()
+	//crew destroyed it, let them call shuttle
+	emergency_shuttle.disabled = FALSE
 
 /obj/flock_structure/relay/get_desc()
 	var/time_remaining = round(src.charge_time_length - getTimeInSecondsSinceTime(src.time_started))
@@ -90,6 +104,8 @@
 		M.playsound_local(M, "sound/misc/flockmind/flock_broadcast_kaboom.ogg", 60, 0, 2)
 		M.flash(3 SECONDS)
 	SPAWN(1 SECOND)
+		// okay now you may have a shuttle
+		emergency_shuttle.disabled = FALSE
 		emergency_shuttle.incall()
 		emergency_shuttle.can_recall = 0 // yeah centcom's coming no matter what
 		boutput(world, "<span class='notice'><B>Alert: The emergency shuttle has been called.</B></span>")
