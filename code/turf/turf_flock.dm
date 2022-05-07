@@ -287,6 +287,7 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 
 	update_icon()
 		..()
+		//TODO animate walls and put this back
 		//if (src.broken)
 		//	icon_state = icon_state + "b"
 		//else
