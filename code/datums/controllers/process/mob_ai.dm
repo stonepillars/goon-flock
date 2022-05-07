@@ -3,7 +3,7 @@
 datum/controller/process/mob_ai
 	setup()
 		name = "Mob AI"
-		schedule_interval = 0.16 SECONDS
+		schedule_interval = 0.1 SECONDS
 
 	doWork()
 		for(var/X in ai_mobs)
@@ -14,7 +14,7 @@ datum/controller/process/mob_ai
 			if (!M)
 				continue
 
-			if ((M.mob_flags & LIGHTWEIGHT_AI_MOB) && ticks % 50 == 0) //call life() with a slowed update rate on mobs we manage that arent part of the standard mobs list
+			if ((M.mob_flags & LIGHTWEIGHT_AI_MOB) && ticks % 60 == 0) //call life() with a slowed update rate on mobs we manage that arent part of the standard mobs list
 				if( M.z == 4 && !Z4_ACTIVE ) continue
 				if (istype(X, /mob/living))
 					var/mob/living/L = X
@@ -33,7 +33,7 @@ datum/controller/process/mob_ai
 							M.abilityHolder.next_update = 10 SECONDS
 				scheck()
 
-			if((M.mob_flags & HEAVYWEIGHT_AI_MOB) || ticks % 10 == 0) //either we can tick every time, or we tick every 1.6 seconds
+			if((M.mob_flags & HEAVYWEIGHT_AI_MOB) || ticks % 10 == 0) //either we can tick every time, or we tick every 1 second
 				var/mob/living/L = M
 				if((isliving(M) && (L.is_npc || L.ai_active) || !isliving(M)))
 					if(istype(X, /mob/living/carbon/human))
