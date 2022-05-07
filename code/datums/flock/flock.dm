@@ -624,8 +624,7 @@
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
 	/obj/window = /obj/window/feather,
-	/obj/machinery/door/airlock = /obj/machinery/door/feather,
-	/obj/machinery/door = null,
+	/obj/machinery/door = /obj/machinery/door/feather,
 	/obj/stool = /obj/stool/chair/comfy/flock,
 	/obj/table = /obj/table/flock/auto,
 	/obj/machinery/light/small/floor = /obj/machinery/light/flock/floor,
@@ -685,36 +684,41 @@
 		if (RL_Started) RL_UPDATE_LIGHT(T)
 
 	for(var/obj/O in T)
-		if(istype(O, /obj/machinery/door/feather))
-			// repair door
-			var/obj/machinery/door/feather/door = O
-			door.heal_damage()
-			animate_flock_convert_complete(O)
-		else
-			for(var/keyPath in flock_conversion_paths) //types are converted with priority determined by list order
-				var/obj/replacementPath = flock_conversion_paths[keyPath] //put subclasses ahead of superclasses in the flock_conversion_paths list
-				if(istype(O, keyPath))
-					if(isnull(replacementPath))
+		for(var/keyPath in flock_conversion_paths) //types are converted with priority determined by list order
+			if(!istype(O, keyPath))
+				continue
+			if (istype(O, /obj/machinery))
+				if (istype(O, /obj/machinery/door))
+					// split for readability
+					if (istype(O, /obj/machinery/door/firedoor/pyro) || istype(O, /obj/machinery/door/window) || istype(O, /obj/machinery/door/airlock/pyro/glass/windoor) || istype(O, /obj/machinery/door/unpowered/wood))
 						qdel(O)
-					else
-						var/dir = O.dir
-						var/obj/converted = new replacementPath(T)
-						// if the object is a closet, it might not have spawned its contents yet
-						// so force it to do that first
-						if(istype(O, /obj/storage))
-							var/obj/storage/S = O
-							if(!isnull(S.spawn_contents))
-								S.make_my_stuff()
-						// if the object has contents, move them over!!
-						for (var/obj/OO in O)
-							OO.set_loc(converted)
-						for (var/mob/M in O)
-							M.set_loc(converted)
+						break
+					if (istype(O, /obj/machinery/door/poddoor/pyro) && !(findtext(O.name, "cargo") || findtext(O.name, "pod") || findtext(O.name, "mass") || findtext(O.name, "disposal"))) // shutters
 						qdel(O)
-						converted.set_dir(dir)
-						animate_flock_convert_complete(converted)
-					break //we found and converted the type, don't convert it again
-
+						break
+				if (istype(O, /obj/machinery/computer))
+					if (istype(O, /obj/machinery/computer/card/portable) || istype(O, /obj/machinery/computer/security/wooden_tv) || istype(O, /obj/machinery/computer/secure_data/detective_computer) || istype(O, /obj/machinery/computer/airbr) || istype(O, /obj/machinery/computer/tour_console) || istype(O, /obj/machinery/computer/arcade) || istype(O, /obj/machinery/computer/tetris))
+						break
+				if (istype(O, /obj/machinery/light/lamp) || istype(O, /obj/machinery/computer3/generic/personal) || istype(O, /obj/machinery/computer3/luggable))
+					break
+			var/dir = O.dir
+			var/replacementPath = flock_conversion_paths[keyPath]
+			var/obj/converted = new replacementPath(T)
+			// if the object is a closet, it might not have spawned its contents yet
+			// so force it to do that first
+			if(istype(O, /obj/storage))
+				var/obj/storage/S = O
+				if(!isnull(S.spawn_contents))
+					S.make_my_stuff()
+			// if the object has contents, move them over!!
+			for (var/obj/OO in O)
+				OO.set_loc(converted)
+			for (var/mob/M in O)
+				M.set_loc(converted)
+			qdel(O)
+			converted.set_dir(dir)
+			animate_flock_convert_complete(converted)
+			break
 
 	return T
 
