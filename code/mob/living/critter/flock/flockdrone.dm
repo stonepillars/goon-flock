@@ -72,8 +72,8 @@
 
 	for (var/type as anything in childrentypesof(/datum/contextAction/flockdrone))
 		src.contexts += new type
-
-	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE, FALSE)
 
 /mob/living/critter/flock/drone/click(atom/target, list/params)
 	if (src.floorrunning)
@@ -85,8 +85,6 @@
 		if (controller)
 			src.release_control_abrupt()
 		flock_speak(null, "Connection to drone [src.real_name] lost.", src.flock)
-		src.update_health_icon()
-		src.flock.removeDrone(src)
 	src.remove_simple_light("drone_light")
 	..()
 
@@ -204,23 +202,21 @@
 	controller = null
 	src.update_health_icon()
 
-/mob/living/critter/flock/drone/proc/dormantize()
-	src.dormant = TRUE
+/mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
-	src.ai?.die()
 	src.remove_simple_light("drone_light")
 
 	if (!src.flock)
+		..()
 		return
 
 	src.update_health_icon()
 	src.flock.hideAnnotations(src)
-	src.flock.removeDrone(src)
 
 	if (src.controller)
 		if (src.flock.getComplexDroneCount())
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
-				if (istype(F))
+				if (istype(F) && F != src)
 					src.controller.set_loc(get_turf(F))
 					break
 		else
@@ -244,7 +240,8 @@
 	if (src.z != Z_LEVEL_NULL)
 		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
 	src.is_npc = FALSE // turns off ai
-	src.flock = null
+
+	..()
 
 /mob/living/critter/flock/drone/proc/undormantize()
 	src.dormant = 0
@@ -594,11 +591,8 @@
 // and then the numerous procs that use that catchall proc
 /mob/living/critter/flock/drone/bullet_act(var/obj/projectile/P)
 	if(floorrunning)
-		return // haha fuck you i'm in the FLOOR
-	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
-		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
-	else
-		..()
+		return FALSE
+	if (..())
 		var/attacker = P.shooter
 		if(attacker)
 			src.harmedBy(attacker)
@@ -713,8 +707,8 @@
 	remove_lifeprocess(/datum/lifeprocess/statusupdate)
 
 /mob/living/critter/flock/drone/death(var/gibbed)
-	if(src.floorrunning)
-		src.end_floorrunning()
+	if(src.controller)
+		src.release_control()
 	if(!src.dormant)
 		if(src.is_npc)
 			emote("scream")
@@ -723,23 +717,15 @@
 		else
 			emote("scream")
 			say("\[System notification: drone lost.\]")
-	src.ai.die()
-	walk(src, 0)
-	// transfer our resources to our heart
 	var/obj/item/organ/heart/flock/core = src.organHolder.get_organ("heart")
 	if(core)
 		core.resources = src.resources
 		src.resources = 0 // just in case any weirdness happens let's pre-empt the dupe bug
-	if(src.controller)
-		src.release_control()
-	src.update_health_icon()
-	src.flock?.removeDrone(src)
 	..()
 	src.icon_state = "drone-dead"
-	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
 	src.reduce_lifeprocess_on_death()
 	src.set_density(FALSE)
-	desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
+	src.desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
 	src.remove_simple_light("drone_light")
 
 /mob/living/critter/flock/drone/ghostize()
