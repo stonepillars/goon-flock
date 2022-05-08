@@ -418,6 +418,15 @@
 	src.addClientImage(I)
 	return I
 
+/datum/flock/proc/add_control_icon(var/mob/living/critter/flock/flockthing, var/mob/living/intangible/flock/sentient)
+	var/image/icon = src.add_overhead_image('icons/misc/featherzone.dmi', flockthing, sentient.control_icon)
+	src.annotations_control_icons[flockthing] = icon
+
+/datum/flock/proc/remove_control_icon(var/mob/living/critter/flock/flockthing)
+	var/image/I = src.annotations_control_icons[flockthing]
+	src.annotations_control_icons -= flockthing
+	src.removeClientImage(I)
+
 // ENEMIES
 
 /datum/flock/proc/updateEnemy(atom/M)
