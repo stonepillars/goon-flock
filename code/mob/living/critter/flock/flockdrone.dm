@@ -56,7 +56,6 @@
 	src.name = "[pick_string("flockmind.txt", "flockdrone_name_adj")] [pick_string("flockmind.txt", "flockdrone_name_noun")]"
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	src.update_name_tag()
-	src.update_health_icon()
 
 	if(src.dormant) // we'be been flagged as dormant in the map editor or something
 		src.dormantize()
@@ -210,7 +209,6 @@
 		..()
 		return
 
-	src.update_health_icon()
 	src.flock.hideAnnotations(src)
 
 	if (src.controller)
@@ -631,7 +629,6 @@
 /mob/living/critter/flock/drone/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
 	..()
 	src.check_health()
-	src.update_health_icon()
 	if (brute <= 0 && burn <= 0 && tox <= 0)
 		return
 	var/prev_damaged = src.damaged
@@ -671,28 +668,6 @@
 			if(!dormant)
 				src.icon_state = "drone-d2"
 	return
-
-/mob/living/critter/flock/drone/proc/update_health_icon()
-	if (!src.flock)
-		return
-	var/image/I
-	if (src.real_name in src.flock.annotations_health)
-		I = src.flock.annotations_health[src.real_name]
-		src.flock.annotations_health -= src.real_name
-		src.flock.removeClientImage(I)
-
-	if (isdead(src) || src.dormant || src.disposed)
-		return
-
-	I = image('icons/misc/featherzone.dmi', src, "hp-[round(src.get_health_percentage() * 10) * 10]")
-	I.blend_mode = BLEND_ADD
-	I.pixel_x = 10
-	I.pixel_y = 16
-	I.plane = PLANE_ABOVE_LIGHTING
-	I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
-	src.flock.annotations_health[src.real_name] = I
-	src.flock.addClientImage(I)
-	src.client?.images -= I
 
 /mob/living/critter/flock/drone/proc/reduce_lifeprocess_on_death() //used for AI mobs we dont give a dang about them after theyre dead
 	remove_lifeprocess(/datum/lifeprocess/blood)

@@ -87,33 +87,7 @@
 	flockdronegibs(get_turf(src))
 	if (src.mind || src.client)
 		src.ghostize()
-	src.update_health_icon()
 	qdel(src)
-
-/mob/living/critter/flock/bit/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
-	..()
-	src.update_health_icon()
-
-/mob/living/critter/flock/bit/proc/update_health_icon()
-	if (!src.flock)
-		return
-	var/image/I
-	if (src.real_name in src.flock.annotations_health)
-		I = src.flock.annotations_health[src.real_name]
-		src.flock.annotations_health -= src.real_name
-		src.flock.removeClientImage(I)
-
-	if (isdead(src) || src.dormant || src.disposed)
-		return
-
-	I = image('icons/misc/featherzone.dmi', src, "hp-[round(src.get_health_percentage() * 10) * 10]")
-	I.blend_mode = BLEND_ADD
-	I.pixel_x = 10
-	I.pixel_y = 16
-	I.plane = PLANE_ABOVE_LIGHTING
-	I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
-	src.flock.annotations_health[src.real_name] = I
-	src.flock.addClientImage(I)
 
 /mob/living/critter/flock/bit/disposing()
 	if (src.mind || src.client)
