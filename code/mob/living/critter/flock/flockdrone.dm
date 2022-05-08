@@ -141,7 +141,7 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
-	var/image/icon = flock.add_overhead_image('icons/misc/featherzone16x16.dmi', src, pilot.control_icon)
+	var/image/icon = flock.add_overhead_image('icons/misc/featherzone.dmi', src, pilot.control_icon)
 	flock.annotations_control_icons[src] = icon
 	boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
