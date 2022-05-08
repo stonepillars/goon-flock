@@ -46,6 +46,7 @@
 	var/tmp/allow_unrestricted_hotbox = 0
 	var/wet = 0
 	var/sticky = FALSE
+	/// this turf will be replaced by a flock plating tile if it becomes plating in the future
 	var/flock_plating_under = FALSE
 	throw_unlimited = 0 //throws cannot stop on this tile if true (also makes space drift)
 
