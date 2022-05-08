@@ -489,7 +489,7 @@ proc/generate_space_color()
 /turf/proc/ReplaceWith(var/what, var/keep_old_material = 1, var/handle_air = 1, handle_dir = 1, force = 0)
 	var/turf/simulated/new_turf
 	var/old_dir = dir
-	var/flock_plating_is_under = src.flock_plating_under || istype(src, /turf/simulated/floor/feather_plating)
+	var/flock_plating_is_under = src.flock_plating_under || istype(src, /turf/simulated/floor/plating/feather_plating)
 
 	var/oldmat = src.material
 
@@ -598,7 +598,7 @@ proc/generate_space_color()
 			if (flock_plating_is_under)
 				new_turf.flock_plating_under = TRUE
 		if ("FeatherPlating")
-			new_turf = new /turf/simulated/floor/feather_plating(src)
+			new_turf = new /turf/simulated/floor/plating/feather_plating(src)
 		if ("Unsimulated Floor")
 			new_turf = new /turf/unsimulated/floor(src)
 		else

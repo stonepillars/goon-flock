@@ -3,7 +3,7 @@
 // -----
 // FLOOR
 // -----
-/turf/simulated/floor/feather_plating
+/turf/simulated/floor/plating/feather_plating
 	name = "weird plating"
 	desc = "A strange Flock under-plating. It looks rough enough that it could support tile placement."
 	icon = 'icons/misc/featherzone.dmi'
@@ -11,22 +11,20 @@
 	mat_appearances_to_ignore = list("gnesis")
 	mat_changename = FALSE
 	mat_changedesc = FALSE
-	step_material = "step_plating"
-	step_priority = STEP_PRIORITY_MED
 
-/turf/simulated/floor/feather_plating/New()
+/turf/simulated/floor/plating/feather_plating/New()
 	..()
 	setMaterial(getMaterial("gnesis"))
 	setIntact(FALSE)
 
-/turf/simulated/floor/feather_plating/special_desc(dist, mob/user)
+/turf/simulated/floor/plating/feather_plating/special_desc(dist, mob/user)
 	if (isflock(user) && !intact)
 		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident unknown. No data packet received.
 			<br><span class='bold'>###=-</span></span>"}
 	else
 		return null
 
-/turf/simulated/floor/feather_plating/to_plating()
+/turf/simulated/floor/plating/feather_plating/to_plating()
 	if (!intact)
 		return
 	setIntact(FALSE)
@@ -45,7 +43,7 @@
 
 	levelupdate()
 
-/turf/simulated/floor/feather_plating/restore_tile(datum/material/mat)
+/turf/simulated/floor/plating/feather_plating/restore_tile(datum/material/mat)
 	if (intact)
 		return
 	setIntact(TRUE)
@@ -67,13 +65,13 @@
 
 	levelupdate()
 
-/turf/simulated/floor/feather_plating/break_tile_to_plating()
+/turf/simulated/floor/plating/feather_plating/break_tile_to_plating()
 	return
 
-/turf/simulated/floor/feather_plating/break_tile()
+/turf/simulated/floor/plating/feather_plating/break_tile()
 	return
 
-/turf/simulated/floor/feather_plating/burn_tile()
+/turf/simulated/floor/plating/feather_plating/burn_tile()
 	return
 
 /turf/simulated/floor/feather

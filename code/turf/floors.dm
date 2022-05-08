@@ -1803,8 +1803,8 @@ DEFINE_FLOORS(grasslush/thin,
 
 		// Don't replace with an [else]! If a prying tool is found above [intact] might become 0 and this runs too, which is how floor swapping works now! - BatElite
 		if (!intact)
-			if (istype(src, /turf/simulated/floor/feather_plating))
-				var/turf/simulated/floor/feather_plating/plating = src
+			if (istype(src, /turf/simulated/floor/plating/feather_plating))
+				var/turf/simulated/floor/plating/feather_plating/plating = src
 				plating.restore_tile(C.material)
 			else
 				restore_tile()
