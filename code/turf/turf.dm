@@ -756,9 +756,6 @@ proc/generate_space_color()
 		floor.icon_state = icon_old
 	return floor
 
-/turf/proc/ReplaceWithFeatherPlating()
-	return src.ReplaceWith("FeatherPlating", FALSE)
-
 //This is for admin replacements (deletions) ONLY. I swear to god if any actual in-game code uses this I will be pissed - Wire
 /turf/proc/ReplaceWithSpaceForce()
 	var/area/my_area = loc

@@ -1610,7 +1610,7 @@ DEFINE_FLOORS(grasslush/thin,
 		if(src.reinforced) return
 	if(!intact) return
 	if (src.flock_plating_under)
-		src.ReplaceWithFeatherPlating()
+		src.ReplaceWith("FeatherPlating", FALSE)
 		return
 	if (!icon_old)
 		icon_old = icon_state

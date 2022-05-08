@@ -145,7 +145,7 @@
 /turf/simulated/floor/feather/break_tile_to_plating()
 	// if the turf's on, turn it off
 	off()
-	src.ReplaceWithFeatherPlating()
+	src.ReplaceWith("FeatherPlating", FALSE)
 
 /turf/simulated/floor/feather/break_tile()
 	off()
