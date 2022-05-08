@@ -7,6 +7,8 @@
 
 	//NOTE: if you need to track something, put it here
 	var/list/flockminds = list()
+	/// Has a relay been unleashed yet this round
+	var/relay_unleashed = FALSE
 
 /datum/game_mode/flock/announce()
 	boutput(world, "<B>The current game mode is - Flock!</B>")
@@ -30,18 +32,17 @@
 		flockmind.special_role = ROLE_FLOCKMIND
 		possible_flockminds.Remove(flockmind)
 
-	return 1
+	return TRUE
 
 /datum/game_mode/flock/post_setup()
 	//TODO
-	return 1
+	return TRUE
 
 /datum/game_mode/flock/check_finished()
 	//TODO
 	. = ..()
 
 /datum/game_mode/flock/declare_completion()
-	//TODO
 	. = ..()
-
+	// if (relay_unleashed)
 
