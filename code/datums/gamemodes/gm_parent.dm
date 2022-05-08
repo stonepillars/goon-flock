@@ -92,6 +92,8 @@
 			else if (traitor.special_role == ROLE_VAMPTHRALL)
 				stuff_to_output += "<B>[traitor_name]</B> was a vampire's thrall!"
 				continue // Ditto.
+			else if (traitor.special_role == ROLE_FLOCKTRACE)
+				continue // Flocktraces are listed under their respective flockmind
 			else
 				if (traitor.late_special_role)
 					stuff_to_output += "<B>[traitor_name]</B> was a late-joining [traitor.special_role]!"
@@ -189,6 +191,13 @@
 						rewarded_detail = copytext(rewarded_detail, 1, -2)
 						stuff_to_output += stolen_detail
 						stuff_to_output += rewarded_detail
+				if (traitor.special_role == ROLE_FLOCKMIND)
+					var/mob/living/intangible/flock/flockmind/flockmind = traitor.current
+					if (istype(flockmind))
+						if (length(flockmind.flock.traces))
+							stuff_to_output += "Flocktraces:"
+						for (var/mob/living/intangible/flock/trace/flocktrace in flockmind.flock.traces)
+							stuff_to_output += "	[flocktrace.name] played by [flocktrace.mind.displayed_key]"
 
 				for (var/datum/objective/objective in traitor.objectives)
 	#ifdef CREW_OBJECTIVES
