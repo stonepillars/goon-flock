@@ -274,7 +274,7 @@
 		dummy = new()
 		dummy.layer = target.layer
 		dummy.plane = PLANE_FLOCKVISION
-		dummy.invisibility = INVIS_FLOCKMIND
+		dummy.invisibility = INVIS_FLOCK
 		dummy.appearance_flags = PIXEL_SCALE | RESET_TRANSFORM | RESET_COLOR | PASS_MOUSE
 		dummy.icon = target.icon
 		dummy.icon_state = target.icon_state
@@ -352,13 +352,14 @@
 /datum/flock/proc/registerUnit(var/atom/movable/D)
 	if(isflock(D))
 		src.units |= D
+	D.AddComponent(/datum/component/flock_interest, src)
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 	aH.updateCompute()
 
 /datum/flock/proc/removeDrone(var/atom/movable/D)
 	if(isflock(D))
 		src.units -= D
-
+		D.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
 		if(D:real_name && busy_tiles[D:real_name])
 			src.unreserveTurf(D:real_name)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
@@ -376,12 +377,14 @@
 /datum/flock/proc/registerStructure(var/atom/movable/S)
 	if(isflockstructure(S))
 		src.structures |= S
+		S.AddComponent(/datum/component/flock_interest, src)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 
 /datum/flock/proc/removeStructure(var/atom/movable/S)
 	if(isflockstructure(S))
 		src.structures -= S
+		S.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 
@@ -420,7 +423,11 @@
 /datum/flock/proc/updateEnemy(atom/M)
 	if(!M)
 		return
-	if(!isliving(M) && !iscritter(M))
+	if (isvehicle(M))
+		for (var/mob/occupant in M) //yes we are blaming the passenger
+			src.updateEnemy(occupant)
+	//vehicles can be enemies but drones will only attack them if they are occupied
+	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
 		return
 	var/enemy_name = M
 	var/list/enemy_deets
@@ -440,7 +447,7 @@
 
 /datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
-	if(!isliving(M) && !iscritter(M))
+	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
 		return
 	src.enemies -= M
 
@@ -499,9 +506,14 @@
 /datum/flock/proc/claimTurf(var/turf/simulated/T)
 	src.all_owned_tiles |= T
 	src.priority_tiles -= T
-	for (var/obj/flock_structure/structure in T.contents)
-		structure.flock = src
-		src.registerStructure(structure)
+	T.AddComponent(/datum/component/flock_interest, src)
+	for(var/obj/O in T.contents)
+		if(HAS_ATOM_PROPERTY(O, PROP_ATOM_FLOCK_THING))
+			O.AddComponent(/datum/component/flock_interest, src)
+		if(istype(O, /obj/flock_structure))
+			var/obj/flock_structure/structure = O
+			structure.flock = src
+			src.registerStructure(structure)
 
 	var/image/I = src.annotations_priority_tiles[T]
 	src.annotations_priority_tiles -= T
@@ -616,7 +628,7 @@
 // see /obj/machinery/light/small/floor and /obj/machinery/light for examples of this
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
-	/obj/window = /obj/window/feather,
+	/obj/window = /obj/window/auto/feather,
 	/obj/machinery/door/airlock = /obj/machinery/door/feather,
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
@@ -647,9 +659,8 @@
 		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/simulated/wall))
-		var/turf/converted_wall = T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
 		animate_flock_convert_complete(T)
-		APPLY_ATOM_PROPERTY(converted_wall, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 
 	// regular and flock lattices
 	var/obj/lattice/lat = locate(/obj/lattice) in T
@@ -668,7 +679,6 @@
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
 		if(!FL)
 			FL = new /obj/lattice/flock(T) //may as well reuse the var
-			APPLY_ATOM_PROPERTY(FL, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
@@ -707,7 +717,6 @@
 							M.set_loc(converted)
 						qdel(O)
 						converted.set_dir(dir)
-						APPLY_ATOM_PROPERTY(converted, PROP_ATOM_FLOCK_THING, "flock_convert_turf")
 						animate_flock_convert_complete(converted)
 					break //we found and converted the type, don't convert it again
 

@@ -6,7 +6,6 @@
 	density = 0
 	say_language = "feather"
 	voice_name = "synthetic chirps"
-	see_invisible = INVIS_FLOCKMIND
 	speechverb_say = "chirps"
 	speechverb_exclaim = "screeches"
 	speechverb_ask = "inquires"
@@ -58,6 +57,7 @@
 	setMaterial(getMaterial("gnesis"))
 	src.material.setProperty("reflective", 45)
 	APPLY_ATOM_PROPERTY(src, PROP_MOB_RADPROT, src, 100)
+	src.see_invisible = INVIS_CLOAK
 
 	// do not automatically set up a flock if one is not provided
 	// flockless drones act differently
@@ -80,6 +80,22 @@
 	else
 		state["area"] = "???"
 	return state
+
+/mob/living/critter/flock/proc/dormantize()
+	src.dormant = TRUE
+	src.ai?.die()
+
+	if (!src.flock)
+		return
+
+	src.flock.removeDrone(src)
+	src.flock = null
+
+/mob/living/critter/flock/bullet_act(var/obj/projectile/P)
+	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
+		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
+		return FALSE
+	..()
 
 //compute - override if behaviour is weird
 /mob/living/critter/flock/proc/compute_provided()
@@ -154,6 +170,18 @@
 		// tell whoever's controlling the critter to come to the flockmind, pronto
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: The flockmind requests your presence immediately.\]</b></span>")
 
+/mob/living/critter/flock/death(var/gibbed)
+	..()
+	src.ai.die()
+	walk(src, 0)
+	src.flock?.removeDrone(src)
+	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
+
+/mob/living/critter/flock/disposing()
+	if (src.flock)
+		src.flock.removeDrone(src)
+	..()
+
 //////////////////////////////////////////////////////
 // VARIOUS FLOCK ACTIONS
 //////////////////////////////////////////////////////
@@ -167,6 +195,7 @@
 	id = "flock_convert"
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 45
+	resumable = FALSE
 
 	var/turf/simulated/target
 	var/obj/decal/decal
@@ -236,6 +265,7 @@
 	id = "flock_construct"
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 30
+	resumable = FALSE
 
 	var/turf/simulated/target
 	var/obj/decal/decal
@@ -299,6 +329,7 @@
 	id = "flock_egg"
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 80
+	resumable = FALSE
 
 	New(var/duration_i)
 		..()
@@ -340,6 +371,7 @@
 	id = "flock_repair"
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 10
+	resumable = FALSE
 
 	var/atom/target
 
@@ -404,6 +436,9 @@
 				if (/obj/window/feather)
 					var/obj/window/feather/window = target
 					window.repair()
+				if (/obj/window/auto/feather)
+					var/obj/window/auto/feather/window = target
+					window.repair()
 				if (/obj/grille/flock)
 					var/obj/grille/flock/barricade = target
 					barricade.repair()
@@ -421,6 +456,7 @@
 	id = "flock_entomb"
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 60
+	resumable = FALSE
 
 	var/atom/target
 	var/obj/decal/decal
@@ -481,6 +517,7 @@
 	id = "flock_decon"
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	duration = 60
+	resumable = FALSE
 
 	var/atom/target
 
@@ -552,7 +589,7 @@
 			qdel(target)
 		if(istype(target, /obj/grille/flock))
 			qdel(target)
-		if(istype(target, /obj/window/feather))
+		if(istype(target, /obj/window/feather) || istype(target, /obj/window/auto/feather))
 			var/obj/window/the_window = target
 			//copied wholesale from the /obj/window deconstruction code
 			var/obj/item/sheet/A = new /obj/item/sheet(get_turf(the_window))
@@ -575,6 +612,7 @@
 	interrupt_flags = INTERRUPT_MOVE | INTERRUPT_ACT | INTERRUPT_STUNNED | INTERRUPT_ACTION
 	var/const/default_duration = 1 SECOND
 	duration = default_duration
+	resumable = FALSE
 	color_success = "#4444FF"
 	var/obj/flock_structure/ghost/target = null
 

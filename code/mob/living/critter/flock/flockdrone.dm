@@ -71,8 +71,8 @@
 
 	for (var/type as anything in childrentypesof(/datum/contextAction/flockdrone))
 		src.contexts += new type
-
-	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE, FALSE)
 
 /mob/living/critter/flock/drone/click(atom/target, list/params)
 	if (src.floorrunning)
@@ -84,7 +84,6 @@
 		if (controller)
 			src.release_control_abrupt()
 		flock_speak(null, "Connection to drone [src.real_name] lost.", src.flock)
-		src.flock.removeDrone(src)
 	src.remove_simple_light("drone_light")
 	..()
 
@@ -111,14 +110,13 @@
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
 		src.is_npc = 0
 
-/mob/living/critter/flock/drone/proc/take_control(mob/living/intangible/flock/pilot)
+/mob/living/critter/flock/drone/proc/take_control(mob/living/intangible/flock/pilot, give_alert = TRUE)
 	if(!pilot)
 		return // fuck it
 	if(controller)
 		boutput(pilot, "<span class='alert'>This drone is already being controlled.</span>")
 		return
 	src.controller = pilot
-	walk(src, 0)
 	src.ai.stop_move() //cancel any pathing that's happening
 	src.is_npc = 0
 	src.dormant = 0
@@ -143,23 +141,21 @@
 	src.hud?.update_intent()
 	var/image/icon = flock.add_overhead_image('icons/misc/featherzone.dmi', src, pilot.control_icon)
 	flock.annotations_control_icons[src] = icon
-	boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
+	if (give_alert)
+		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
-/mob/living/critter/flock/drone/proc/release_control()
+/mob/living/critter/flock/drone/proc/release_control(give_alerts = TRUE)
 	src.flock?.hideAnnotations(src)
 	src.is_npc = 1
-	emote("beep")
-	say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
+	if (give_alerts)
+		emote("beep")
+		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
 	if(src.client && !controller)
 		// don't know how this happened but you need a controller right now
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
 	if(controller)
 		if (src.floorrunning)
-			src.end_floorrunning()
-			if (istype(src.loc, /turf/simulated/floor/feather))
-				var/turf/simulated/floor/feather/floor = src.loc
-				if (floor.on && !floor.connected)
-					floor.off()
+			src.end_floorrunning(TRUE)
 		// move controller out
 		controller.set_loc(get_turf(src))
 		// move us over to the controller
@@ -178,7 +174,8 @@
 		var/image/I = flock.annotations_control_icons[src]
 		flock.annotations_control_icons -= src
 		flock.removeClientImage(I)
-		flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
+		if (give_alerts)
+			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
 		controller = null
 
@@ -190,11 +187,7 @@
 	if(!controller)
 		return
 	if (src.floorrunning)
-		src.end_floorrunning()
-		if (istype(src.loc, /turf/simulated/floor/feather))
-			var/turf/simulated/floor/feather/floor = src.loc
-			if (floor.on && !floor.connected)
-				floor.off()
+		src.end_floorrunning(TRUE)
 	controller.set_loc(get_turf(src))
 	var/datum/mind/mind = src.mind
 	if (mind)
@@ -210,22 +203,20 @@
 	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	controller = null
 
-/mob/living/critter/flock/drone/proc/dormantize()
-	src.dormant = TRUE
+/mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
-	src.ai?.die()
 	src.remove_simple_light("drone_light")
 
 	if (!src.flock)
+		..()
 		return
 
 	src.flock.hideAnnotations(src)
-	src.flock.removeDrone(src)
 
 	if (src.controller)
 		if (src.flock.getComplexDroneCount())
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
-				if (istype(F))
+				if (istype(F) && F != src)
 					src.controller.set_loc(get_turf(F))
 					break
 		else
@@ -249,7 +240,8 @@
 	if (src.z != Z_LEVEL_NULL)
 		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
 	src.is_npc = FALSE // turns off ai
-	src.flock = null
+
+	..()
 
 /mob/living/critter/flock/drone/proc/undormantize()
 	src.dormant = 0
@@ -410,11 +402,7 @@
 	if (src.floorrunning && src.resources >= 1)
 		src.resources--
 		if (src.resources < 1)
-			src.end_floorrunning()
-			if (istype(src.loc, /turf/simulated/floor/feather))
-				var/turf/simulated/floor/feather/floor = src.loc
-				if (floor.on && !floor.connected)
-					floor.off()
+			src.end_floorrunning(TRUE)
 	if (!src.dormant && src.z != Z_LEVEL_STATION)
 		src.dormantize()
 		return
@@ -492,14 +480,12 @@
 				var/turf/simulated/wall/auto/feather/wall = src.loc
 				if (wall.broken)
 					return ..()
+				if (!wall.on)
+					wall.on()
 
 			src.start_floorrunning()
 	else if(keys && src.floorrunning)
-		src.end_floorrunning()
-		if (istype(src.loc, /turf/simulated/floor/feather))
-			var/turf/simulated/floor/feather/floor = src.loc
-			if (floor.on && !floor.connected)
-				floor.off()
+		src.end_floorrunning(TRUE)
 	return ..()
 
 /mob/living/critter/flock/drone/proc/start_floorrunning()
@@ -524,13 +510,22 @@
 				qdel(grab_grabbed_by)
 	animate_flock_floorrun_start(src)
 
-/mob/living/critter/flock/drone/proc/end_floorrunning()
+/mob/living/critter/flock/drone/proc/end_floorrunning(check_lights = FALSE)
 	if(!src.floorrunning)
 		return
 	playsound(src, "sound/misc/flockmind/flockdrone_floorrun.ogg", 50, 1, -3)
 	src.floorrunning = 0
 	src.set_density(1)
 	src.throws_can_hit_me = TRUE
+	if (check_lights)
+		if (istype(src.loc, /turf/simulated/floor/feather))
+			var/turf/simulated/floor/feather/floor = src.loc
+			if (floor.on && !floor.connected)
+				floor.off()
+		else if (istype(src.loc, /turf/simulated/wall/auto/feather))
+			var/turf/simulated/wall/auto/feather/wall = src.loc
+			if (wall.on)
+				wall.off()
 	animate_flock_floorrun_end(src)
 
 /mob/living/critter/flock/drone/movement_delay()
@@ -596,13 +591,10 @@
 // and then the numerous procs that use that catchall proc
 /mob/living/critter/flock/drone/bullet_act(var/obj/projectile/P)
 	if(floorrunning)
-		return // haha fuck you i'm in the FLOOR
-	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
-		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
-	else
-		..()
-		var/mob/attacker = P.shooter
-		if(istype(attacker))
+		return FALSE
+	if (..())
+		var/attacker = P.shooter
+		if(attacker)
 			src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
@@ -692,8 +684,8 @@
 	remove_lifeprocess(/datum/lifeprocess/statusupdate)
 
 /mob/living/critter/flock/drone/death(var/gibbed)
-	if(src.floorrunning)
-		src.end_floorrunning()
+	if(src.controller)
+		src.release_control()
 	if(!src.dormant)
 		if(src.is_npc)
 			emote("scream")
@@ -702,22 +694,15 @@
 		else
 			emote("scream")
 			say("\[System notification: drone lost.\]")
-	src.ai.die()
-	walk(src, 0)
-	// transfer our resources to our heart
 	var/obj/item/organ/heart/flock/core = src.organHolder.get_organ("heart")
 	if(core)
 		core.resources = src.resources
 		src.resources = 0 // just in case any weirdness happens let's pre-empt the dupe bug
-	if(src.controller)
-		src.release_control()
-	src.flock?.removeDrone(src)
 	..()
 	src.icon_state = "drone-dead"
-	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
 	src.reduce_lifeprocess_on_death()
 	src.set_density(FALSE)
-	desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
+	src.desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
 	src.remove_simple_light("drone_light")
 
 /mob/living/critter/flock/drone/ghostize()
@@ -770,6 +755,10 @@
 	// get candidate places to move them
 	var/turf/T = get_turf(src)
 	var/list/candidate_turfs = getneighbours(src)
+	for(var/turf/n in candidate_turfs)
+		if(is_blocked_turf(n))
+			candidate_turfs -= n
+	candidate_turfs += T //ensure there's always at least the turf we're stood on
 	for(var/i=1 to num_bits)
 		B = new(get_turf(src), F = src.flock)
 		src.flock?.registerUnit(B)
@@ -812,6 +801,9 @@
 		if(istype(O, /atom/movable/screen))
 			continue // no UI elements please
 		. += O
+
+/mob/living/critter/flock/drone/message_admin_on_attack()
+	return
 
 // TODO: do this better
 /mob/living/critter/flock/drone/change_eye_blurry(var/amount, var/cap = 0)
@@ -977,6 +969,10 @@
 					var/obj/window/feather/window = target
 					if (window.health < window.health_max)
 						found_target = TRUE
+				if (/obj/window/auto/feather)
+					var/obj/window/auto/feather/window = target
+					if (window.health < window.health_max)
+						found_target = TRUE
 				if (/obj/grille/flock)
 					var/obj/grille/flock/barricade = target
 					if (barricade.health < barricade.health_max)
@@ -1099,12 +1095,6 @@
 	animate_flockdrone_item_absorb(item)
 
 /datum/equipmentHolder/flockAbsorption/on_unequip()
-	var/obj/item/temp = item
-	if(temp)
-		animate(temp) // cancel animation
-	..()
-
-/datum/equipmentHolder/flockAbsorption/drop(var/force = 0)
 	var/obj/item/temp = item
 	if(temp)
 		animate(temp) // cancel animation
