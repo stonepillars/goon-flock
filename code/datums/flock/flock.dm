@@ -580,21 +580,21 @@
 	var/turf/busy_turf
 	for(var/name in src.busy_tiles)
 		busy_turf = src.busy_tiles[name]
-		if (busy_turf.disposed)
+		if (QDELETED(busy_turf))
 			src.unreserveTurf(busy_turf)
 
 	for(var/turf/T in src.priority_tiles)
-		if (T.disposed)
+		if (QDELETED(T))
 			src.togglePriorityTurf(T)
 
 	for(var/atom/S in src.deconstruct_targets)
-		if(S.disposed)
+		if(QDELETED(S))
 			src.toggleDeconstructionFlag(S)
 
 	var/atom/M
 	for(var/enemy in src.enemies)
 		M = src.enemies[enemy]["mob"]
-		if (M.disposed)
+		if (QDELETED(M))
 			src.removeEnemy(M)
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
@@ -628,7 +628,7 @@
 // see /obj/machinery/light/small/floor and /obj/machinery/light for examples of this
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
-	/obj/window = /obj/window/feather,
+	/obj/window = /obj/window/auto/feather,
 	/obj/machinery/door/airlock = /obj/machinery/door/feather,
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
