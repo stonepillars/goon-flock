@@ -1094,17 +1094,5 @@
 	if(temp)
 		animate(temp) // cancel animation
 		if(temp.material)
-			//code from setMaterial which sets up color + texture
-			var/set_color_alpha = TRUE
-			temp.alpha = 255
-			temp.color = null
-			temp.UpdateOverlays(null, "material")
-			if (islist(temp.mat_appearances_to_ignore) && length(temp.mat_appearances_to_ignore))
-				if (temp.material.name in temp.mat_appearances_to_ignore)
-					set_color_alpha = FALSE
-			if (set_color_alpha && temp.mat_changeappearance && temp.material.applyColor)
-				if (temp.material.texture)
-					temp.setTexture(temp.material.texture, temp.material.texture_blend, "material")
-				temp.alpha = temp.material.alpha
-				temp.color = temp.material.color
+			temp.setMaterialAppearance(temp.material)
 	..()
