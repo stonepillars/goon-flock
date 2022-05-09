@@ -475,7 +475,8 @@
 	annotations_priority_tiles = null
 	annotations_enemies = null
 	flockmind = null
-	qdel(src)
+	//while this is neat cleanup, we still need the flock datum for tracking flocktrace mind connections
+	// qdel(src)
 
 // TURFS
 
