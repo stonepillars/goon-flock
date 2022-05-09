@@ -46,7 +46,7 @@
 
 /datum/game_mode/flock/victory_msg()
 	if (src.signal_unleashed)
-		return "<b style='font-size:20px'>Flock victory!</b><br>The Flock managed to construct a relay and transmit The Signal. One step closer to its unknowable goals."
+		return "<b style='font-size:20px'>Flock victory!</b><br>The Flock managed to construct a relay and transmit The Signal. One step closer to its mysterious goals."
 	else
 		var/living_flockmind = FALSE
 		for (var/datum/mind/flockmind as anything in src.flockminds)
