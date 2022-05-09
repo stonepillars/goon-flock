@@ -191,13 +191,17 @@
 						rewarded_detail = copytext(rewarded_detail, 1, -2)
 						stuff_to_output += stolen_detail
 						stuff_to_output += rewarded_detail
+
 				if (traitor.special_role == ROLE_FLOCKMIND)
-					var/mob/living/intangible/flock/flockmind/flockmind = traitor.current
-					if (istype(flockmind))
-						if (length(flockmind.flock.traces))
+					for (var/flockname in flocks)
+						var/datum/flock/flock = flocks[flockname]
+						if (flock.flockmind_mind == traitor && length(flock.trace_minds))
 							stuff_to_output += "Flocktraces:"
-						for (var/mob/living/intangible/flock/trace/flocktrace in flockmind.flock.traces)
-							stuff_to_output += "	[flocktrace.name] played by [flocktrace.mind.displayed_key]"
+							for (var/trace_name in flock.trace_minds)
+								var/datum/mind/trace_mind = flock.trace_minds[trace_name]
+								//the first character in this string is an invisible brail character, because otherwise DM eats my indentation
+								//blame amy for the hack
+								stuff_to_output += "<b>⠀   [trace_name] (played by [trace_mind.displayed_key])<b>"
 
 				for (var/datum/objective/objective in traitor.objectives)
 	#ifdef CREW_OBJECTIVES

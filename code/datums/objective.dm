@@ -815,7 +815,7 @@ proc/create_fluff(datum/mind/target)
 
 	check_completion()
 		var/datum/game_mode/flock/flockmode = ticker.mode
-		return istype(flockmode) && flockmode.relay_unleashed
+		return istype(flockmode) && flockmode.signal_unleashed
 
 
 /datum/objective/specialist/wraith

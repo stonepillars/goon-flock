@@ -6,9 +6,9 @@
 	shuttle_available_threshold = 12000 // 20 min, default value, probably change this
 
 	//NOTE: if you need to track something, put it here
-	var/list/mob/living/intangible/flock/flockmind/flockminds = list()
+	var/list/datum/mind/flockminds = list()
 	/// Has a relay been unleashed yet this round
-	var/relay_unleashed = FALSE
+	var/signal_unleashed = FALSE
 
 /datum/game_mode/flock/announce()
 	boutput(world, "<B>The current game mode is - Flock!</B>")
@@ -45,7 +45,7 @@
 	. = ..()
 
 /datum/game_mode/flock/victory_msg()
-	if (src.relay_unleashed)
+	if (src.signal_unleashed)
 		return "<b style='font-size:20px'>Flock victory!</b><br>The Flock managed to construct a relay and transmit The Signal. One step closer to its unknowable goals."
 	else
 		var/living_flockmind = FALSE

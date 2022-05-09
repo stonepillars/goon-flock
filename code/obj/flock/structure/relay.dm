@@ -119,7 +119,7 @@
 	explosion_new(src, location, 2000)
 	gib(location)
 	var/datum/game_mode/flock/gamemode = ticker.mode
-	gamemode.relay_unleashed = TRUE
+	gamemode.signal_unleashed = TRUE
 	sleep(2 SECONDS) //allow them to hear the explosion before their headsets scream and die
 	destroy_radios()
 
