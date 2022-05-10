@@ -418,7 +418,10 @@
 		if (I.health > 0)
 			return
 		if (I.amount > 1)
-			I.health = src.absorber.item_equip_health
+			if (initial(I.health))
+				I.health = initial(I.health)
+			else
+				I.set_health()
 			I.change_stack_amount(-1)
 			return
 
@@ -1089,7 +1092,6 @@
 	icon = 'icons/mob/flock_ui.dmi'
 	icon_state = "absorber"
 	var/instant_absorb = FALSE
-	var/item_equip_health
 
 /datum/equipmentHolder/flockAbsorption/can_equip(var/obj/item/I)
 	if (istype(I, /obj/item/grab))
@@ -1102,7 +1104,6 @@
 
 	var/mob/living/critter/flock/drone/F = holder
 	src.instant_absorb = item.amount > 1 && round(F.absorb_per_health * item.health) == 0
-	src.item_equip_health = item.health
 
 	item.inventory_counter?.show_count()
 
