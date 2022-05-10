@@ -139,6 +139,7 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
+	flock.add_control_icon(src, pilot)
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -169,6 +170,7 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
+		flock.remove_control_icon(src)
 		if (give_alerts)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
@@ -964,6 +966,10 @@
 					var/obj/window/feather/window = target
 					if (window.health < window.health_max)
 						found_target = TRUE
+				if (/obj/window/auto/feather)
+					var/obj/window/auto/feather/window = target
+					if (window.health < window.health_max)
+						found_target = TRUE
 				if (/obj/grille/flock)
 					var/obj/grille/flock/barricade = target
 					if (barricade.health < barricade.health_max)
@@ -1089,4 +1095,6 @@
 	var/obj/item/temp = item
 	if(temp)
 		animate(temp) // cancel animation
+		if(temp.material)
+			temp.setMaterialAppearance(temp.material)
 	..()

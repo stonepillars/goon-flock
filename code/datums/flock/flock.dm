@@ -19,6 +19,7 @@
 	var/list/annotations_priority_tiles = list()
 	var/list/annotations_deconstruct_targets = list()
 	var/list/annotations_enemies = list()
+	var/list/annotations_control_icons = list()
 	var/list/obj/flock_structure/structures = list()
 	var/list/datum/unlockable_flock_structure/unlockableStructures = list()
 	///list of strings that lets flock record achievements for structure unlocks
@@ -320,6 +321,8 @@
 			C.images |= src.annotations_busy_tiles[key]
 		for(var/atom/key in src.annotations_enemies)
 			C.images |= src.annotations_enemies[key]
+		for(var/atom/key in src.annotations_control_icons)
+			C.images |= src.annotations_control_icons[key]
 
 /datum/flock/proc/hideAnnotations(var/mob/M)
 	if(!M)
@@ -333,6 +336,8 @@
 			C.images -= src.annotations_busy_tiles[key]
 		for(var/atom/key in src.annotations_enemies)
 			C.images -= src.annotations_enemies[key]
+		for(var/atom/key in src.annotations_control_icons)
+			C.images -= src.annotations_control_icons[key]
 
 /datum/flock/proc/addClientImage(image/I)
 	for (var/mob/M in src.annotation_viewers)
@@ -400,13 +405,27 @@
 	else
 		src.deconstruct_targets += target
 
-		I = image('icons/misc/featherzone.dmi', target, "hazard")
-		I.blend_mode = BLEND_ADD
-		I.pixel_y = 16
-		I.plane = PLANE_ABOVE_LIGHTING
-		I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+		I = add_overhead_image('icons/misc/featherzone.dmi', target, "hazard")
 		src.annotations_deconstruct_targets[target] = I
-		src.addClientImage(I)
+
+/// Just because this was duplicated a bunch
+/datum/flock/proc/add_overhead_image(icon, target, icon_state)
+	var/image/I = image(icon, target, icon_state)
+	I.blend_mode = BLEND_ADD
+	I.pixel_y = 16
+	I.plane = PLANE_ABOVE_LIGHTING
+	I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+	src.addClientImage(I)
+	return I
+
+/datum/flock/proc/add_control_icon(var/mob/living/critter/flock/flockthing, var/mob/living/intangible/flock/sentient)
+	var/image/icon = src.add_overhead_image('icons/misc/featherzone.dmi', flockthing, sentient.control_icon)
+	src.annotations_control_icons[flockthing] = icon
+
+/datum/flock/proc/remove_control_icon(var/mob/living/critter/flock/flockthing)
+	var/image/I = src.annotations_control_icons[flockthing]
+	src.annotations_control_icons -= flockthing
+	src.removeClientImage(I)
 
 // ENEMIES
 
@@ -432,13 +451,8 @@
 		enemy_deets = src.enemies[enemy_name]
 		enemy_deets["last_seen"] = get_area(M)
 	if (!(M in src.annotations_enemies))
-		var/image/I = image('icons/misc/featherzone.dmi', M, "hazard")
-		I.blend_mode = BLEND_ADD
-		I.pixel_y = 16
-		I.plane = PLANE_ABOVE_LIGHTING
-		I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+		var/image/I = add_overhead_image('icons/misc/featherzone.dmi', M, "hazard")
 		src.annotations_enemies[M] = I
-		src.addClientImage(I)
 
 /datum/flock/proc/removeEnemy(atom/M)
 	// call off all drones attacking this guy
@@ -575,21 +589,21 @@
 	var/turf/busy_turf
 	for(var/name in src.busy_tiles)
 		busy_turf = src.busy_tiles[name]
-		if (busy_turf.disposed)
+		if (QDELETED(busy_turf))
 			src.unreserveTurf(busy_turf)
 
 	for(var/turf/T in src.priority_tiles)
-		if (T.disposed)
+		if (QDELETED(T))
 			src.togglePriorityTurf(T)
 
 	for(var/atom/S in src.deconstruct_targets)
-		if(S.disposed)
+		if(QDELETED(S))
 			src.toggleDeconstructionFlag(S)
 
 	var/atom/M
 	for(var/enemy in src.enemies)
 		M = src.enemies[enemy]["mob"]
-		if (M.disposed)
+		if (QDELETED(M))
 			src.removeEnemy(M)
 
 /datum/flock/proc/convert_turf(var/turf/T, var/converterName)
@@ -623,7 +637,7 @@
 // see /obj/machinery/light/small/floor and /obj/machinery/light for examples of this
 /var/list/flock_conversion_paths = list(
 	/obj/grille/steel = /obj/grille/flock,
-	/obj/window = /obj/window/feather,
+	/obj/window = /obj/window/auto/feather,
 	/obj/machinery/door/airlock = /obj/machinery/door/feather,
 	/obj/machinery/door = null,
 	/obj/stool = /obj/stool/chair/comfy/flock,
