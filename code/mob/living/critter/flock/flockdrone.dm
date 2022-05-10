@@ -923,7 +923,7 @@
 				actions.start(new/datum/action/bar/flock_convert(target), user)
 	if(user.a_intent == INTENT_HARM)
 		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
-			if(istype(target, /obj/flock_structure/ghost) || istype(target, /turf/simulated/floor/feather) || istype(target, /obj/flock_structure/egg) || istype(target, /obj/flock_structure/relay))
+			if(isflockdeconimmune(target))
 				return
 			actions.start(new /datum/action/bar/flock_decon(target), user)
 		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls

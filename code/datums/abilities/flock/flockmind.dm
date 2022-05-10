@@ -460,9 +460,7 @@
 		return TRUE
 	var/mob/living/intangible/flock/F = holder.owner
 	if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
-		if(istype(target,/obj/flock_structure/ghost))
-			return TRUE // does tgui window for canceling since cancelbuild is on click, will need to fix this if we change it in the future
-		if (istype(target, /mob/living/critter/flock) || istype(target, /turf/simulated/floor/feather) || istype(target, /obj/flock_structure/rift) || istype(target, /obj/flock_structure/egg) || istype(target, /obj/flock_structure/relay))
+		if (isflockdeconimmune(target)) // ghost structure on click opens tgui window
 			return TRUE
 		F.flock.toggleDeconstructionFlag(target)
 		return FALSE
