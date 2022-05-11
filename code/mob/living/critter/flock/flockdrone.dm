@@ -140,6 +140,7 @@
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
 	src.update_health_icon()
+	flock.add_control_icon(src, pilot)
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -170,6 +171,7 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
+		flock.remove_control_icon(src)
 		if (give_alerts)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
@@ -891,8 +893,20 @@
 			src.disarm(target,user)
 			return
 
+	if(user.a_intent == INTENT_HARM)
+		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
+			if(isflockdeconimmune(target))
+				return
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
+			if(target?.material.mat_id == "gnesis")
+				actions.start(new /datum/action/bar/flock_decon(target), user)
+		else
+			..()
+		return
+
 	// CONVERT TURF
-	if(!isturf(target) && !HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) && !istype(target, /obj/structure/girder))
+	if(!isturf(target) && (!HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) || istype(target, /obj/lattice/flock)) && !istype(target, /obj/structure/girder))
 		target = get_turf(target)
 
 	if(istype(target, /turf) && !istype(target, /turf/simulated) && !istype(target, /turf/space))
@@ -924,18 +938,9 @@
 				actions.start(new/datum/action/bar/flock_convert(target), user)
 			else
 				actions.start(new/datum/action/bar/flock_convert(target), user)
-	if(user.a_intent == INTENT_HARM)
-		if(istype(target, /obj/flock_structure/ghost))
-			return
-		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
-		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
-			if(target?.material.mat_id == "gnesis")
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-		else
-			..()
+
 //help intent actions
-	else if(user.a_intent == INTENT_HELP)
+	if(user.a_intent == INTENT_HELP)
 		if (istype(target, /obj/flock_structure/ghost))
 			if (user.resources <= 0)
 				boutput(user, "<span class='alert'>No resources available for construction.</span>")
@@ -965,6 +970,10 @@
 						found_target = TRUE
 				if (/obj/window/feather)
 					var/obj/window/feather/window = target
+					if (window.health < window.health_max)
+						found_target = TRUE
+				if (/obj/window/auto/feather)
+					var/obj/window/auto/feather/window = target
 					if (window.health < window.health_max)
 						found_target = TRUE
 				if (/obj/grille/flock)
@@ -1092,4 +1101,6 @@
 	var/obj/item/temp = item
 	if(temp)
 		animate(temp) // cancel animation
+		if(temp.material)
+			temp.setMaterialAppearance(temp.material)
 	..()
