@@ -139,7 +139,10 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
-	flock.add_control_icon(src, pilot)
+	if (istype(pilot, /mob/living/intangible/flock/flockmind))
+		flock.addAnnotation(src, "flockmind_face")
+	else
+		flock.addAnnotation(src, "flocktrace_face")
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -170,7 +173,10 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
-		flock.remove_control_icon(src)
+		if (istype(controller, /mob/living/intangible/flock/flockmind))
+			flock.removeAnnotation(src, "flockmind_face")
+		else
+			flock.removeAnnotation(src, "flocktrace_face")
 		if (give_alerts)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
