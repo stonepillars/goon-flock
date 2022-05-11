@@ -891,9 +891,9 @@
 			return
 
 	if(user.a_intent == INTENT_HARM)
-		if(istype(target, /obj/flock_structure/ghost))
-			return
 		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
+			if(isflockdeconimmune(target))
+				return
 			actions.start(new /datum/action/bar/flock_decon(target), user)
 		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
 			if(target?.material.mat_id == "gnesis")
@@ -935,6 +935,7 @@
 				actions.start(new/datum/action/bar/flock_convert(target), user)
 			else
 				actions.start(new/datum/action/bar/flock_convert(target), user)
+
 //help intent actions
 	if(user.a_intent == INTENT_HELP)
 		if (istype(target, /obj/flock_structure/ghost))
