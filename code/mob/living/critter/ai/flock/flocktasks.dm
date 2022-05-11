@@ -1234,9 +1234,9 @@ butcher
 	var/list/turfs = list()
 	path = null
 	targetpos = null
-	for(var/turf/tmpturf in range(holder.owner,2))
-		if(!istype(tmpturf,/turf/space) && !is_blocked_turf(tmpturf) && GET_DIST(holder.owner,startpos) <= GET_DIST(tmpturf,startpos))
-			turfs += tmpturf
+	for(var/turf/T in range(holder.owner,2))
+		if(!istype(T,/turf/space) && !is_blocked_turf(T) && GET_DIST(holder.owner,startpos) <= GET_DIST(T,startpos))
+			turfs += T
 	if(!length(turfs))
 		//oh shit we must be in space, better wander in the direction of the station
 		turfs += pick_landmark(LANDMARK_LATEJOIN)
