@@ -18,7 +18,7 @@
 	var/datum/mind/flockmind_mind = null
 	var/list/units = list()
 	var/list/enemies = list()
-	///Associative list of objects to lists of their annotations
+	///Associative list of objects to an associative list of their annotation names to images
 	var/list/annotations = list()
 	///Static cache of annotation images
 	var/static/list/annotation_imgs = null
