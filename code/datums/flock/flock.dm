@@ -375,7 +375,7 @@
 		var/image/icon = image(src.annotation_imgs[annotation], loc=target)
 		if (isturf(target))
 			var/turf/T = target
-			icon.loc = T.RL_MulOverlay ? T.RL_MulOverlay : T
+			icon.loc = T.RL_MulOverlay || T
 		active[annotation] = icon
 		get_image_group(src).add_image(icon)
 
