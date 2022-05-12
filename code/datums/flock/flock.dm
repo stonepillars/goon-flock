@@ -322,35 +322,35 @@
 	hazard.plane = PLANE_ABOVE_LIGHTING
 	hazard.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	hazard.pixel_y = 16
-	.["hazard"] = .["deconstruct"] = hazard
+	.[FLOCK_ANNOTATION_HAZARD] = .[FLOCK_ANNOTATION_DECONSTRUCT] = hazard
 
 	var/image/priority = image('icons/misc/featherzone.dmi', icon_state = "frontier")
 	priority.appearance_flags = RESET_ALPHA | RESET_COLOR
 	priority.alpha = 180
 	priority.plane = PLANE_ABOVE_LIGHTING
 	priority.mouse_opacity = FALSE
-	.["priority"] = priority
+	.[FLOCK_ANNOTATION_PRIORITY] = priority
 
 	var/image/reserved = image('icons/misc/featherzone.dmi', icon_state = "frontier")
 	reserved.appearance_flags = RESET_ALPHA | RESET_COLOR
 	reserved.alpha = 80
 	reserved.plane = PLANE_ABOVE_LIGHTING
 	reserved.mouse_opacity = FALSE
-	.["reserved"] = reserved
+	.[FLOCK_ANNOTATION_RESERVED] = reserved
 
 	var/image/flock_face = image('icons/misc/featherzone.dmi', icon_state = "flockmind_face")
 	flock_face.blend_mode = BLEND_ADD
 	flock_face.plane = PLANE_ABOVE_LIGHTING
 	flock_face.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	flock_face.pixel_y = 16
-	.["flockmind_face"] = flock_face
+	.[FLOCK_ANNOTATION_FLOCKMIND_CONTROL] = flock_face
 
 	var/image/trace_face = image('icons/misc/featherzone.dmi', icon_state = "flocktrace_face")
 	trace_face.blend_mode = BLEND_ADD
 	trace_face.plane = PLANE_ABOVE_LIGHTING
 	trace_face.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
 	trace_face.pixel_y = 16
-	.["flocktrace_face"] = trace_face
+	.[FLOCK_ANNOTATION_FLOCKTRACE_CONTROL] = trace_face
 
 ///internal proc to get the indexed list of annotations on a particular mob
 /datum/flock/proc/_getAnnotations(atom/target)
@@ -443,7 +443,7 @@
 	return count
 
 /datum/flock/proc/toggleDeconstructionFlag(var/atom/target)
-	toggleAnnotation(target, "deconstruct")
+	toggleAnnotation(target, FLOCK_ANNOTATION_DECONSTRUCT)
 	src.deconstruct_targets ^= target
 
 // ENEMIES
@@ -466,7 +466,7 @@
 		enemy_deets["mob"] = M
 		enemy_deets["last_seen"] = enemy_area
 		src.enemies[enemy_name] = enemy_deets
-		addAnnotation(M, "hazard")
+		addAnnotation(M, FLOCK_ANNOTATION_HAZARD)
 	else
 		enemy_deets = src.enemies[enemy_name]
 		enemy_deets["last_seen"] = get_area(M)
@@ -477,7 +477,7 @@
 		return
 	src.enemies -= M
 
-	removeAnnotation(M, "hazard")
+	removeAnnotation(M, FLOCK_ANNOTATION_HAZARD)
 
 /datum/flock/proc/isEnemy(atom/M)
 	var/enemy_name = M
@@ -527,7 +527,7 @@
 			var/obj/flock_structure/structure = O
 			structure.flock = src
 			src.registerStructure(structure)
-	removeAnnotation(T, "priority")
+	removeAnnotation(T, FLOCK_ANNOTATION_PRIORITY)
 
 /datum/flock/proc/isTurfFree(var/turf/simulated/T, var/queryName) // provide the drone's name here: if they own the turf it's free _to them_
 	for(var/name in src.busy_tiles)
@@ -540,7 +540,7 @@
 /datum/flock/proc/togglePriorityTurf(var/turf/T)
 	if (!T)
 		return TRUE
-	toggleAnnotation(T, "priority")
+	toggleAnnotation(T, FLOCK_ANNOTATION_PRIORITY)
 	priority_tiles ^= T
 
 // get closest unclaimed tile to requester

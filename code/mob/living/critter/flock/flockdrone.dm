@@ -140,9 +140,9 @@
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
 	if (istype(pilot, /mob/living/intangible/flock/flockmind))
-		flock.addAnnotation(src, "flockmind_face")
+		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
 	else
-		flock.addAnnotation(src, "flocktrace_face")
+		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -178,9 +178,9 @@
 		controller.mind.current = controller
 		ticker.minds += controller.mind
 	if (istype(controller, /mob/living/intangible/flock/flockmind))
-		flock.removeAnnotation(src, "flockmind_face")
+		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
 	else
-		flock.removeAnnotation(src, "flocktrace_face")
+		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 	if (give_alerts)
 		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	controller = null
