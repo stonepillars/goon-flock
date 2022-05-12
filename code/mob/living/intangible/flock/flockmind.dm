@@ -22,7 +22,7 @@
 	src.last_time = world.timeofday
 
 	src.flock = !F ? new /datum/flock() : F
-	src.real_name = "Flockmind " + src.flock.name
+	src.real_name = "Flockmind [src.flock.name]"
 	src.name = src.real_name
 	src.update_name_tag()
 	src.flock.registerFlockmind(src)
