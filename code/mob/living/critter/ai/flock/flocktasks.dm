@@ -1260,7 +1260,7 @@ butcher
 	path = null
 	targetpos = null
 	for(var/turf/T in range(holder.owner,2))
-		if(!istype(T,/turf/space) && !is_blocked_turf(T) && GET_DIST(holder.owner,startpos) <= GET_DIST(T,startpos))
+		if(!istype(T,/turf/space) && !flock_is_blocked_turf(T) && GET_DIST(holder.owner,startpos) <= GET_DIST(T,startpos))
 			turfs += T
 	if(!length(turfs))
 		//oh shit we must be in space, better wander in the direction of the station

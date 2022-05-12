@@ -266,6 +266,15 @@ proc/get_angle(atom/a, atom/b)
 			return 1
 	return 0
 
+//is_blocked_turf for flock
+/proc/flock_is_blocked_turf(var/turf/T)
+	if (!T) return 0
+	if(T.density) return 1
+	for(var/atom/A in T)
+		if(A?.density && !isflock(A))//ignores flockdrones/flockbits
+			return 1
+	return 0
+
 /proc/get_edge_cheap(var/atom/A, var/direction)
 	. = A.loc
 	switch(direction)
