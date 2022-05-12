@@ -127,7 +127,7 @@
 // target: holder target assigned by a sequence task
 /datum/aiTask/succeedable/move
 	name = "moving"
-	max_fails = 5
+	max_fails = 2
 	var/list/found_path = null
 	var/atom/move_target = null
 
