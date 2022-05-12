@@ -358,7 +358,7 @@
 	var/name_found = FALSE
 	var/tries = 0
 	var/max_tries = 5000 // really shouldn't occur
-	switch(flocktype)
+	switch(flock_type)
 		if ("flock")
 			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
@@ -367,7 +367,6 @@
 					if (F.name == name)
 						break
 				name_found = TRUE
-			var/trace_found = FALSE
 			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
 				tries++
@@ -376,7 +375,6 @@
 						break
 				name_found = TRUE
 		if ("flockdrone")
-			var/drone_found = FALSE
 			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 				tries++
@@ -385,7 +383,6 @@
 						break
 				name_found = TRUE
 		if ("flockbit")
-			var/bit_found = FALSE
 			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
 				tries++
