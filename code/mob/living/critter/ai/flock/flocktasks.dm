@@ -76,6 +76,12 @@ butcher
 	can_be_adjacent_to_target = FALSE
 	max_dist = 0
 
+	New()
+		..()
+		var/datum/aiTask/succeedable/move/tmp = subtasks[subtask_index]
+		if(istype(tmp))
+			tmp.max_path_dist = 300
+
 	on_tick()
 		if (!holder.target)
 			holder.target = get_turf(src.target)
