@@ -355,34 +355,44 @@
 
 /datum/flock/proc/pick_name(flock_type)
 	var/name
-	switch(flock_type)
-		if ("flock")
-			while (!name || (locate(name) in flocks))
+	var/name_found = FALSE
+	var/tries = 0
+	var/max_tries = 5000 // really shouldn't occur
+			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
-		if ("flocktrace")
+				tries++
+				for (var/datum/flock/F as anything in flocks)
+					if (F.name == name)
+						break
+				name_found = TRUE
 			var/trace_found = FALSE
-			while (!trace_found)
+			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
+				tries++
 				for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
 					if (T.name == name)
 						break
-				trace_found = TRUE
+				name_found = TRUE
 		if ("flockdrone")
 			var/drone_found = FALSE
-			while (!drone_found)
+			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+				tries++
 				for (var/mob/living/critter/flock/drone/F in src.units)
 					if (F.name == name)
 						break
-				drone_found = TRUE
+				name_found = TRUE
 		if ("flockbit")
 			var/bit_found = FALSE
-			while (!bit_found)
+			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
+				tries++
 				for (var/mob/living/critter/flock/bit/F in src.units)
 					if (F.name == name)
 						break
-				bit_found = TRUE
+				name_found = TRUE
+	if (!name_found && tries == max_tries)
+		return "error"
 	return name
 
 // UNITS
