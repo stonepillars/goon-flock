@@ -1155,6 +1155,12 @@ butcher
 
 /////// Targetable AI tasks, instead of looking for targets around them they just override with their own target var
 /datum/aiTask/sequence/goalbased/build/targetable
+	New()
+		..()
+		var/datum/aiTask/succeedable/move/movesubtask = subtasks[subtask_index]
+		if(istype(movesubtask))
+			movesubtask.max_path_dist = 300
+
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
@@ -1167,6 +1173,12 @@ butcher
 		holder.target = get_turf(src.target)
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/targetable
+	New()
+		..()
+		var/datum/aiTask/succeedable/move/movesubtask = subtasks[subtask_index]
+		if(istype(movesubtask))
+			movesubtask.max_path_dist = 300
+
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
@@ -1191,6 +1203,12 @@ butcher
 			return TRUE
 
 /datum/aiTask/sequence/goalbased/barricade/targetable
+	New()
+		..()
+		var/datum/aiTask/succeedable/move/movesubtask = subtasks[subtask_index]
+		if(istype(movesubtask))
+			movesubtask.max_path_dist = 300
+
 	switched_to()
 		on_reset()
 		if (!valid_target(holder.target))
@@ -1203,6 +1221,7 @@ butcher
 		holder.target = get_turf(src.target)
 
 /datum/aiTask/timed/targeted/flockdrone_shoot/targetable
+
 	switched_to()
 		on_reset()
 		if (!(ismob(src.target) || iscritter(src.target) || isvehicle(src.target)) || isflock(src.target))
