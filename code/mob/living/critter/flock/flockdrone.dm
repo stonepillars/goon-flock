@@ -188,17 +188,18 @@
 /mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
 	src.remove_simple_light("drone_light")
+	emote("beep")
 
 	if (!src.flock)
 		..()
 		return
-
 	src.flock.hideAnnotations(src)
 	//hold a ref to the controller so we can put them back with the flock
 	var/mob/living/intangible/flock/old_controller = src.controller
 	if (src.controller)
-		src.release_control()
+		src.release_control_abrupt(FALSE)
 	if (old_controller)
+		boutput(old_controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
 		if (src.flock.getComplexDroneCount())
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
 				if (istype(F) && F != src)
