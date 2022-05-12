@@ -78,9 +78,9 @@ butcher
 
 	New()
 		..()
-		var/datum/aiTask/succeedable/move/tmp = subtasks[subtask_index]
-		if(istype(tmp))
-			tmp.max_path_dist = 300
+		var/datum/aiTask/succeedable/move/movesubtask = subtasks[subtask_index]
+		if(istype(movesubtask))
+			movesubtask.max_path_dist = 300
 
 	on_tick()
 		if (!holder.target)
