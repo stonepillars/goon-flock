@@ -358,6 +358,8 @@
 	var/name_found = FALSE
 	var/tries = 0
 	var/max_tries = 5000 // really shouldn't occur
+	switch(flocktype)
+		if ("flock")
 			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 				tries++
