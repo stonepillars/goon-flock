@@ -22,8 +22,8 @@
 	src.name = "[pick_string("flockmind.txt", "flockbit_name_adj")] [pick_string("flockmind.txt", "flockbit_name_noun")]"
 	src.real_name = src.flock ? src.flock.pick_name("flockbit") : name
 	src.update_name_tag()
-
-	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
+	src.AddComponent(/datum/component/flock_protection)
 
 /mob/living/critter/flock/bit/special_desc(dist, mob/user)
 	if(isflock(user))
@@ -31,10 +31,16 @@
 		<br><span class='bold'>ID:</span> [src.real_name]
 		<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
 		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
-		<br><span class='bold'>Cognition:</span> PREDEFINED
+		<br><span class='bold'>Cognition:</span> [src.dormant ? "ABSENT" : "PREDEFINED"]
 		<br><span class='bold'>###=-</span></span>"}
 	else
 		return null // give the standard description
+
+/mob/living/critter/flock/bit/Life(datum/controller/process/mobs/parent)
+	if (..(parent))
+		return 1
+	if (!src.dormant && src.z != Z_LEVEL_STATION)
+		src.dormantize()
 
 /mob/living/critter/flock/bit/MouseDrop_T(mob/living/target, mob/user)
 	if(!target || !user)
@@ -47,12 +53,6 @@
 			..() // do ghost observes, i guess
 	else
 		..()
-
-/mob/living/critter/flock/bit/bullet_act(var/obj/projectile/P)
-	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
-		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
-		return
-	..()
 
 /mob/living/critter/flock/bit/setup_hands()
 	..()
@@ -76,27 +76,35 @@
 	HH.can_attack = 1
 	HH.can_range_attack = 0
 
+/mob/living/critter/flock/bit/dormantize()
+	src.icon_state = "bit-dormant"
+	animate(src) // doesnt work right now
+	..()
+
 /mob/living/critter/flock/bit/death(var/gibbed)
-	walk(src, 0)
-	src.flock?.removeDrone(src)
-	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
+	..()
 	flockdronegibs(get_turf(src))
-	if (src.mind || src.client) //Shouldn't be possible, but someone managed it
+	if (src.mind || src.client)
 		src.ghostize()
 	qdel(src)
+
+/mob/living/critter/flock/bit/disposing()
+	if (src.mind || src.client)
+		src.ghostize()
+	..()
 
 // okay so this might be fun for gimmicks
 /mob/living/critter/flock/bit/Login()
 	..()
 	src.client?.color = null
-	walk(src, 0)
+	src.ai?.stop_move()
 	src.is_npc = 0
 
 /mob/living/critter/flock/bit/specific_emotes(var/act, var/param = null, var/voluntary = 0)
 	switch (act)
 		if ("whistle", "beep", "burp", "scream", "growl", "abeep", "grump", "fart")
 			if (src.emote_check(voluntary, 50))
-				playsound(src, "sound/misc/flockmind/flockbit_wisp[pick("1","2","3","4","5","6")].ogg", 60, 1)
+				playsound(src, "sound/misc/flockmind/flockbit_wisp[pick("1","2","3","4","5","6")].ogg", 40, 1)
 				return "<b>[src]</b> chimes."
 		if ("flip")
 			if (src.emote_check(voluntary, 50) && !src.shrunk)
@@ -123,5 +131,5 @@
 	if(!istype(target, /turf/simulated) && !istype(target, /turf/space))
 		boutput(user, "<span class='alert'>Something about this structure prevents it from being assimilated.</span>")
 	else
-		playsound(src, "sound/misc/flockmind/flockbit_wisp[pick("1","2","3","4","5","6")].ogg")
+		playsound(src, "sound/misc/flockmind/flockbit_wisp[pick("1","2","3","4","5","6")].ogg", 40)
 		actions.start(new/datum/action/bar/flock_convert(target, 25), user)

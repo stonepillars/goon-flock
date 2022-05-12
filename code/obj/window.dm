@@ -303,6 +303,7 @@
 		return the_text
 
 	Cross(atom/movable/mover)
+		if(!src.density) return 1
 		if(istype(mover, /obj/projectile))
 			var/obj/projectile/P = mover
 			if(P.proj_data.window_pass)
@@ -727,7 +728,7 @@
 		/turf/simulated/wall/auto/jen, /turf/simulated/wall/auto/reinforced/jen,
 		/turf/unsimulated/wall/auto/supernorn/wood, /turf/unsimulated/wall/auto/adventure/shuttle/dark, /turf/simulated/wall/auto/reinforced/old, /turf/unsimulated/wall/auto/lead/blue, /turf/unsimulated/wall/auto/adventure/old, /turf/unsimulated/wall/auto/adventure/mars/interior, /turf/unsimulated/wall/auto/adventure/shuttle, /turf/unsimulated/wall/auto/reinforced/supernorn)
 
-	var/list/connects_to_exceptions = list(/obj/window/cubicle, /obj/window/reinforced)
+	var/list/connects_to_exceptions = list(/obj/window/cubicle, /obj/window/reinforced, /turf/unsimulated/wall/auto/lead/blue)
 	var/list/connects_with_overlay_exceptions = list(/obj/window, /obj/machinery/door/poddoor )
 	alpha = 160
 	the_tuff_stuff
@@ -1043,19 +1044,49 @@
 
 
 // Flockdrone BS goes here - cirr
+/obj/window/auto/feather
+	default_material = "gnesisglass"
+
+/obj/window/auto/feather/New()
+	connects_to += /turf/simulated/wall/auto/feather
+	..()
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
+	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
+
+/obj/window/auto/feather/special_desc(dist, mob/user)
+	if(isflock(user))
+		return {"
+		<span class='flocksay'>
+			<span class='bold'>###=-</span> Ident confirmed, data packet received.
+			<br><span class='bold'>ID:</span> Fibrewoven Window
+			<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
+			<br><span class='bold'>###=-</span>
+		</span>
+		"}
+	else
+		return null // give the standard description
+
+/obj/window/auto/feather/proc/repair()
+	src.health = min(src.health + 10, src.health_max)
+
+
 /obj/window/feather
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "window"
 	default_material = "gnesisglass"
 	hitsound = 'sound/impact_sounds/Crystal_Hit_1.ogg'
 	shattersound = 'sound/impact_sounds/Crystal_Shatter_1.ogg'
+	mat_appearances_to_ignore = list("gnesis")
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	health = 50 // as strong as reinforced glass, but not as strong as plasmaglass
 	health_max = 50
 	density = 1
 
 /obj/window/feather/New()
 	..()
-	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
+	src.AddComponent(/datum/component/flock_protection)
 
 /obj/window/feather/special_desc(dist, mob/user)
   if(isflock(user))
@@ -1066,6 +1097,9 @@
     // todo: damageable walls
   else
     return null // give the standard description
+
+/obj/window/feather/proc/repair()
+	src.health = min(src.health + 10, src.health_max)
 
 /obj/window/feather/north
 	dir = NORTH

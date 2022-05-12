@@ -101,6 +101,8 @@
 #define COMSIG_ATOM_EXPLODE "atom_explode"
 /// When the atom somewhere (possibly nested deep) in contents is a source of an explosion (object, args_to_explode_at)
 #define COMSIG_ATOM_EXPLODE_INSIDE "atom_explode_inside"
+/// When the atom reflects a projectile
+#define COMSIG_ATOM_PROJECTILE_REFLECTED "atom_reflect_projectile"
 /// When something enters the contents of this atom (i.e. Entered())
 #define COMSIG_ATOM_ENTERED "atom_entered"
 
@@ -340,6 +342,11 @@
 #define CELL_RETURNED_LIST 16
 #define CELL_FULL 32
 
+// ---- obj/storage signals ----
+
+/// When the storage closes
+#define COMSIG_STORAGE_CLOSED "storage_closed"
+
 // ---- area signals ----
 /// area's active var set to true (when a client enters)
 #define COMSIG_AREA_ACTIVATED "area_activated"
@@ -366,3 +373,7 @@
 // ---- ability signals ----
 /// Send item to a mob
 #define COMSIG_SEND_TO_MOB "send_to_mob"
+
+// ---- Flockmind ----
+/// Action by a thing (/atom) that harms the flock, that can be intentional (boolean)
+#define COMSIG_FLOCK_ATTACK "flock_attack"

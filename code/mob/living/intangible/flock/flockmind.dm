@@ -7,27 +7,32 @@
 	desc = "The collective machine consciousness of a bunch of glass peacock things."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flockmind"
+	control_icon = "flockmind_face"
 	layer = NOLIGHT_EFFECTS_LAYER_BASE
 
 	var/started = 0
 	var/last_time // when i say per second I MEAN PER SECOND DAMMIT
 
 
-/mob/living/intangible/flock/flockmind/New()
+/mob/living/intangible/flock/flockmind/New(turf/newLoc, datum/flock/F = null)
 	..()
 
 	APPLY_ATOM_PROPERTY(src, PROP_MOB_EXAMINE_ALL_NAMES, src)
 	src.abilityHolder = new /datum/abilityHolder/flockmind(src)
 	src.last_time = world.timeofday
 
-	src.flock = new /datum/flock()
+	src.flock = !F ? new /datum/flock() : F
 	src.real_name = "Flockmind " + src.flock.name
 	src.name = src.real_name
 	src.update_name_tag()
 	src.flock.registerFlockmind(src)
 	src.flock.showAnnotations(src)
-	src.addAbility(/datum/targetable/flockmindAbility/spawnEgg)
-	src.addAbility(/datum/targetable/flockmindAbility/ping)
+	if (!F)
+		src.addAbility(/datum/targetable/flockmindAbility/spawnEgg)
+		src.addAbility(/datum/targetable/flockmindAbility/ping)
+	else
+		src.started = TRUE
+		src.addAllAbilities()
 
 /mob/living/intangible/flock/flockmind/special_desc(dist, mob/user)
   if(isflock(user))
@@ -52,6 +57,20 @@
 	else
 		stat("Flock:", "none")
 		stat("Drones:", 0)
+
+/mob/living/intangible/flock/flockmind/proc/getTraceToPromote()
+	var/eligible_traces = list()
+	for (var/mob/living/intangible/flock/trace/T as anything in src.flock.traces)
+		if (T.client)
+			eligible_traces += T
+		else if (istype(T.loc, /mob/living/critter/flock/drone))
+			var/mob/living/critter/flock/drone/flockdrone = T.loc
+			if (flockdrone.client)
+				eligible_traces += T
+	if (length(eligible_traces))
+		return tgui_input_list(src, "Choose Flocktrace to promote to Flockmind", "Promotion", sortList(eligible_traces))
+	else
+		return -1
 
 /mob/living/intangible/flock/flockmind/Login()
 	..()
@@ -91,10 +110,11 @@
 	src.addAbility(/datum/targetable/flockmindAbility/radioStun)
 	src.addAbility(/datum/targetable/flockmindAbility/directSay)
 	src.addAbility(/datum/targetable/flockmindAbility/createStructure)
+	src.addAbility(/datum/targetable/flockmindAbility/deconstruct)
 
 /mob/living/intangible/flock/flockmind/death(gibbed)
 	if(src.client)
-		boutput(src, "<span class='alert'>With the last of your drones dying, nothing is left to compute your consciousness. You abruptly cease to exist.</span>")
+		boutput(src, "<span class='alert'>With no drones left in your Flock, nothing is left to compute your consciousness. You abruptly cease to exist.</span>")
 	src.flock?.perish()
 	REMOVE_ATOM_PROPERTY(src, PROP_MOB_INVISIBILITY, src)
 	src.icon_state = "blank"
