@@ -26,8 +26,8 @@
 	// too lazy, might as well use existing stuff
 	butcherable = 1
 
-	var/absorb_rate = 2 // how much item health is removed per tick when absorbing
-	var/absorb_per_health = 1 // how much resources we get per item health
+	var/health_absorb_rate = 2 // how much item health is removed per tick when absorbing
+	var/resources_per_health = 1 // how much resources we get per item health
 
 	// dormancy means do nothing
 
@@ -406,13 +406,13 @@
 	if (!I)
 		return
 
-	var/absorb = min(src.absorb_rate, I.health)
+	var/health_absorbed = min(src.health_absorb_rate, I.health)
 	if (absorber.instant_absorb && !absorber.ignore_amount)
 		boutput(src, "<span class='alert'>[I] is weak enough that it breaks apart instantly!</span>")
-		src.resources += round(src.absorb_per_health * absorb * I.amount)
+		src.resources += round(src.resources_per_health * health_absorbed * I.amount)
 	else
-		I.health -= absorb
-		src.resources += round(src.absorb_per_health * absorb)
+		I.health -= health_absorbed
+		src.resources += round(src.resources_per_health * health_absorbed)
 		if (I.health > 0 || (I.health == 0 && I.amount > 1 && !absorber.ignore_amount))
 			playsound(src, "sound/effects/sparks[rand(1, 6)].ogg", 50, 1)
 		if (I.health > 0)
@@ -1104,7 +1104,7 @@
 		item.combust_ended()
 
 	var/mob/living/critter/flock/drone/F = holder
-	src.instant_absorb = item.amount > 1 && round(F.absorb_per_health * item.health) == 0
+	src.instant_absorb = item.amount > 1 && round(F.resources_per_health * item.health) == 0
 	src.ignore_amount = istype(item, /obj/item/spacecash)
 
 	item.inventory_counter?.show_count()
