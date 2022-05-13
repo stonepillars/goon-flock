@@ -737,16 +737,16 @@
 
 	return T
 
-/proc/mass_flock_convert_turf(var/turf/T)
+/proc/mass_flock_convert_turf(var/turf/T, datum/flock/F)
 	// a terrible idea
 	if(!T)
 		T = get_turf(usr)
 	if(!T)
 		return // not sure if this can happen, so it will
 
-	flock_spiral_conversion(T)
+	flock_spiral_conversion(T, F)
 
-/proc/radial_flock_conversion(var/atom/movable/source, var/max_radius=20)
+/proc/radial_flock_conversion(var/atom/movable/source, datum/flock/F, var/max_radius=20)
 	if(!source) return
 	var/turf/T = get_turf(source)
 	var/radius = 1
@@ -755,7 +755,10 @@
 		LAGCHECK(LAG_LOW)
 		for(var/turf/tile in turfs)
 			if(istype(tile, /turf/simulated) && !isfeathertile(tile))
-				flock_convert_turf(tile)
+				if (F)
+					F.claimTurf(flock_convert_turf(tile))
+				else
+					flock_convert_turf(tile)
 				sleep(0.5)
 		LAGCHECK(LAG_LOW)
 		radius++
@@ -764,7 +767,7 @@
 			return // our source is gone, stop the process
 
 
-/proc/flock_spiral_conversion(var/turf/T)
+/proc/flock_spiral_conversion(var/turf/T, datum/flock/F)
 	if(!T) return
 	// spiral algorithm adapted from https://stackoverflow.com/questions/398299/looping-in-a-spiral
 	var/ox = T.x
@@ -779,7 +782,10 @@
 	while(isturf(T))
 		if(istype(T, /turf/simulated) && !isfeathertile(T))
 			// do stuff to turf
-			flock_convert_turf(T)
+			if (F)
+				F.claimTurf(flock_convert_turf(T))
+			else
+				flock_convert_turf(T)
 			sleep(0.2 SECONDS)
 		LAGCHECK(LAG_LOW)
 		// figure out where next turf is
