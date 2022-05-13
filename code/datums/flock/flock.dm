@@ -367,6 +367,7 @@
 					if (F.name == name)
 						break
 				name_found = TRUE
+		if ("flocktrace")
 			while (!name_found && tries < max_tries)
 				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
 				tries++
