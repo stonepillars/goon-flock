@@ -146,7 +146,7 @@
 /mob/living/critter/flock/drone/proc/release_control(give_alerts = TRUE)
 	src.flock?.hideAnnotations(src)
 	src.is_npc = 1
-	if (give_alerts)
+	if (give_alerts && src.z == Z_LEVEL_STATION)
 		emote("beep")
 		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
 	if(src.client && !controller)
@@ -156,7 +156,16 @@
 		if (src.floorrunning)
 			src.end_floorrunning(TRUE)
 		// move controller out
-		controller.set_loc(get_turf(src))
+		if (src.z == Z_LEVEL_STATION)
+			controller.set_loc(get_turf(src))
+		else
+			if (src.flock?.getComplexDroneCount() > 1)
+				for (var/mob/living/critter/flock/drone/F in src.flock.units)
+					if (istype(F) && F != src)
+						src.controller.set_loc(get_turf(F))
+						break
+			else
+				src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
 		// move us over to the controller
 		var/datum/mind/mind = src.mind
 		if (mind)
@@ -171,7 +180,7 @@
 				controller.mind.current = controller
 				ticker.minds += controller.mind
 		flock.remove_control_icon(src)
-		if (give_alerts)
+		if (give_alerts && src.z == Z_LEVEL_STATION)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
 		controller = null
@@ -185,7 +194,16 @@
 		return
 	if (src.floorrunning)
 		src.end_floorrunning(TRUE)
-	controller.set_loc(get_turf(src))
+	if (src.z == Z_LEVEL_STATION)
+		controller.set_loc(get_turf(src))
+	else
+		if (src.flock?.getComplexDroneCount() > 1)
+			for (var/mob/living/critter/flock/drone/F in src.flock.units)
+				if (istype(F) && F != src)
+					src.controller.set_loc(get_turf(F))
+					break
+		else
+			src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
 	var/datum/mind/mind = src.mind
 	if (mind)
 		mind.transfer_to(controller)
@@ -203,6 +221,7 @@
 /mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
 	src.remove_simple_light("drone_light")
+	actions.stop_all(src)
 
 	if (!src.flock)
 		..()
@@ -211,7 +230,7 @@
 	src.flock.hideAnnotations(src)
 
 	if (src.controller)
-		if (src.flock.getComplexDroneCount())
+		if (src.flock.getComplexDroneCount() > 1)
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
 				if (istype(F) && F != src)
 					src.controller.set_loc(get_turf(F))
@@ -403,9 +422,10 @@
 	if (!src.dormant && src.z != Z_LEVEL_STATION)
 		src.dormantize()
 		return
+	if (src.dormant)
+		return
 
 	var/obj/item/I = absorber.item
-
 	if(I)
 		var/absorb = clamp(src.absorb_rate, 0, I.health)
 		I.health -= absorb
