@@ -1247,14 +1247,25 @@ butcher
 	var/list/turfs = list()
 	path = null
 	targetpos = null
-	for(var/turf/T in range(holder.owner,2))
-		if(!istype(T,/turf/space) && !flock_is_blocked_turf(T) && GET_DIST(holder.owner,startpos) <= GET_DIST(T,startpos))
+	var/inspace = TRUE
+	for(var/turf/T in range(2,holder.owner))
+		if(!istype(T,/turf/space) && T != holder.owner.loc && !flock_is_blocked_turf(T) && GET_DIST(holder.owner,startpos) <= GET_DIST(T,startpos))
 			turfs += T
-	if(!length(turfs))
+			inspace = FALSE
+
+		if(inspace && !istype(T,/turf/space))
+			inspace = FALSE
+	if(inspace)
 		//oh shit we must be in space, better wander in the direction of the station
-		turfs += pick_landmark(LANDMARK_LATEJOIN)
+		turfs += get_step(holder.owner,get_dir(holder.owner,pick_landmark(LANDMARK_LATEJOIN)))
 	if(length(turfs))
 		targetpos = pick(turfs)
 	else
 		//well I guess the station is gone and everyone is dead. Back to default wander behaviour
 		..()
+
+/datum/aiTask/timed/wander/flock/on_reset()
+	src.startpos = null
+	src.targetpos = null
+	src.path = null
+	holder.stop_move()
