@@ -35,7 +35,7 @@
 
 /datum/flock/New()
 	..()
-	src.name = src.pick_name(src)
+	src.name = src.pick_name("flock")
 	flocks[src.name] = src
 	processing_items |= src
 	for(var/DT in childrentypesof(/datum/unlockable_flock_structure))
@@ -353,43 +353,44 @@
 
 // naming
 
-/datum/flock/proc/pick_name(flock_thing)
+/datum/flock/proc/pick_name(flock_type)
 	var/name
 	var/name_found = FALSE
 	var/tries = 0
 	var/max_tries = 5000 // really shouldn't occur
-	if (istype(flock_thing, /datum/flock))
-		while (!name_found && tries < max_tries)
-			name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
-			tries++
-			for (var/datum/flock/F as anything in flocks)
-				if (F.name == name)
-					break
-			name_found = TRUE
-	else if (istype(flock_thing, /mob/living/intangible/flock/trace))
-		while (!name_found && tries < max_tries)
-			name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
-			tries++
-			for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
-				if (T.name == name)
-					break
-			name_found = TRUE
-	else if (istype(flock_thing, /mob/living/critter/flock/drone))
-		while (!name_found && tries < max_tries)
-			name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
-			tries++
-			for (var/mob/living/critter/flock/drone/F in src.units)
-				if (F.name == name)
-					break
-			name_found = TRUE
-	else if (istype(flock_thing, /mob/living/critter/flock/bit))
-		while (!name_found && tries < max_tries)
-			name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
-			tries++
-			for (var/mob/living/critter/flock/bit/F in src.units)
-				if (F.name == name)
-					break
-			name_found = TRUE
+	switch(flock_type)
+		if ("flock")
+			while (!name_found && tries < max_tries)
+				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+				tries++
+				for (var/datum/flock/F as anything in flocks)
+					if (F.name == name)
+						break
+				name_found = TRUE
+		if ("flocktrace")
+			while (!name_found && tries < max_tries)
+				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
+				tries++
+				for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
+					if (T.name == name)
+						break
+				name_found = TRUE
+		if ("flockdrone")
+			while (!name_found && tries < max_tries)
+				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+				tries++
+				for (var/mob/living/critter/flock/drone/F in src.units)
+					if (F.name == name)
+						break
+				name_found = TRUE
+		if ("flockbit")
+			while (!name_found && tries < max_tries)
+				name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
+				tries++
+				for (var/mob/living/critter/flock/bit/F in src.units)
+					if (F.name == name)
+						break
+				name_found = TRUE
 	if (!name_found && tries == max_tries)
 		return "error"
 	return name

@@ -25,7 +25,7 @@
 	else
 		src.death() // f u
 
-	src.real_name = src.flock ? src.flock.pick_name(src) : name
+	src.real_name = src.flock ? src.flock.pick_name("flocktrace") : name
 	src.name = src.real_name
 	src.update_name_tag()
 
