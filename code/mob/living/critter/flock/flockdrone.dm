@@ -235,7 +235,7 @@
 		controller = null
 	src.is_npc = TRUE // to ensure right flock_speak message
 	if (src.z != Z_LEVEL_NULL && src.z != Z_LEVEL_STATION)
-		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock) // gives message for suicide
+		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
 	src.is_npc = FALSE // turns off ai
 
 	..()
