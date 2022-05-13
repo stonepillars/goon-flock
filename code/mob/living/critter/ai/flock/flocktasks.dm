@@ -763,33 +763,21 @@ butcher
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(!F?.flock)
 		return
-	for(var/atom/T in view(target_range, holder.owner))
-		//handle vehicles first
-		if (isvehicle(T))
-			var/vehicle_is_enemy = F.flock.isEnemy(T) //if someone gets in an enemy pod, attack
-			var/enemy_found = FALSE
-			for (var/mob/occupant in T)
-				if (!F.flock.isEnemy(occupant) && !vehicle_is_enemy)
+	for(var/atom/T in F.flock.enemies)
+		if(IN_RANGE(T,holder.owner,target_range))
+			F.flock.updateEnemy(T)
+			if(isliving(T))
+				var/mob/living/M = T
+				if(is_incapacitated(M))
 					continue
-				F.flock.updateEnemy(occupant)
-				enemy_found = TRUE
-				break
-			if (enemy_found) //bad guy in pod
-				. += T
-			//continue regardless of whether we find an enemy or not, since we don't want to attack empty pods
-			continue
-		if(!F.flock.isEnemy(T))
-			continue
-		if(isliving(T))
-			var/mob/living/M = T
-			if(is_incapacitated(M))
+			if(istype(T.loc.type, /obj/flock_structure/cage))
 				continue
-		// mob is a valid target, check if they're not already in a cage
-		if(!istype(T.loc.type, /obj/flock_structure/cage))
-			// if we can get a valid path to the target, include it for consideration
 			. += T
-		F.flock.updateEnemy(T)
-
+		else if (isvehicle(T.loc))
+			if(IN_RANGE(T.loc, holder.owner, target_range))
+				F.flock.updateEnemy(T)
+				F.flock.updateEnemy(T.loc)
+				. += T.loc
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE-SPECIFIC CAPTURE TASK
@@ -834,11 +822,11 @@ butcher
 	. = list()
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.flock)
-		for(var/atom/T in view(max_dist, holder.owner))
-			if (valid_target(T))
-				// if we can get a valid path to the target, include it for consideration
-				. += T
-				F.flock.updateEnemy(T)
+		for(var/atom/T in F.flock.enemies)
+			if(IN_RANGE(T,holder.owner,max_dist))
+				if (valid_target(T))
+					. += T
+					F.flock.updateEnemy(T)
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
 /datum/aiTask/succeedable/capture
