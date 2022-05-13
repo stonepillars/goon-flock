@@ -57,7 +57,7 @@
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	src.update_name_tag()
 
-	if(src.dormant) // we'be been flagged as dormant in the map editor or something
+	if(!F || src.dormant) // we'be been flagged as dormant in the map editor or something
 		src.dormantize()
 	else
 		src.add_simple_light("drone_light", rgb2num(glow_color))
@@ -234,8 +234,8 @@
 		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
 		controller = null
 	src.is_npc = TRUE // to ensure right flock_speak message
-	if (src.z != Z_LEVEL_NULL)
-		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
+	if (src.z != Z_LEVEL_NULL && src.z != Z_LEVEL_STATION)
+		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock) // gives message for suicide
 	src.is_npc = FALSE // turns off ai
 
 	..()
