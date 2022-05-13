@@ -221,7 +221,6 @@
 /mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
 	src.remove_simple_light("drone_light")
-	actions.stop_all(src)
 
 	if (!src.flock)
 		..()
