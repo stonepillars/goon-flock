@@ -81,6 +81,15 @@
 		src.broken = FALSE
 		src.icon_state = initial(src.icon_state)
 
+/obj/machinery/door/feather/proc/deconstruct()
+	var/turf/T = get_turf(src)
+	playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+	var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard(T)
+	S.setMaterial(getMaterial("gnesisglass"))
+	S = new /obj/item/raw_material/shard(T)
+	S.setMaterial(getMaterial("gnesis"))
+	qdel(src)
+
 /obj/machinery/door/feather/play_animation(animation)
 	if(broken)
 		return

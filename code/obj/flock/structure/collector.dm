@@ -6,9 +6,9 @@
 	health = 60
 	resourcecost = 200
 	/// does it draw from the local apc if its strong enough.
-	var/drawfromgrid = 0
+	var/drawfromgrid = FALSE
 	/// is it active?
-	var/active = 0
+	var/active = FALSE
 	/// max range for the thing.
 	var/maxrange = 5
 	/// the tiles its connected to
@@ -69,7 +69,7 @@
 			connectedto |= floor
 
 	for(var/turf/simulated/floor/feather/flocktile as anything in connectedto)
-		flocktile.connected = 1
+		flocktile.connected = TRUE
 		flocktile.on() //make it glo
 
 

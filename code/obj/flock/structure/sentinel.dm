@@ -109,7 +109,7 @@
 		animate(filter, size=((-(cos(180*(3/100))-1)/2)*32), time=10 SECONDS, flags = ANIMATION_PARALLEL)
 
 /obj/effect/flock_sentinelrays
-	mouse_opacity = 0
+	mouse_opacity = FALSE
 	plane = PLANE_NOSHADOW_BELOW
 	blend_mode = BLEND_ADD
 

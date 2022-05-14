@@ -10,9 +10,9 @@
 	icon_state = "floor"
 	flags = USEDELAY
 	mat_appearances_to_ignore = list("steel","gnesis")
-	mat_changename = 0
-	mat_changedesc = 0
-	broken = 0
+	mat_changename = FALSE
+	mat_changedesc = FALSE
+	broken = FALSE
 	step_material = "step_plating"
 	step_priority = STEP_PRIORITY_MED
 	var/health = 50
@@ -21,8 +21,8 @@
 	var/col_b = 0.6
 	var/datum/light/light
 	var/brightness = 0.5
-	var/on = 0
-	var/connected = 0 //used for collector
+	var/on = FALSE
+	var/connected = FALSE //used for collector
 	var/datum/flock_tile_group/group = null //the group its connected to
 
 
@@ -80,7 +80,7 @@
 /turf/simulated/floor/feather/break_tile()
 	off()
 	icon_state = "floor-broken"
-	broken = 1
+	broken = TRUE
 	splitgroup()
 	for(var/obj/flock_structure/f in src)
 		if(f.usesgroups)
@@ -151,7 +151,7 @@
 	src.icon_state = "floor-on"
 	src.name = "weird glowing floor"
 	src.desc = "Looks like disco's not dead after all."
-	on = 1
+	on = TRUE
 	//playsound(src.loc, "sound/machines/ArtifactFea3.ogg", 25, 1)
 	src.light.enable()
 
@@ -163,13 +163,13 @@
 		src.name = initial(name)
 		src.desc = initial(desc)
 	src.light.disable()
-	on = 0
+	on = FALSE
 
 /turf/simulated/floor/feather/broken
 	name = "weird broken floor"
 	desc = "Disco's dead, baby."
 	icon_state = "floor-broken"
-	broken = 1
+	broken = TRUE
 
 ////////////////////////////////////////////////////////////////////////////////////////
 //start of flocktilegroup stuff
@@ -412,7 +412,8 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 		for (var/turf/simulated/wall/auto/feather/W in orange(1))
 			W.UpdateIcon()
 
-/turf/simulated/wall/auto/feather/proc/destroy_resources()
+/turf/simulated/wall/auto/feather/proc/deconstruct()
+	make_cleanable(/obj/decal/cleanable/flockdrone_debris/fluid, get_turf(src))
 	src.ReplaceWith("/turf/simulated/floor/feather", FALSE)
 
 	if (map_settings?.auto_walls)

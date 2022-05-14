@@ -4,8 +4,6 @@
 /obj/flock_structure/relay
 	icon = 'icons/misc/featherzone-160x160.dmi'
 	icon_state = "structure-relay"
-	anchored = 1
-	density = 1
 	name = "titanic polyhedron"
 	desc = "The sight of the towering geodesic sphere fills you with dread. A thousand voices whisper to you."
 	flock_id = "Signal Relay Broadcast Amplifier"

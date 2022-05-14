@@ -8,9 +8,8 @@
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flockmind"
 	control_icon = "flockmind_face"
-	layer = NOLIGHT_EFFECTS_LAYER_BASE
 
-	var/started = 0
+	var/started = FALSE
 	var/last_time // when i say per second I MEAN PER SECOND DAMMIT
 
 
@@ -35,17 +34,17 @@
 		src.addAllAbilities()
 
 /mob/living/intangible/flock/flockmind/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> [src.real_name]
-    <br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none, somehow"]
-    <br><span class='bold'>Resources:</span> [src.flock.total_resources()]
-	<br><span class='bold'>Total Compute:</span> [src.flock.total_compute()]
-    <br><span class='bold'>System Integrity:</span> [round(src.flock.total_health_percentage()*100)]%
-    <br><span class='bold'>Cognition:</span> COMPUTATIONAL NEXUS
-    <br>###=-</span></span>"}
-  else
-    return null // give the standard description
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> [src.real_name]
+		<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none, somehow"]
+		<br><span class='bold'>Resources:</span> [src.flock.total_resources()]
+		<br><span class='bold'>Total Compute:</span> [src.flock.total_compute()]
+		<br><span class='bold'>System Integrity:</span> [round(src.flock.total_health_percentage()*100)]%
+		<br><span class='bold'>Cognition:</span> COMPUTATIONAL NEXUS
+		<br>###=-</span></span>"}
+	else
+		return null // give the standard description
 
 // TEMPORARY, I FUCKING HATE STAT PANELS
 /mob/living/intangible/flock/flockmind/Stat()
@@ -53,7 +52,7 @@
 	stat(null, " ")
 	if(src.flock)
 		stat("Flock:", src.flock.name)
-		stat("Drones:", src.flock.units.len)
+		stat("Drones:", length(src.flock.units))
 	else
 		stat("Flock:", "none")
 		stat("Drones:", 0)
@@ -89,13 +88,12 @@
 
 /mob/living/intangible/flock/flockmind/proc/spawnEgg()
 	if(src.flock)
-		var/obj/flock_structure/rift/r = new(get_turf(src), src.flock)
-		r.mainflock = src.flock
+		new /obj/flock_structure/rift(get_turf(src), src.flock)
 		playsound(src, "sound/impact_sounds/Metal_Clang_1.ogg", 30, 1)
 	else
 		boutput(src, "<span class='alert'>You don't have a flock, it's not going to listen to you! Also call a coder, this should be impossible!</span>")
 		return
-	src.started = 1
+	src.started = TRUE
 	src.removeAbility(/datum/targetable/flockmindAbility/spawnEgg)
 	src.addAllAbilities()
 
@@ -118,7 +116,7 @@
 	src.flock?.perish()
 	REMOVE_ATOM_PROPERTY(src, PROP_MOB_INVISIBILITY, src)
 	src.icon_state = "blank"
-	src.canmove = 0
+	src.canmove = FALSE
 	flick("flockmind-death", src)
 	src.ghostize()
 	spawn(2 SECONDS) // wait for the animation to finish

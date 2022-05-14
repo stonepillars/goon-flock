@@ -35,7 +35,7 @@
     return null // give the standard description
 
 /obj/table/flock/auto
-	auto = 1
+	auto = TRUE
 
 /obj/item/furniture_parts/table/flock
 	name = "collapsed disk"
@@ -69,8 +69,8 @@
 	icon_state = "chair_flock"
 	arm_icon_state = "chair_flock-arm"
 	comfort_value = 6
-	deconstructable = 1
-	climbable = 0
+	deconstructable = TRUE
+	climbable = FALSE
 	parts_type = /obj/item/furniture_parts/flock_chair
 	scoot_sounds = list( 'sound/misc/chair/glass/scoot1.ogg', 'sound/misc/chair/glass/scoot2.ogg', 'sound/misc/chair/glass/scoot3.ogg', 'sound/misc/chair/glass/scoot4.ogg', 'sound/misc/chair/glass/scoot5.ogg' )
 	mat_appearances_to_ignore = list("gnesis")
@@ -130,8 +130,8 @@
 	open_sound = "sound/misc/flockmind/flockdrone_locker_open.ogg"
 	close_sound = "sound/misc/flockmind/flockdrone_locker_close.ogg"
 	mat_appearances_to_ignore = list("steel","gnesis")
-	mat_changename = 0
-	mat_changedesc = 0
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 	var/health_attack = 100
 	var/health_max = 100
 	var/hitsound = "sound/impact_sounds/Generic_Hit_Heavy_1.ogg"
@@ -163,7 +163,7 @@
 	if (!src.open)
 		if (istype(W, /obj/item/cargotele))
 			boutput(user, "<span class='alert'>For some reason, it refuses to budge.</span>")
-		else if (isweldingtool(W) && W:try_weld(user, 0, -1, 0, 0))
+		else if (isweldingtool(W) && W:try_weld(user, 0, -1, FALSE, FALSE))
 			boutput(user, "<span class='alert'>It doesn't matter what you try, it doesn't seem to keep welded shut.</span>")
 		else if (isitem(W))
 			if(SEND_SIGNAL(src, COMSIG_FLOCK_ATTACK, user, TRUE))
@@ -177,17 +177,19 @@
 		if (istype(W, /obj/item/satchel) && length(W.contents))
 			..()
 		else if (!issilicon(user))
-			if (istype(user, /mob/living/critter/flock/drone))
-				if (W)
-					user.u_equip(W)
-					W.set_loc(src.loc)
-				else
-					return ..()
-			else if(user.drop_item())
+			if(user.drop_item())
 				W?.set_loc(src.loc)
 
 /obj/storage/closet/flock/proc/repair()
 	src.health_attack = min(src.health_attack + 25, src.health_max)
+
+/obj/storage/closet/flock/proc/deconstruct()
+	var/turf/T = get_turf(src)
+	playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+	var/obj/item/raw_material/shard/S = new /obj/item/raw_material/shard(T)
+	S.setMaterial(getMaterial("gnesisglass"))
+	src.dump_contents()
+	qdel(src)
 
 /obj/storage/closet/flock/attack_hand(mob/user as mob)
 	if (BOUNDS_DIST(user, src) > 0)
@@ -221,12 +223,12 @@
 	icon_state = "flock1"
 	base_state = "flock"
 	brightness = 1.2
-	power_usage = 0
-	on = 1
-	removable_bulb = 0
+	power_usage = FALSE
+	on = TRUE
+	removable_bulb = FALSE
 	mat_appearances_to_ignore = list("gnesis")
-	mat_changename = 0
-	mat_changedesc = 0
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 
 /obj/machinery/light/flock/New()
 	..()
@@ -242,6 +244,12 @@
 	else
 		..()
 
+/obj/machinery/light/flock/proc/deconstruct()
+	var/turf/T = get_turf(src)
+	make_cleanable(/obj/decal/cleanable/flockdrone_debris/fluid, T)
+	playsound(T, "sound/impact_sounds/Glass_Shatter_3.ogg", 25, 1)
+	qdel(src)
+
 /obj/item/furniture_parts/flock_chair/special_desc(dist, mob/user)
   if(isflock(user))
     return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
@@ -251,15 +259,9 @@
     return null // give the standard description
 
 /obj/machinery/light/flock/floor
-	name = "pulsing cabochon"
-	desc = "It pulses and flares to a strange rhythm."
 	icon_state = "flock_floor1"
 	base_state = "flock_floor"
 	plane = PLANE_FLOOR
-	brightness = 1.2
-	power_usage = 0
-	on = 1
-	removable_bulb = 0
 /////////////
 // FIBRENET
 /////////////
@@ -269,8 +271,8 @@
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "fibrenet"
 	mat_appearances_to_ignore = list("steel","gnesis")
-	mat_changename = 0
-	mat_changedesc = 0
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 
 /obj/lattice/flock/New()
 	..()
@@ -286,7 +288,7 @@
 			playsound(src.loc, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
 			T.add_fingerprint(user)
 			qdel(src)
-	if (isweldingtool(C) && C:try_weld(user,0,-1,0,0))
+	if (isweldingtool(C) && C:try_weld(user,0,-1,FALSE,FALSE))
 		if(SEND_SIGNAL(src, COMSIG_FLOCK_ATTACK, user, TRUE))
 			return
 		boutput(user, "<span class='notice'>The fibres burn away in the same way glass doesn't. Huh.</span>")
@@ -310,11 +312,11 @@
 	icon_state = "barricade"
 	health = 50
 	health_max = 50
-	shock_when_entered = 0
+	shock_when_entered = FALSE
 	auto = FALSE
 	mat_appearances_to_ignore = list("steel","gnesis")
-	mat_changename = 0
-	mat_changedesc = 0
+	mat_changename = FALSE
+	mat_changedesc = FALSE
 
 	update_icon(special_icon_state, override_parent = TRUE) //fix for perspective grilles fucking these up
 		if (ruined)

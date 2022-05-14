@@ -2,12 +2,12 @@
 	name = "weird glowy thing"
 	desc = "Is it broccoli? A glass chicken? A peacock? A green roomba? A shiny discobot? A crystal turkey? A bugbird? A radio pigeon??"
 	icon_state = "drone"
-	density = 1
+	density = TRUE
 	hand_count = 3
-	can_throw = 1
-	can_grab = 1
-	can_disarm = 1
-	can_help = 1
+	can_throw = TRUE
+	can_grab = TRUE
+	can_disarm = TRUE
+	can_help = TRUE
 	compute = 10
 	death_text = "%src% clatters into a heap of fragments."
 	pet_text = list("taps", "pats", "drums on", "ruffles", "touches", "pokes", "prods")
@@ -23,17 +23,13 @@
 
 	var/damaged = 0 // used for state management for description showing, as well as preventing drones from screaming about being hit
 
-	// too lazy, might as well use existing stuff
-	butcherable = 1
+	butcherable = TRUE
 
 	var/absorb_rate = 2 // how much item health is removed per tick when absorbing
 	var/absorb_per_health = 3 // how much resources we get per item health
 	var/absorb_completion = 6 // how much resources we get after the item is totally eaten
 
-	// dormancy means do nothing
-
-	// voltron powers activate
-	var/floorrunning = 0
+	var/floorrunning = FALSE
 	var/can_floorrun = TRUE
 
 	// antigrab powers
@@ -64,7 +60,7 @@
 		if(src.client)
 			// create a flocktrace for ourselves
 			controller = new/mob/living/intangible/flock/trace(src, src.flock)
-			src.is_npc = 0
+			src.is_npc = FALSE
 		else
 			emote("beep")
 			say(pick_string("flockmind.txt", "flockdrone_created"))
@@ -108,7 +104,7 @@
 	if(isnull(controller)) // finally i can just use swap bodies again
 		// make a new controller
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
-		src.is_npc = 0
+		src.is_npc = FALSE
 
 /mob/living/critter/flock/drone/proc/take_control(mob/living/intangible/flock/pilot, give_alert = TRUE)
 	if(!pilot)
@@ -118,9 +114,9 @@
 		return
 	src.controller = pilot
 	src.ai.stop_move() //cancel any pathing that's happening
-	src.is_npc = 0
-	src.dormant = 0
-	src.anchored = 0
+	src.is_npc = FALSE
+	src.dormant = FALSE
+	src.anchored = FALSE
 	// move mind into flockdrone
 	var/datum/mind/mind = pilot.mind
 	if (mind)
@@ -145,7 +141,7 @@
 
 /mob/living/critter/flock/drone/proc/release_control(give_alerts = TRUE)
 	src.flock?.hideAnnotations(src)
-	src.is_npc = 1
+	src.is_npc = TRUE
 	if (give_alerts)
 		emote("beep")
 		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
@@ -241,9 +237,9 @@
 	..()
 
 /mob/living/critter/flock/drone/proc/undormantize()
-	src.dormant = 0
-	src.canmove = 1
-	src.anchored = 0
+	src.dormant = FALSE
+	src.canmove = TRUE
+	src.anchored = FALSE
 	src.damaged = -1
 	src.check_health() // handles updating the icon to something more appropriate
 	src.visible_message("<span class='notice'><b>[src]</b> begins to glow and hover.</span>")
@@ -251,9 +247,9 @@
 	src.add_simple_light("drone_light", rgb2num(glow_color))
 	if(src.client)
 		controller = new/mob/living/intangible/flock/trace(src, src.flock)
-		src.is_npc = 0
+		src.is_npc = FALSE
 	else
-		src.is_npc = 1
+		src.is_npc = TRUE
 
 
 /mob/living/critter/flock/drone/special_desc(dist, mob/user)
@@ -294,7 +290,8 @@
 	if(src.flock)
 		src.flock.hideAnnotations(src)
 
-/mob/living/critter/flock/drone/is_spacefaring() return 1
+/mob/living/critter/flock/drone/is_spacefaring()
+	return TRUE
 
 /mob/living/critter/flock/drone/Cross(atom/movable/mover)
 	if(isflock(mover))
@@ -364,7 +361,7 @@
 	HH.can_hold_items = FALSE
 	HH.can_range_attack = TRUE
 
-/mob/living/critter/flock/drone/specific_emotes(var/act, var/param = null, var/voluntary = 0)
+/mob/living/critter/flock/drone/specific_emotes(var/act, var/param = null, var/voluntary = FALSE)
 	switch (act)
 		if("stare")
 			if (src.emote_check(voluntary, 50))
@@ -395,7 +392,7 @@
 
 /mob/living/critter/flock/drone/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
-		return 1
+		return TRUE
 	if (src.floorrunning && src.resources >= 1)
 		src.resources--
 		if (src.resources < 1)
@@ -489,8 +486,8 @@
 	if(src.floorrunning)
 		return
 	playsound(src, "sound/misc/flockmind/flockdrone_floorrun.ogg", 50, 1, -3)
-	src.floorrunning = 1
-	src.set_density(0)
+	src.floorrunning = TRUE
+	src.set_density(FALSE)
 	src.throws_can_hit_me = FALSE
 	src.set_pulling(null)
 	if (src.pulled_by)
@@ -511,8 +508,8 @@
 	if(!src.floorrunning)
 		return
 	playsound(src, "sound/misc/flockmind/flockdrone_floorrun.ogg", 50, 1, -3)
-	src.floorrunning = 0
-	src.set_density(1)
+	src.floorrunning = FALSE
+	src.set_density(TRUE)
 	src.throws_can_hit_me = TRUE
 	if (check_lights)
 		if (istype(src.loc, /turf/simulated/floor/feather))
@@ -533,7 +530,7 @@
 
 /mob/living/critter/flock/drone/Cross(atom/movable/mover, turf/target, height=0, air_group=0)
 	if(floorrunning)
-		return 1
+		return TRUE
 	else
 		return ..()
 
@@ -601,8 +598,7 @@
 		src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
-	// check whatever reagents are about to get dumped on us
-	var/has_harmful_chemicals = 0
+	var/has_harmful_chemicals = FALSE
 	if(istype(I, /obj/item/reagent_containers/glass))
 		var/list/reagent_list = I.reagents.reagent_list
 		for(var/reagent_id in reagent_list)
@@ -610,7 +606,7 @@
 			// if the reagent mix dumped on us includes a combustible or harmful reagent, the mob has harmful intent
 			// (there's other reagents that might be effective on these things without them realising it's dangerous outright)
 			if(istype(current_reagent, /datum/reagent/combustible) || istype(current_reagent, /datum/reagent/harmful))
-				has_harmful_chemicals = 1
+				has_harmful_chemicals = TRUE
 				break
 	// get reagents dumped on us or whatever
 	..()
@@ -687,7 +683,7 @@
 		if(src.is_npc)
 			emote("scream")
 			say(pick_string("flockmind.txt", "flockdrone_death"))
-			src.is_npc = 0 // stop ticking the AI for this mob
+			src.is_npc = FALSE // stop ticking the AI for this mob
 		else
 			emote("scream")
 			say("\[System notification: drone lost.\]")
@@ -807,19 +803,19 @@
 	if (amount < 0)
 		return ..()
 	else
-		return 1
+		return TRUE
 
 /mob/living/critter/flock/drone/take_eye_damage(var/amount, var/tempblind = 0)
 	if (amount < 0)
 		return ..()
 	else
-		return 1
+		return TRUE
 
 /mob/living/critter/flock/drone/take_ear_damage(var/amount, var/tempdeaf = 0)
 	if (amount < 0)
 		return ..()
 	else
-		return 1
+		return TRUE
 
 /////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE SPECIFIC LIMBS AND EQUIPMENT SLOTS
@@ -844,9 +840,9 @@
 
 /datum/limb/flock_grip/grab(mob/target, var/mob/living/critter/flock/drone/user)
 	if (!user || !target)
-		return 0
+		return FALSE
 	if (isintangible(target))
-		return 0 // stop grabbing AI eyes dammit
+		return FALSE // stop grabbing AI eyes dammit
 	if(prob(grab_mob_hit_prob))
 		..()
 	else
@@ -855,7 +851,7 @@
 
 /datum/limb/flock_grip/harm(mob/target, var/mob/living/critter/flock/drone/user)
 	if (!user || !target)
-		return 0
+		return FALSE
 	if (istype(target, /mob/living/critter/flock))
 		boutput(user, "<span class='alert'>The grip tool refuses to harm this, jamming briefly.</span>")
 	else
@@ -867,7 +863,7 @@
 			user.attack_effects(target, affecting)
 			var/list/specific_attack_messages = pick(attack_messages)
 			msgs.base_attack_message = "<span class='combat bold'>[user] [specific_attack_messages[1]] [target] [specific_attack_messages[2]]!</span>"
-			msgs.flush(0)
+			msgs.flush(FALSE)
 			user.lastattacked = target
 		else
 			user.visible_message("<span class='combat bold'>[user] attempts to prod [target] but misses!</span>")
@@ -1068,7 +1064,7 @@
 	sname = "stunbolt"
 	shot_sound = 'sound/weapons/laser_f.ogg'
 	shot_number = 1
-	window_pass = 1
+	window_pass = TRUE
 	brightness = 1
 	color_red = 0.5
 	color_green = 0.9

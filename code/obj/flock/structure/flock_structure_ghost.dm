@@ -7,7 +7,7 @@
 	var/building = null //thing thats being built
 	var/currentmats = 0 //mats currently in the thing.
 	flock_id = "Construction Tealprint"
-	density = 0
+	density = FALSE
 
 
 /obj/flock_structure/ghost/building_specific_info()
@@ -49,12 +49,12 @@
 
 /obj/flock_structure/ghost/proc/flock_is_blocked_turf(var/turf/T)
 	// nicked from is_blocked_turf
-	if (!T) return 0
-	if(T.density) return 1
+	if (!T) return FALSE
+	if(T.density) return TRUE
 	for(var/atom/A in T)
 		if(A?.density && !isflock(A))//ignores flockdrones/flockbits
-			return 1
-	return 0
+			return TRUE
+	return FALSE
 
 
 /obj/flock_structure/ghost/Click(location, control, params)

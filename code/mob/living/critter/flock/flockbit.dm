@@ -2,12 +2,12 @@
 	name = "floaty gewgaw"
 	desc = "Well, that's a thing."
 	icon_state = "flockbit"
-	density = 0
+	density = FALSE
 	hand_count = 2
-	pays_to_construct = 0 // free buildings!!
+	pays_to_construct = FALSE // free buildings!!
 	health_brute = 5 // fragile, handle with care (one smack will destroy them)
 	health_burn = 5
-	fits_under_table = 1
+	fits_under_table = TRUE
 	flags = TABLEPASS
 
 /mob/living/critter/flock/bit/New(var/atom/location, var/datum/flock/F=null)
@@ -38,7 +38,7 @@
 
 /mob/living/critter/flock/bit/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
-		return 1
+		return TRUE
 	if (!src.dormant && src.z != Z_LEVEL_STATION)
 		src.dormantize()
 
@@ -62,9 +62,9 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "griptool"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 1
-	HH.can_attack = 1
-	HH.can_range_attack = 0
+	HH.can_hold_items = TRUE
+	HH.can_attack = TRUE
+	HH.can_range_attack = FALSE
 
 	HH = hands[2]
 	HH.limb = new /datum/limb/flockbit_converter
@@ -72,9 +72,9 @@
 	HH.icon = 'icons/mob/flock_ui.dmi'
 	HH.icon_state = "converter"
 	HH.limb_name = HH.name
-	HH.can_hold_items = 0
-	HH.can_attack = 1
-	HH.can_range_attack = 0
+	HH.can_hold_items = FALSE
+	HH.can_attack = TRUE
+	HH.can_range_attack = FALSE
 
 /mob/living/critter/flock/bit/dormantize()
 	src.icon_state = "bit-dormant"
@@ -98,7 +98,7 @@
 	..()
 	src.client?.color = null
 	src.ai?.stop_move()
-	src.is_npc = 0
+	src.is_npc = FALSE
 
 /mob/living/critter/flock/bit/specific_emotes(var/act, var/param = null, var/voluntary = 0)
 	switch (act)

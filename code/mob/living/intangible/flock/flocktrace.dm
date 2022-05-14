@@ -10,7 +10,6 @@
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flocktrace"
 	control_icon = "flocktrace_face"
-	layer = NOLIGHT_EFFECTS_LAYER_BASE
 
 	compute = -100 //it is expensive to run more threads
 
@@ -100,7 +99,7 @@
 
 /mob/living/intangible/flock/trace/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
-		return 1
+		return TRUE
 	var/datum/abilityHolder/flockmind/aH = src.abilityHolder
 	aH?.updateCompute()
 	if (src.flock && src.flock.total_compute() < src.flock.used_compute())
@@ -113,7 +112,7 @@
 	src.flock?.removeTrace(src)
 	REMOVE_ATOM_PROPERTY(src, PROP_MOB_INVISIBILITY, src)
 	src.icon_state = "blank"
-	src.canmove = 0
+	src.canmove = FALSE
 	flick("flocktrace-death", src)
 	src.ghostize()
 	spawn(2 SECONDS) // wait for the animation to finish

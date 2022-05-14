@@ -2,8 +2,8 @@
 /obj/flock_structure
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "egg"
-	anchored = 1
-	density = 1
+	anchored = TRUE
+	density = TRUE
 	name = "uh oh"
 	desc = "CALL A CODER THIS SHOULDN'T BE SEEN"
 	flags = USEDELAY
@@ -139,7 +139,6 @@
 	if(refund >= 1)
 		var/obj/item/flockcache/cache = new(get_turf(src))
 		cache.resources = refund
-	src.flock?.removeDrone(src)
 	qdel(src)
 
 
@@ -164,7 +163,6 @@
 				B.setMaterial(getMaterial("gnesisglass"))
 		if(prob(30))
 			B.throw_at(get_edge_cheap(location, pick(alldirs)), rand(10), 3)
-	src.flock?.removeDrone(src)
 	qdel(src)
 
 /obj/flock_structure/proc/repair()

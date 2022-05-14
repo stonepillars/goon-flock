@@ -30,7 +30,7 @@
 	var/list/achievements = list()
 	var/mob/living/intangible/flock/flockmind/flockmind
 	var/snoop_clarity = 80 // how easily we can see silicon messages, how easily silicons can see this flock's messages
-	var/snooping = 0 //are both sides of communication currently accessible?
+	var/snooping = FALSE //are both sides of communication currently accessible?
 	var/datum/tgui/flockpanel
 
 /datum/flock/New()
@@ -538,8 +538,8 @@
 		if(name == queryName)
 			continue
 		if(src.busy_tiles[name] == T)
-			return 0
-	return 1
+			return FALSE
+	return TRUE
 
 /datum/flock/proc/togglePriorityTurf(var/turf/T)
 	if(!T)
@@ -585,7 +585,7 @@
 			floors_no_longer_existing |= T
 			continue
 
-	if(floors_no_longer_existing.len > 0)
+	if(length(floors_no_longer_existing))
 		src.all_owned_tiles -= floors_no_longer_existing
 
 	for(var/datum/unlockable_flock_structure/ufs as anything in src.unlockableStructures)
@@ -669,24 +669,24 @@
 	var/RL_AddLumB = T.RL_AddLumB
 
 	if(istype(T, /turf/simulated/floor))
-		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		T.ReplaceWith("/turf/simulated/floor/feather", FALSE)
 		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/simulated/wall))
-		T.ReplaceWith("/turf/simulated/wall/auto/feather", 0)
+		T.ReplaceWith("/turf/simulated/wall/auto/feather", FALSE)
 		animate_flock_convert_complete(T)
 
 	// regular and flock lattices
 	var/obj/lattice/lat = locate(/obj/lattice) in T
 	if(lat)
 		qdel(lat)
-		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		T.ReplaceWith("/turf/simulated/floor/feather", FALSE)
 		animate_flock_convert_complete(T)
 
 	var/obj/grille/catwalk/catw = locate(/obj/grille/catwalk) in T
 	if(catw)
 		qdel(catw)
-		T.ReplaceWith("/turf/simulated/floor/feather", 0)
+		T.ReplaceWith("/turf/simulated/floor/feather", FALSE)
 		animate_flock_convert_complete(T)
 
 	if(istype(T, /turf/space))

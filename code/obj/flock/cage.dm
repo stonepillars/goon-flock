@@ -16,15 +16,13 @@
 	anchored = FALSE
 	var/atom/occupant = null
 	var/obj/target = null
-	var/eating_occupant = 0
+	var/eating_occupant = FALSE
 	var/initial_volume = 200
 	// convert things into different fluids, convert those fluids into coagulated gnesis, convert 50 of that into an egg
 	var/target_fluid = "flockdrone_fluid"
 	var/create_egg_at_fluid = 100
 	var/absorb_per_process_tick = 2
-	mat_changename = 0
-	mat_changedesc = 0
-	mat_changeappearance = 0
+	mat_changeappearance = FALSE
 
 
 	New(loc, var/atom/iced, datum/flock/F=null)
@@ -81,14 +79,14 @@
 		if(length(organs) >= 2)
 			organs -= brain
 		if(length(items))
-			eating_occupant = 0
+			eating_occupant = FALSE
 			target = pick(items)
 			H.remove_item(target)
 			playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 			boutput(H, "<span class='alert'>[src] pulls [target] from you and begins to rip it apart.</span>")
 			src.visible_message("<span class='alert'>[src] pulls [target] from [H] and begins to rip it apart.</span>")
 		else if(length(limbs))
-			eating_occupant = 1
+			eating_occupant = TRUE
 			target = pick(limbs)
 			H.limbs.sever(target)
 			H.emote("scream")
@@ -98,7 +96,7 @@
 			src.visible_message("<span class='alert bold'>[src] wrenches [target.name] clean off and begins peeling it apart!</span>")
 			flock.achieve("human dissection")
 		else if(length(organs))
-			eating_occupant = 1
+			eating_occupant = TRUE
 			target = pick(organs)
 			H.drop_organ(target)
 			H.emote("scream")
@@ -136,14 +134,14 @@
 		if(length(organs) >= 2)
 			organs -= brain
 		if(length(items))
-			eating_occupant = 0
+			eating_occupant = FALSE
 			target = pick(items)
 			R.remove_item(target)
 			playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 			boutput(R, "<span class='alert'>[src] pulls [target] from you and begins to rip it apart.</span>")
 			src.visible_message("<span class='alert'>[src] pulls [target] from [R] and begins to rip it apart.</span>")
 		else if(length(limbs))
-			eating_occupant = 1
+			eating_occupant = TRUE
 			target = pick(limbs)
 			R.compborg_lose_limb(target)
 			R.emote("scream")
@@ -152,7 +150,7 @@
 			boutput(R, "<span class='alert bold'>[src] wrenches your [initial(target.name)] clean off and begins peeling it apart! Fuck!</span>")
 			src.visible_message("<span class='alert bold'>[src] wrenches [target.name] clean off and begins peeling it apart!</span>")
 		else if(length(organs))
-			eating_occupant = 1
+			eating_occupant = TRUE
 			target = pick(organs)
 			R.compborg_lose_limb(target)
 			R.emote("scream")
@@ -192,7 +190,7 @@
 				edibles += O
 			if(length(edibles))
 				target = pick(edibles)
-				eating_occupant = 0
+				eating_occupant = FALSE
 				playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 				if(occupant)
 					boutput(occupant, "<span class='notice'>[src] begins to process [target].</span>")
