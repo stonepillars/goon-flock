@@ -776,7 +776,7 @@ butcher
 	if(!F?.flock)
 		return
 	for(var/atom/T in F.flock.enemies)
-		if(IN_RANGE(T,holder.owner,target_range))
+		if(T in view(holder.owner,target_range))
 			F.flock.updateEnemy(T)
 			if(isliving(T))
 				var/mob/living/M = T
@@ -786,7 +786,7 @@ butcher
 				continue
 			. += T
 		else if (isvehicle(T.loc))
-			if(IN_RANGE(T.loc, holder.owner, target_range))
+			if(T.loc in view(holder.owner, target_range))
 				F.flock.updateEnemy(T)
 				F.flock.updateEnemy(T.loc)
 				. += T.loc
