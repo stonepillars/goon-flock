@@ -447,10 +447,10 @@
 							continue
 						else
 							return FALSE
-					else //we must be a public door
+					else if (O.allowed(passer)) //even if it has no access, it might not let us pass
 						continue
 				return FALSE
-		else if(!A.Cross(passer))
+		if(!A.Cross(passer))
 			return FALSE
 
 #undef CAN_STEP

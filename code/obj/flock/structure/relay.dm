@@ -22,7 +22,7 @@
 	plane = PLANE_NOSHADOW_ABOVE
 	var/last_time_sound_played_in_seconds = 0
 	var/sound_length_in_seconds = 27
-	var/charge_time_length = 600 // also in seconds
+	var/charge_time_length = 360 // also in seconds
 	var/final_charge_time_length = 18
 	var/col_r = 0.1
 	var/col_g = 0.7
@@ -42,6 +42,10 @@
 	flock_speak(null, "RELAY CONSTRUCTED! DEFEND THE RELAY!!", src.flock)
 	SPAWN(1 SECOND)
 		radial_flock_conversion(src, 20)
+	SPAWN(10 SECONDS)
+		var/msg = "Overwhelming anomalous power signatures detected on station. This is an existential threat to the station. All personnel must contain this event."
+		msg = radioGarbleText(msg, 7)
+		command_alert(msg, sound_to_play = "sound/misc/announcement_1.ogg", alert_origin = ALERT_ANOMALY)
 
 /obj/flock_structure/relay/disposing()
 	..()
@@ -104,8 +108,9 @@
 		emergency_shuttle.disabled = FALSE
 		emergency_shuttle.incall()
 		emergency_shuttle.can_recall = 0 // yeah centcom's coming no matter what
+		emergency_shuttle.settimeleft(180) // cut the time down to keep some sense of urgency
 		boutput(world, "<span class='notice'><B>Alert: The emergency shuttle has been called.</B></span>")
-		boutput(world, "<span class='notice'>- - - <b>Reason:</b> Hostile transmission intercepted. Sending emergency shuttle.</span>")
+		boutput(world, "<span class='notice'>- - - <b>Reason:</b> Hostile transmission intercepted. Sending rapid response emergency shuttle.</span>")
 		boutput(world, "<span class='notice'><B>It will arrive in [round(emergency_shuttle.timeleft()/60)] minutes.</B></span>")
 	sleep(2 SECONDS)
 	for(var/x = -2 to 2)
@@ -113,6 +118,8 @@
 			flockdronegibs(locate(location.x + x, location.y + y, location.z))
 	explosion_new(src, location, 2000)
 	gib(location)
+	var/datum/game_mode/flock/gamemode = ticker.mode
+	gamemode.signal_unleashed = TRUE
 	sleep(2 SECONDS) //allow them to hear the explosion before their headsets scream and die
 	destroy_radios()
 

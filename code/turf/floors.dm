@@ -1400,6 +1400,20 @@ DEFINE_FLOORS(grasslush/thinner,
 DEFINE_FLOORS(grasslush/thin,
 	icon_state = "grass_thin")
 
+/////////////////////////////////////////
+
+DEFINE_FLOORS(solidcolor,
+	icon_state = "solid_white")
+
+DEFINE_FLOORS(solidcolor/fullbright,
+	fullbright = 1)
+
+DEFINE_FLOORS(solidcolor/black,
+	icon_state = "solid_black")
+
+DEFINE_FLOORS(solidcolor/black/fullbright,
+	fullbright = 1)
+
 /* ._.-'~'-._.-'~'-._.-'~'-._.-'~'-._.-'~'-._.-'~'-._.-'~'-._. */
 /*-=-=-=-=-=-=-=-FUCK THAT SHIT MY WRIST HURTS=-=-=-=-=-=-=-=-=*/
 /* '~'-._.-'~'-._.-'~'-._.-'~'-._.-'~'-._.-'~'-._.-'~'-._.-'~' */
@@ -1806,17 +1820,17 @@ DEFINE_FLOORS(grasslush/thin,
 			if (istype(src, /turf/simulated/floor/plating/feather_plating))
 				var/turf/simulated/floor/plating/feather_plating/plating = src
 				plating.restore_tile(C.material)
+				playsound(src, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
 			else
-				restore_tile()
-				src.plate_mat = src.material
-				if(C.material)
-					src.setMaterial(C.material)
-			playsound(src, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
+				if(T.change_stack_amount(-1))
+					restore_tile()
+					src.plate_mat = src.material
+					if(C.material)
+						src.setMaterial(C.material)
+					playsound(src, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
 
-			if(!istype(src.material, /datum/material/metal/steel))
-				logTheThing("station", user, null, "constructs a floor (<b>Material:</b>: [src.material && src.material.name ? "[src.material.name]" : "*UNKNOWN*"]) at [log_loc(src)].")
-
-			T.change_stack_amount(-1)
+				if(!istype(src.material, /datum/material/metal/steel))
+					logTheThing("station", user, null, "constructs a floor (<b>Material:</b>: [src.material && src.material.name ? "[src.material.name]" : "*UNKNOWN*"]) at [log_loc(src)].")
 			//if(T && (--T.amount < 1))
 			//	qdel(T)
 			//	return

@@ -71,8 +71,8 @@
 
 	for (var/type as anything in childrentypesof(/datum/contextAction/flockdrone))
 		src.contexts += new type
-
-	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE)
+	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
+	src.AddComponent(/datum/component/flock_protection, FALSE, FALSE, FALSE, FALSE)
 
 /mob/living/critter/flock/drone/click(atom/target, list/params)
 	if (src.floorrunning)
@@ -84,7 +84,6 @@
 		if (controller)
 			src.release_control_abrupt()
 		flock_speak(null, "Connection to drone [src.real_name] lost.", src.flock)
-		src.flock.removeDrone(src)
 	src.remove_simple_light("drone_light")
 	..()
 
@@ -118,7 +117,6 @@
 		boutput(pilot, "<span class='alert'>This drone is already being controlled.</span>")
 		return
 	src.controller = pilot
-	walk(src, 0)
 	src.ai.stop_move() //cancel any pathing that's happening
 	src.is_npc = 0
 	src.dormant = 0
@@ -141,6 +139,8 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
+	src.update_health_icon()
+	flock.add_control_icon(src, pilot)
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -171,10 +171,12 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
+		flock.remove_control_icon(src)
 		if (give_alerts)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
 		controller = null
+		src.update_health_icon()
 
 /mob/living/critter/flock/drone/proc/release_control_abrupt()
 	src.flock?.hideAnnotations(src)
@@ -199,23 +201,22 @@
 		ticker.minds += controller.mind
 	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	controller = null
+	src.update_health_icon()
 
-/mob/living/critter/flock/drone/proc/dormantize()
-	src.dormant = TRUE
+/mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
-	src.ai?.die()
 	src.remove_simple_light("drone_light")
 
 	if (!src.flock)
+		..()
 		return
 
 	src.flock.hideAnnotations(src)
-	src.flock.removeDrone(src)
 
 	if (src.controller)
 		if (src.flock.getComplexDroneCount())
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
-				if (istype(F))
+				if (istype(F) && F != src)
 					src.controller.set_loc(get_turf(F))
 					break
 		else
@@ -239,7 +240,8 @@
 	if (src.z != Z_LEVEL_NULL)
 		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
 	src.is_npc = FALSE // turns off ai
-	src.flock = null
+
+	..()
 
 /mob/living/critter/flock/drone/proc/undormantize()
 	src.dormant = 0
@@ -589,11 +591,8 @@
 // and then the numerous procs that use that catchall proc
 /mob/living/critter/flock/drone/bullet_act(var/obj/projectile/P)
 	if(floorrunning)
-		return // haha fuck you i'm in the FLOOR
-	if(istype(P.proj_data, /datum/projectile/energy_bolt/flockdrone))
-		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
-	else
-		..()
+		return FALSE
+	if (..())
 		var/attacker = P.shooter
 		if(attacker)
 			src.harmedBy(attacker)
@@ -685,8 +684,8 @@
 	remove_lifeprocess(/datum/lifeprocess/statusupdate)
 
 /mob/living/critter/flock/drone/death(var/gibbed)
-	if(src.floorrunning)
-		src.end_floorrunning()
+	if(src.controller)
+		src.release_control()
 	if(!src.dormant)
 		if(src.is_npc)
 			emote("scream")
@@ -695,22 +694,15 @@
 		else
 			emote("scream")
 			say("\[System notification: drone lost.\]")
-	src.ai.die()
-	walk(src, 0)
-	// transfer our resources to our heart
 	var/obj/item/organ/heart/flock/core = src.organHolder.get_organ("heart")
 	if(core)
 		core.resources = src.resources
 		src.resources = 0 // just in case any weirdness happens let's pre-empt the dupe bug
-	if(src.controller)
-		src.release_control()
-	src.flock?.removeDrone(src)
 	..()
 	src.icon_state = "drone-dead"
-	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
 	src.reduce_lifeprocess_on_death()
 	src.set_density(FALSE)
-	desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
+	src.desc = "[initial(desc)]<br><span class='alert'>\The [src] is a dead, broken heap.</span>"
 	src.remove_simple_light("drone_light")
 
 /mob/living/critter/flock/drone/ghostize()
@@ -763,6 +755,10 @@
 	// get candidate places to move them
 	var/turf/T = get_turf(src)
 	var/list/candidate_turfs = getneighbours(src)
+	for(var/turf/n in candidate_turfs)
+		if(is_blocked_turf(n))
+			candidate_turfs -= n
+	candidate_turfs += T //ensure there's always at least the turf we're stood on
 	for(var/i=1 to num_bits)
 		B = new(get_turf(src), F = src.flock)
 		src.flock?.registerUnit(B)
@@ -805,6 +801,9 @@
 		if(istype(O, /atom/movable/screen))
 			continue // no UI elements please
 		. += O
+
+/mob/living/critter/flock/drone/message_admin_on_attack()
+	return
 
 // TODO: do this better
 /mob/living/critter/flock/drone/change_eye_blurry(var/amount, var/cap = 0)
@@ -894,8 +893,20 @@
 			src.disarm(target,user)
 			return
 
+	if(user.a_intent == INTENT_HARM)
+		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
+			if(isflockdeconimmune(target))
+				return
+			actions.start(new /datum/action/bar/flock_decon(target), user)
+		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
+			if(target?.material.mat_id == "gnesis")
+				actions.start(new /datum/action/bar/flock_decon(target), user)
+		else
+			..()
+		return
+
 	// CONVERT TURF
-	if(!isturf(target) && !HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) && !istype(target, /obj/structure/girder))
+	if(!isturf(target) && (!HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING) || istype(target, /obj/lattice/flock)) && !istype(target, /obj/structure/girder))
 		target = get_turf(target)
 
 	if(istype(target, /turf) && !istype(target, /turf/simulated) && !istype(target, /turf/space))
@@ -927,18 +938,9 @@
 				actions.start(new/datum/action/bar/flock_convert(target), user)
 			else
 				actions.start(new/datum/action/bar/flock_convert(target), user)
-	if(user.a_intent == INTENT_HARM)
-		if(istype(target, /obj/flock_structure/ghost))
-			return
-		if(HAS_ATOM_PROPERTY(target,PROP_ATOM_FLOCK_THING))
-			actions.start(new /datum/action/bar/flock_decon(target), user)
-		else if(istype(target,/obj/structure/girder)) //special handling for partially deconstructed walls
-			if(target?.material.mat_id == "gnesis")
-				actions.start(new /datum/action/bar/flock_decon(target), user)
-		else
-			..()
+
 //help intent actions
-	else if(user.a_intent == INTENT_HELP)
+	if(user.a_intent == INTENT_HELP)
 		if (istype(target, /obj/flock_structure/ghost))
 			if (user.resources <= 0)
 				boutput(user, "<span class='alert'>No resources available for construction.</span>")
@@ -968,6 +970,10 @@
 						found_target = TRUE
 				if (/obj/window/feather)
 					var/obj/window/feather/window = target
+					if (window.health < window.health_max)
+						found_target = TRUE
+				if (/obj/window/auto/feather)
+					var/obj/window/auto/feather/window = target
 					if (window.health < window.health_max)
 						found_target = TRUE
 				if (/obj/grille/flock)
@@ -1095,4 +1101,6 @@
 	var/obj/item/temp = item
 	if(temp)
 		animate(temp) // cancel animation
+		if(temp.material)
+			temp.setMaterialAppearance(temp.material)
 	..()

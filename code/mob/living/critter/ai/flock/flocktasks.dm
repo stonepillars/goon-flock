@@ -541,7 +541,8 @@ butcher
 	add_task(holder.get_instance(/datum/aiTask/succeedable/rummage, list(holder)))
 
 /datum/aiTask/sequence/goalbased/rummage/precondition()
-	. = TRUE // no precondition required that isn't already checked for targets
+	var/mob/living/critter/flock/drone/F = holder.owner
+	return !(F?.absorber?.item) //only go rummaging if you ain't got stuff to eat
 
 /datum/aiTask/sequence/goalbased/rummage/get_targets()
 	. = list()
@@ -578,9 +579,8 @@ butcher
 		var/mob/living/critter/flock/drone/F = holder.owner
 		usr = F // don't ask, please, don't
 		if(F?.set_hand(1)) // grip tool
-			// drop whatever we're holding
 			if(!F.is_in_hands(container_target)) //if it's not in any of our hands, pick it up
-				F.drop_item()
+				F.drop_item() // drop whatever we're holding
 				F.set_dir(get_dir(F, container_target))
 				F.hand_attack(container_target) //try and pick it up
 			if(F.is_in_hands(container_target)) //did we do it?
@@ -589,7 +589,7 @@ butcher
 					container_target.MouseDrop(get_turf(F)) //this will do nothing on a locked secure storage
 					// might as well eat the container now
 					F.absorber.equip(container_target) //eating the container drops the contents anyway
-					return
+				return
 			else
 				// we've opened a HUD, do a fake HUD click, because i am dedicated to this whole puppetry schtick
 				container_target.hud.relay_click("boxes", F, dummy_params)
@@ -1210,3 +1210,38 @@ butcher
 	on_reset()
 		..()
 		holder.target = src.target
+
+///////////////////////////////////////////////////////////////////////////////////////////////////
+/// Wander override for better wandering
+/datum/aiTask/timed/wander/flock
+	minimum_task_ticks = 5
+	maximum_task_ticks = 7 //you go a lot further with this wandering, so shorten the task time
+	var/turf/startpos
+	var/turf/targetpos
+	var/path
+
+/datum/aiTask/timed/wander/flock/on_tick()
+	if(!startpos)
+		startpos = get_turf(holder.owner)
+	if(targetpos && GET_DIST(holder.owner,targetpos) > 0) //if we have a target and we're not already there
+		if(!path || !length(path))
+			path = get_path_to(holder.owner, targetpos, 5, 1) //short search, we don't want this to be expensive
+		if(length(path))
+			holder.move_to_with_path(targetpos, path, 0)
+			return
+
+	//pick a random tile that is not space, and not closer to startpos than we are now
+	var/list/turfs = list()
+	path = null
+	targetpos = null
+	for(var/turf/T in range(holder.owner,2))
+		if(!istype(T,/turf/space) && !is_blocked_turf(T) && GET_DIST(holder.owner,startpos) <= GET_DIST(T,startpos))
+			turfs += T
+	if(!length(turfs))
+		//oh shit we must be in space, better wander in the direction of the station
+		turfs += pick_landmark(LANDMARK_LATEJOIN)
+	if(length(turfs))
+		targetpos = pick(turfs)
+	else
+		//well I guess the station is gone and everyone is dead. Back to default wander behaviour
+		..()

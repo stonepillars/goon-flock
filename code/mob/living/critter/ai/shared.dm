@@ -91,9 +91,6 @@
 	// thanks byond forums for letting me know that the byond native implentation FUCKING SUCKS
 	holder.owner.move_dir = pick(alldirs)
 	holder.owner.process_move()
-
-/datum/aiTask/timed/wander/on_tick()
-	. = ..()
 	holder.stop_move()
 	holder.owner.move_dir = null // clear out direction so it doesn't get latched when client is attached
 
@@ -151,7 +148,7 @@
 	if(!src.move_target)
 		fails++
 		return
-	if(!src.found_path)
+	if(!src.found_path || !length(src.found_path))
 		get_path()
 	if(length(src.found_path))
 		holder.move_to_with_path(move_target,src.found_path,0)
