@@ -401,8 +401,10 @@
 
 /datum/flock/proc/removeStructure(var/atom/movable/S)
 	if(isflockstructure(S))
-		src.structures -= S
-		S.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
+		var/obj/flock_structure/structure = S
+		src.structures -= structure
+		structure.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
+		structure.flock = null
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 
@@ -497,7 +499,7 @@
 	for(var/mob/living/critter/flock/F as anything in src.units)
 		F.dormantize()
 	for(var/obj/flock_structure/S as anything in src.structures)
-		S.flock = null
+		src.removeStructure(S)
 	all_owned_tiles = null
 	busy_tiles = null
 	priority_tiles = null
