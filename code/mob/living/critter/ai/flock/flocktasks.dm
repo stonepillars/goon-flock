@@ -370,10 +370,11 @@ butcher
 
 /datum/aiTask/sequence/goalbased/repair/get_targets()
 	. = list()
+	var/mob/living/critter/flock/drone/FH = holder.owner
 	for(var/mob/living/critter/flock/drone/F in view(max_dist, holder.owner))
 		if(F == holder.owner)
 			continue
-		if(F.get_health_percentage() < 0.66 && !isdead(F))//yeesh dont try to repair something which is dead
+		if(FH.flock == F.flock && F.get_health_percentage() < 0.66 && !isdead(F))//yeesh dont try to repair something which is dead
 			// if we can get a valid path to the target, include it for consideration
 			. += F
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
@@ -713,9 +714,20 @@ butcher
 	var/run_range = 3
 	var/list/dummy_params = list("icon-x" = 16, "icon-y" = 16)
 
+/datum/aiTask/timed/targeted/flockdrone_shoot/proc/precondition()
+	//if we know there are enemies, and gun is charged and ready
+	var/mob/living/critter/flock/drone/F = holder.owner
+	if(length(F.flock?.enemies))
+		var/datum/handHolder/HH = F.hands[3]
+		var/datum/limb/gun/stunner = HH?.limb
+		if(istype(stunner) && !stunner.is_on_cooldown())
+			return TRUE
 
 /datum/aiTask/timed/targeted/flockdrone_shoot/evaluate()
-	return weight * score_target(get_best_target(get_targets()))
+	if(src.precondition())
+		return weight * score_target(get_best_target(get_targets()))
+	else
+		return 0
 
 /datum/aiTask/timed/targeted/flockdrone_shoot/on_tick()
 	var/mob/living/critter/owncritter = holder.owner
@@ -770,7 +782,7 @@ butcher
 				var/mob/living/M = T
 				if(is_incapacitated(M))
 					continue
-			if(istype(T.loc.type, /obj/flock_structure/cage))
+			if(istype(T.loc, /obj/flock_structure/cage))
 				continue
 			. += T
 		else if (isvehicle(T.loc))
@@ -794,7 +806,7 @@ butcher
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/precondition()
 	var/mob/living/critter/flock/F = holder.owner
-	return F?.can_afford(15)
+	return F?.can_afford(15) && (length(F.flock?.enemies)) //gotta have enemies if we're gonna cage em
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/evaluate()
 	. = precondition() * weight * score_target(get_best_target(get_targets()))
