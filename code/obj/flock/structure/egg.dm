@@ -10,7 +10,7 @@
 	desc = "Oh god is that a fucking light grenade?!"
 	flock_id = "Second-Stage Assembler"
 	build_time = 6
-	health = 30
+	health = 30 // fragile little thing
 	var/decal_made = FALSE // for splashing stuff on throw
 
 /obj/flock_structure/egg/building_specific_info()

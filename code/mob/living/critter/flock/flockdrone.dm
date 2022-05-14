@@ -23,12 +23,14 @@
 
 	var/damaged = 0 // used for state management for description showing, as well as preventing drones from screaming about being hit
 
+	// too lazy, might as well use existing stuff
 	butcherable = TRUE
 
 	var/absorb_rate = 2 // how much item health is removed per tick when absorbing
 	var/absorb_per_health = 3 // how much resources we get per item health
 	var/absorb_completion = 6 // how much resources we get after the item is totally eaten
 
+	// voltron powers activate
 	var/floorrunning = FALSE
 	var/can_floorrun = TRUE
 
@@ -598,6 +600,7 @@
 		src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/attackby(var/obj/item/I, var/mob/M)
+	// check whatever reagents are about to get dumped on us
 	var/has_harmful_chemicals = FALSE
 	if(istype(I, /obj/item/reagent_containers/glass))
 		var/list/reagent_list = I.reagents.reagent_list
