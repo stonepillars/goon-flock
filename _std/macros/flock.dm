@@ -11,3 +11,4 @@
 #define FLOCK_ANNOTATION_RESERVED "reserved"
 #define FLOCK_ANNOTATION_FLOCKMIND_CONTROL "flockmind_face"
 #define FLOCK_ANNOTATION_FLOCKTRACE_CONTROL "flocktrace_face"
+#define FLOCK_ANNOTATION_HEALTH "health"

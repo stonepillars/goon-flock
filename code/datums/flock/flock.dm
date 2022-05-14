@@ -352,8 +352,16 @@
 	trace_face.pixel_y = 16
 	.[FLOCK_ANNOTATION_FLOCKTRACE_CONTROL] = trace_face
 
-///internal proc to get the indexed list of annotations on a particular mob
-/datum/flock/proc/_getAnnotations(atom/target)
+	var/image/health = image('icons/misc/featherzone.dmi', src, "hp-100")
+	health.blend_mode = BLEND_ADD
+	health.pixel_x = 10
+	health.pixel_y = 16
+	health.plane = PLANE_ABOVE_LIGHTING
+	health.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
+	.[FLOCK_ANNOTATION_HEALTH] = health
+
+///proc to get the indexed list of annotations on a particular mob
+/datum/flock/proc/getAnnotations(atom/target)
 	var/active = src.annotations[target]
 	if(!islist(active))
 		active = list()
@@ -362,7 +370,7 @@
 
 ///Toggle a named annotation
 /datum/flock/proc/toggleAnnotation(atom/target, var/annotation)
-	var/active = _getAnnotations(target)
+	var/active = getAnnotations(target)
 	if (annotation in active)
 		removeAnnotation(target, annotation)
 	else
@@ -370,7 +378,7 @@
 
 ///Add a named annotation
 /datum/flock/proc/addAnnotation(atom/target, var/annotation)
-	var/active = _getAnnotations(target)
+	var/active = getAnnotations(target)
 	if(!(annotation in active))
 		var/image/icon = image(src.annotation_imgs[annotation], loc=target)
 		if (isturf(target))
@@ -381,7 +389,7 @@
 
 ///Remove a named annotation
 /datum/flock/proc/removeAnnotation(atom/target, var/annotation)
-	var/active = _getAnnotations(target)
+	var/active = getAnnotations(target)
 	var/image/image = active[annotation]
 	if (image)
 		get_image_group(src).remove_image(image)

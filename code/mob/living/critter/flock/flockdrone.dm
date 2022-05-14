@@ -143,6 +143,7 @@
 		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
 	else
 		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
+	src.update_health_icon()
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -184,6 +185,7 @@
 	if (give_alerts)
 		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	controller = null
+	src.update_health_icon()
 
 /mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
