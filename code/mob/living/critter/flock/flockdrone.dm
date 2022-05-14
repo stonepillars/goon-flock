@@ -159,13 +159,7 @@
 		if (src.z == Z_LEVEL_STATION)
 			controller.set_loc(get_turf(src))
 		else
-			if (src.flock?.getComplexDroneCount() > 1)
-				for (var/mob/living/critter/flock/drone/F in src.flock.units)
-					if (istype(F) && F != src)
-						src.controller.set_loc(get_turf(F))
-						break
-			else
-				src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
+			src.move_controller_to_station()
 		// move us over to the controller
 		var/datum/mind/mind = src.mind
 		if (mind)
@@ -197,13 +191,7 @@
 	if (src.z == Z_LEVEL_STATION)
 		controller.set_loc(get_turf(src))
 	else
-		if (src.flock?.getComplexDroneCount() > 1)
-			for (var/mob/living/critter/flock/drone/F in src.flock.units)
-				if (istype(F) && F != src)
-					src.controller.set_loc(get_turf(F))
-					break
-		else
-			src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
+		src.move_controller_to_station()
 	var/datum/mind/mind = src.mind
 	if (mind)
 		mind.transfer_to(controller)
@@ -229,13 +217,7 @@
 	src.flock.hideAnnotations(src)
 
 	if (src.controller)
-		if (src.flock.getComplexDroneCount() > 1)
-			for (var/mob/living/critter/flock/drone/F in src.flock.units)
-				if (istype(F) && F != src)
-					src.controller.set_loc(get_turf(F))
-					break
-		else
-			src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
+		src.move_controller_to_station()
 
 		var/datum/mind/mind = src.mind
 		if (mind)
@@ -256,6 +238,15 @@
 	src.is_npc = FALSE // turns off ai
 
 	..()
+
+/mob/living/critter/flock/drone/proc/move_controller_to_station()
+	if (src.flock?.getComplexDroneCount() > 1)
+		for (var/mob/living/critter/flock/drone/F in src.flock.units)
+			if (istype(F) && F != src)
+				src.controller.set_loc(get_turf(F))
+				break
+	else
+		src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
 
 /mob/living/critter/flock/drone/proc/undormantize()
 	src.dormant = 0
