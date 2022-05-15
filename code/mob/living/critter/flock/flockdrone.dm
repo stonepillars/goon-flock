@@ -597,7 +597,7 @@
 	if (!..())
 		return
 	var/attacker = P.shooter
-	if(!ismob(attacker))
+	if(!(ismob(attacker) || iscritter(attacker) || isvehicle(attacker)))
 		attacker = P.mob_shooter
 	src.harmedBy(attacker)
 

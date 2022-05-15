@@ -80,6 +80,6 @@
 /// Protect against someone shooting the parent.
 /datum/component/flock_protection/proc/handle_hitby_proj(atom/source, obj/projectile/P)
 	var/attacker = P.shooter
-	if (!ismob(P.shooter))
+	if (!(ismob(attacker) || iscritter(attacker) || isvehicle(attacker)))
 		attacker = P.mob_shooter
 	return attacker && src.report_proj && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker, FALSE)
