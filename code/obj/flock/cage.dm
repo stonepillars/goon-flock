@@ -195,6 +195,7 @@
 				eating_occupant = 0
 				playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 				if(occupant)
+					src?.flock?.updateEnemy(occupant)
 					boutput(occupant, "<span class='notice'>[src] begins to process [target].</span>")
 			else if(occupant && ishuman(occupant))
 				var/mob/living/carbon/human/H = occupant
