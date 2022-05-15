@@ -775,21 +775,23 @@ butcher
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(!F?.flock)
 		return
+
 	for(var/atom/T in F.flock.enemies)
-		if(T in view(holder.owner,target_range))
+		if(istype(T.loc, /obj/flock_structure/cage)) //already got the bastard, don't need to do anything else
+			continue
+		if (isvehicle(T.loc))
+			if(T.loc in view(holder.owner, target_range))
+				F.flock.updateEnemy(T)
+				F.flock.updateEnemy(T.loc)
+				. += T.loc
+		else if(T in view(holder.owner,target_range))
 			F.flock.updateEnemy(T)
 			if(isliving(T))
 				var/mob/living/M = T
 				if(is_incapacitated(M))
 					continue
-			if(istype(T.loc, /obj/flock_structure/cage))
-				continue
 			. += T
-		else if (isvehicle(T.loc))
-			if(T.loc in view(holder.owner, target_range))
-				F.flock.updateEnemy(T)
-				F.flock.updateEnemy(T.loc)
-				. += T.loc
+
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE-SPECIFIC CAPTURE TASK
