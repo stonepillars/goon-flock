@@ -183,7 +183,8 @@
 		if(reagents.has_reagent(target_fluid, create_egg_at_fluid))
 			reagents.remove_reagent(target_fluid, create_egg_at_fluid)
 			spawnEgg()
-
+		if(occupant && src.flock)
+			src.flock.updateEnemy(occupant)
 		// process stuff into fluids
 		if(isnull(target))
 			// find a new thing to eat
@@ -195,7 +196,6 @@
 				eating_occupant = 0
 				playsound(src, "sound/weapons/nano-blade-1.ogg", 50, 1)
 				if(occupant)
-					src?.flock?.updateEnemy(occupant)
 					boutput(occupant, "<span class='notice'>[src] begins to process [target].</span>")
 			else if(occupant && ishuman(occupant))
 				var/mob/living/carbon/human/H = occupant
