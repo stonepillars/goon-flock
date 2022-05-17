@@ -17,6 +17,8 @@
 	/// Store the mind of the current flockmind
 	var/datum/mind/flockmind_mind = null
 	var/list/units = list()
+	/// associative list of unit names to true values
+	var/list/active_unit_names = list()
 	var/list/enemies = list()
 	var/list/annotation_viewers = list()
 	var/list/annotations_busy_tiles = list()  // key is atom ref, value is image
@@ -365,39 +367,29 @@
 	var/name_found = FALSE
 	var/tries = 0
 	var/max_tries = 5000 // really shouldn't occur
-	switch(flock_type)
-		if ("flock")
-			while (!name_found && tries < max_tries)
-				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
-				tries++
-				for (var/datum/flock/F as anything in flocks)
-					if (F.name == name)
-						break
+
+	while (!name_found && tries < max_tries)
+		if (flock_type == "flock")
+			name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
+			if (!flocks[name])
 				name_found = TRUE
-		if ("flocktrace")
-			while (!name_found && tries < max_tries)
-				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
-				tries++
-				for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
-					if (T.name == name)
-						break
-				name_found = TRUE
-		if ("flockdrone")
-			while (!name_found && tries < max_tries)
+		else if (flock_type == "flocktrace")
+			var/name_picked = FALSE
+			name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
+			for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
+				if (T.real_name == name)
+					name_picked = TRUE
+					break
+			name_found = !name_picked
+		else
+			if (flock_type == "flockdrone")
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
-				tries++
-				for (var/mob/living/critter/flock/drone/F in src.units)
-					if (F.name == name)
-						break
-				name_found = TRUE
-		if ("flockbit")
-			while (!name_found && tries < max_tries)
+			else if (flock_type == "flockbit")
 				name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
-				tries++
-				for (var/mob/living/critter/flock/bit/F in src.units)
-					if (F.name == name)
-						break
+			if (!src.active_unit_names[name])
 				name_found = TRUE
+				src.active_unit_names[name] = TRUE
+		tries++
 	if (!name_found && tries == max_tries)
 		logTheThing("debug", null, null, "Too many tries were reached in trying to name a flock or one of its units.")
 		return "error"
@@ -408,6 +400,8 @@
 /datum/flock/proc/registerUnit(var/atom/movable/D)
 	if(isflock(D))
 		src.units |= D
+		if (src.active_unit_names[D:real_name])
+			D:real_name = istype(D, /mob/living/critter/flock/drone) ? src.pick_name("flockdrone") : src.pick_name("flockbit")
 	D.AddComponent(/datum/component/flock_interest, src)
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 	aH.updateCompute()
@@ -415,6 +409,7 @@
 /datum/flock/proc/removeDrone(var/atom/movable/D)
 	if(isflock(D))
 		src.units -= D
+		src.active_unit_names -= D:real_name
 		D.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
 		if(D:real_name && busy_tiles[D:real_name])
 			src.unreserveTurf(D:real_name)
@@ -536,6 +531,7 @@
 	busy_tiles = null
 	priority_tiles = null
 	units = null
+	active_unit_names = null
 	enemies = null
 	annotations_busy_tiles = null
 	annotations_priority_tiles = null
