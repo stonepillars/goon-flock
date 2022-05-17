@@ -143,7 +143,6 @@
 		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
 	else
 		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
-	src.update_health_icon()
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -152,12 +151,18 @@
 	if (give_alerts)
 		emote("beep")
 		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
-	release_control_abrupt(FALSE)
+	_drop_control()
 	if (give_alerts)
 		flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 
 ///Release control of a drone without blocking calls, so it can be used in ghostize etc.
 /mob/living/critter/flock/drone/proc/release_control_abrupt(give_alerts = TRUE)
+	_drop_control()
+	if (give_alerts)
+		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
+
+///internal proc
+/mob/living/critter/flock/drone/proc/_drop_control()
 	src.flock?.hideAnnotations(src)
 	src.is_npc = TRUE
 	if(src.client && !controller)
@@ -182,15 +187,12 @@
 		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
 	else
 		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
-	if (give_alerts)
-		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	controller = null
 	src.update_health_icon()
 
 /mob/living/critter/flock/drone/dormantize()
 	src.icon_state = "drone-dormant"
 	src.remove_simple_light("drone_light")
-	emote("beep")
 
 	if (!src.flock)
 		..()
