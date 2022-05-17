@@ -36,6 +36,7 @@
 		<br><span class='bold'>###=-</span></span>"}
 	else
 		return null // give the standard description
+
 /mob/living/critter/flock/bit/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return 1
