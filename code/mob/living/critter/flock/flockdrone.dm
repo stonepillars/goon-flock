@@ -151,15 +151,14 @@
 	if (give_alerts)
 		emote("beep")
 		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
-	_drop_control()
-	if (give_alerts)
 		flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
+	_drop_control()
 
 ///Release control of a drone without blocking calls, so it can be used in ghostize etc.
 /mob/living/critter/flock/drone/proc/release_control_abrupt(give_alerts = TRUE)
-	_drop_control()
 	if (give_alerts)
 		flock_speak(null, "Control of drone [src.real_name] ended abruptly.", src.flock)
+	_drop_control()
 
 ///internal proc
 /mob/living/critter/flock/drone/proc/_drop_control()
@@ -201,7 +200,7 @@
 	//hold a ref to the controller so we can put them back with the flock
 	var/mob/living/intangible/flock/old_controller = src.controller
 	if (src.controller)
-		src.release_control_abrupt(FALSE)
+		src.release_control(FALSE)
 	if (old_controller)
 		boutput(old_controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
 		if (src.flock.getComplexDroneCount())
