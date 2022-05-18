@@ -148,19 +148,44 @@
 
 ///Release control of a drone normally
 /mob/living/critter/flock/drone/proc/release_control(give_alerts = TRUE)
+	src.flock?.hideAnnotations(src)
+	src.is_npc = 1
 	if (give_alerts)
 		emote("beep")
 		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
-		flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
-	_drop_control()
+	if(src.client && !controller)
+		// don't know how this happened but you need a controller right now
+		controller = new/mob/living/intangible/flock/trace(src, src.flock)
+	if(controller)
+		if (src.floorrunning)
+			src.end_floorrunning(TRUE)
+		// move controller out
+		controller.set_loc(get_turf(src))
+		// move us over to the controller
+		var/datum/mind/mind = src.mind
+		if (mind)
+			mind.transfer_to(controller)
+		else
+			if (src.client)
+				var/key = src.client.key
+				src.client.mob = controller
+				controller.mind = new /datum/mind()
+				controller.mind.ckey = ckey
+				controller.mind.key = key
+				controller.mind.current = controller
+				ticker.minds += controller.mind
+		if (istype(controller, /mob/living/intangible/flock/flockmind))
+			flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+		else
+			flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
+		if (give_alerts)
+			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
+		// clear refs
+		controller = null
+		src.update_health_icon()
 
-///Release control of a drone without blocking calls, so it can be used in ghostize etc.
 /mob/living/critter/flock/drone/proc/release_control_abrupt()
 	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
-	_drop_control()
-
-///internal proc
-/mob/living/critter/flock/drone/proc/_drop_control()
 	src.flock?.hideAnnotations(src)
 	src.is_npc = TRUE
 	if(src.client && !controller)
@@ -181,6 +206,7 @@
 		controller.mind.key = key
 		controller.mind.current = controller
 		ticker.minds += controller.mind
+	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	if (istype(controller, /mob/living/intangible/flock/flockmind))
 		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
 	else
@@ -195,19 +221,32 @@
 	if (!src.flock)
 		..()
 		return
+
 	src.flock.hideAnnotations(src)
+
 	if (src.controller)
-		//hold a ref to the controller so we can put them back with the flock
-		var/mob/living/intangible/flock/old_controller = src.controller
-		src.release_control(FALSE)
-		boutput(old_controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
 		if (src.flock.getComplexDroneCount())
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
 				if (istype(F) && F != src)
-					old_controller.set_loc(get_turf(F))
+					src.controller.set_loc(get_turf(F))
 					break
 		else
-			old_controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
+			src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
+
+		var/datum/mind/mind = src.mind
+		if (mind)
+			mind.transfer_to(controller)
+		else
+			if (src.client)
+				var/key = src.client.key
+				src.client.mob = controller
+				controller.mind = new /datum/mind()
+				controller.mind.ckey = ckey
+				controller.mind.key = key
+				controller.mind.current = controller
+				ticker.minds += controller.mind
+		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
+		controller = null
 	src.is_npc = TRUE // to ensure right flock_speak message
 	if (src.z != Z_LEVEL_NULL)
 		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
