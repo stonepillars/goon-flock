@@ -518,7 +518,7 @@
 	if(name in src.busy_tiles)
 		return
 	src.busy_tiles[name] = T
-	addAnnotation(T, "reserve")
+	addAnnotation(T, FLOCK_ANNOTATION_RESERVED)
 
 /datum/flock/proc/unreserveTurf(var/name)
 	var/turf/simulated/T = src.busy_tiles[name]
