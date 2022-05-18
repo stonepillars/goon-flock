@@ -17,8 +17,8 @@
 	/// Store the mind of the current flockmind
 	var/datum/mind/flockmind_mind = null
 	var/list/units = list()
-	/// associative list of unit names to true values
-	var/list/active_unit_names = list()
+	/// associative list of used names (for traces, drones, and bits) to true values
+	var/list/active_names = list()
 	var/list/enemies = list()
 	var/list/annotation_viewers = list()
 	var/list/annotations_busy_tiles = list()  // key is atom ref, value is image
@@ -231,6 +231,7 @@
 	if(!T)
 		return
 	src.traces -= T
+	src.active_names -= T.real_name
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 	aH?.updateCompute()
 
@@ -373,22 +374,17 @@
 			name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 			if (!flocks[name])
 				name_found = TRUE
-		else if (flock_type == "flocktrace")
-			var/name_picked = FALSE
-			name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
-			for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
-				if (T.real_name == name)
-					name_picked = TRUE
-					break
-			name_found = !name_picked
 		else
+			if (flock_type == "flocktrace")
+				name = "[pick(consonants_upper)][pick(vowels_lower)].[pick(vowels_lower)]"
 			if (flock_type == "flockdrone")
 				name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 			else if (flock_type == "flockbit")
 				name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
-			if (!src.active_unit_names[name])
+
+			if (!src.active_names[name])
 				name_found = TRUE
-				src.active_unit_names[name] = TRUE
+				src.active_names[name] = TRUE
 		tries++
 	if (!name_found && tries == max_tries)
 		logTheThing("debug", null, null, "Too many tries were reached in trying to name a flock or one of its units.")
@@ -400,7 +396,7 @@
 /datum/flock/proc/registerUnit(var/mob/living/critter/flock/D)
 	if(isflock(D))
 		src.units |= D
-		if (src.active_unit_names[D.real_name])
+		if (src.active_names[D.real_name])
 			D.real_name = istype(D, /mob/living/critter/flock/drone) ? src.pick_name("flockdrone") : src.pick_name("flockbit")
 	D.AddComponent(/datum/component/flock_interest, src)
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
@@ -409,7 +405,7 @@
 /datum/flock/proc/removeDrone(var/mob/living/critter/flock/D)
 	if(isflock(D))
 		src.units -= D
-		src.active_unit_names -= D.real_name
+		src.active_names -= D.real_name
 		D.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
 		if(D.real_name && busy_tiles[D.real_name])
 			src.unreserveTurf(D.real_name)
@@ -531,7 +527,7 @@
 	busy_tiles = null
 	priority_tiles = null
 	units = null
-	active_unit_names = null
+	active_names = null
 	enemies = null
 	annotations_busy_tiles = null
 	annotations_priority_tiles = null
