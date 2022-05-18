@@ -393,10 +393,10 @@
 
 // UNITS
 
-/datum/flock/proc/registerUnit(var/mob/living/critter/flock/D)
+/datum/flock/proc/registerUnit(var/mob/living/critter/flock/D, check_name_uniqueness = FALSE)
 	if(isflock(D))
 		src.units |= D
-		if (src.active_names[D.real_name])
+		if (check_name_uniqueness && src.active_names[D.real_name])
 			D.real_name = istype(D, /mob/living/critter/flock/drone) ? src.pick_name("flockdrone") : src.pick_name("flockbit")
 	D.AddComponent(/datum/component/flock_interest, src)
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder

@@ -280,7 +280,7 @@
 	src.flock?.removeDrone(src)
 	if(flocks[flockName])
 		src.flock = flocks[flockName]
-		src.flock.registerUnit(src) // for the sake of the flockmind
+		src.flock.registerUnit(src, TRUE) // for the sake of the flockmind
 	controller?.flock = flocks[flockName]
 	boutput(src, "<span class='notice'>You are now part of the <span class='bold'>[src.flock.name]</span> flock.</span>")
 
