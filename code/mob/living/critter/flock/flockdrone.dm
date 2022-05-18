@@ -159,7 +159,7 @@
 /mob/living/critter/flock/drone/proc/release_control_abrupt(give_alerts = TRUE)
 	_drop_control()
 	if (give_alerts)
-		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
+		flock_speak(null, "Control of drone [src.real_name] ended abruptly.", src.flock)
 
 ///internal proc
 /mob/living/critter/flock/drone/proc/_drop_control()

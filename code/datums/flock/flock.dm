@@ -352,7 +352,7 @@
 	trace_face.pixel_y = 16
 	.[FLOCK_ANNOTATION_FLOCKTRACE_CONTROL] = trace_face
 
-	var/image/health = image('icons/misc/featherzone.dmi', src, icon_state = "hp-100")
+	var/image/health = image('icons/misc/featherzone.dmi', icon_state = "hp-100")
 	health.blend_mode = BLEND_ADD
 	health.pixel_x = 10
 	health.pixel_y = 16
