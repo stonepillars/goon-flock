@@ -156,7 +156,7 @@
 
 ///Release control of a drone without blocking calls, so it can be used in ghostize etc.
 /mob/living/critter/flock/drone/proc/release_control_abrupt()
-	flock_speak(null, "Control of drone [src.real_name] ended abruptly.", src.flock)
+	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
 	_drop_control()
 
 ///internal proc
