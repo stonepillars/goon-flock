@@ -397,22 +397,22 @@
 
 // UNITS
 
-/datum/flock/proc/registerUnit(var/atom/movable/D)
+/datum/flock/proc/registerUnit(var/mob/living/critter/flock/D)
 	if(isflock(D))
 		src.units |= D
-		if (src.active_unit_names[D:real_name])
-			D:real_name = istype(D, /mob/living/critter/flock/drone) ? src.pick_name("flockdrone") : src.pick_name("flockbit")
+		if (src.active_unit_names[D.real_name])
+			D.real_name = istype(D, /mob/living/critter/flock/drone) ? src.pick_name("flockdrone") : src.pick_name("flockbit")
 	D.AddComponent(/datum/component/flock_interest, src)
 	var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 	aH.updateCompute()
 
-/datum/flock/proc/removeDrone(var/atom/movable/D)
+/datum/flock/proc/removeDrone(var/mob/living/critter/flock/D)
 	if(isflock(D))
 		src.units -= D
-		src.active_unit_names -= D:real_name
+		src.active_unit_names -= D.real_name
 		D.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
-		if(D:real_name && busy_tiles[D:real_name])
-			src.unreserveTurf(D:real_name)
+		if(D.real_name && busy_tiles[D.real_name])
+			src.unreserveTurf(D.real_name)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 // STRUCTURES
