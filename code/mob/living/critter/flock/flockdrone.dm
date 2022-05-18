@@ -196,11 +196,10 @@
 		..()
 		return
 	src.flock.hideAnnotations(src)
-	//hold a ref to the controller so we can put them back with the flock
-	var/mob/living/intangible/flock/old_controller = src.controller
 	if (src.controller)
+		//hold a ref to the controller so we can put them back with the flock
+		var/mob/living/intangible/flock/old_controller = src.controller
 		src.release_control(FALSE)
-	if (old_controller)
 		boutput(old_controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
 		if (src.flock.getComplexDroneCount())
 			for (var/mob/living/critter/flock/drone/F in src.flock.units)
