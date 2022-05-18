@@ -81,5 +81,5 @@
 /datum/component/flock_protection/proc/handle_hitby_proj(atom/source, obj/projectile/P)
 	var/attacker = P.shooter
 	if (!(ismob(attacker) || iscritter(attacker) || isvehicle(attacker)))
-		attacker = P.mob_shooter
+		attacker = P.mob_shooter //shooter is updated on reflection, so we fall back to mob_shooter if it turns out to be a wall or something
 	return attacker && src.report_proj && SEND_SIGNAL(source, COMSIG_FLOCK_ATTACK, attacker, FALSE)
