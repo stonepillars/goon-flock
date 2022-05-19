@@ -138,15 +138,17 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
-	src.update_health_icon()
-	flock.add_control_icon(src, pilot)
+	if (istype(pilot, /mob/living/intangible/flock/flockmind))
+		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+	else
+		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
 /mob/living/critter/flock/drone/proc/release_control(give_alerts = TRUE)
 	src.flock?.hideAnnotations(src)
 	src.is_npc = 1
-	if (give_alerts)
+	if (give_alerts && src.z == Z_LEVEL_STATION)
 		emote("beep")
 		say(pick_string("flockmind.txt", "flockdrone_player_kicked"))
 	if(src.client && !controller)
@@ -156,7 +158,10 @@
 		if (src.floorrunning)
 			src.end_floorrunning(TRUE)
 		// move controller out
-		controller.set_loc(get_turf(src))
+		if (src.z == Z_LEVEL_STATION)
+			controller.set_loc(get_turf(src))
+		else
+			src.move_controller_to_station()
 		// move us over to the controller
 		var/datum/mind/mind = src.mind
 		if (mind)
@@ -170,8 +175,11 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
-		flock.remove_control_icon(src)
-		if (give_alerts)
+		if (istype(controller, /mob/living/intangible/flock/flockmind))
+			flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+		else
+			flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
+		if (give_alerts && src.z == Z_LEVEL_STATION)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
 		controller = null
@@ -186,7 +194,10 @@
 		return
 	if (src.floorrunning)
 		src.end_floorrunning(TRUE)
-	controller.set_loc(get_turf(src))
+	if (src.z == Z_LEVEL_STATION)
+		controller.set_loc(get_turf(src))
+	else
+		src.move_controller_to_station()
 	var/datum/mind/mind = src.mind
 	if (mind)
 		mind.transfer_to(controller)
@@ -199,6 +210,10 @@
 		controller.mind.current = controller
 		ticker.minds += controller.mind
 	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
+	if (istype(controller, /mob/living/intangible/flock/flockmind))
+		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+	else
+		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 	controller = null
 	src.update_health_icon()
 
@@ -213,13 +228,7 @@
 	src.flock.hideAnnotations(src)
 
 	if (src.controller)
-		if (src.flock.getComplexDroneCount())
-			for (var/mob/living/critter/flock/drone/F in src.flock.units)
-				if (istype(F) && F != src)
-					src.controller.set_loc(get_turf(F))
-					break
-		else
-			src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
+		src.move_controller_to_station()
 
 		var/datum/mind/mind = src.mind
 		if (mind)
@@ -236,11 +245,19 @@
 		boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Connection to drone [src.real_name] lost.\]</b></span>")
 		controller = null
 	src.is_npc = TRUE // to ensure right flock_speak message
-	if (src.z != Z_LEVEL_NULL)
-		flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
+	flock_speak(src, "Error: Out of signal range. Disconnecting.", src.flock)
 	src.is_npc = FALSE // turns off ai
 
 	..()
+
+/mob/living/critter/flock/drone/proc/move_controller_to_station()
+	if (src.flock?.getComplexDroneCount() > 1)
+		for (var/mob/living/critter/flock/drone/F in src.flock.units)
+			if (istype(F) && F != src)
+				src.controller.set_loc(get_turf(F))
+				break
+	else
+		src.controller.set_loc(pick_landmark(LANDMARK_LATEJOIN))
 
 /mob/living/critter/flock/drone/proc/undormantize()
 	src.dormant = 0
@@ -290,11 +307,6 @@
 		src.undormantize()
 	if(src.flock)
 		src.flock.showAnnotations(src)
-
-/mob/living/critter/flock/drone/Logout()
-	..()
-	if(src.flock)
-		src.flock.hideAnnotations(src)
 
 /mob/living/critter/flock/drone/is_spacefaring() return 1
 
@@ -402,8 +414,10 @@
 		src.resources--
 		if (src.resources < 1)
 			src.end_floorrunning(TRUE)
-	if (!src.dormant && src.z != Z_LEVEL_STATION)
+	if (!src.dormant && src.z != Z_LEVEL_STATION && src.z != Z_LEVEL_NULL)
 		src.dormantize()
+		return
+	if (src.dormant)
 		return
 
 	var/obj/item/I = absorber.item
@@ -592,6 +606,8 @@
 
 // catchall for shitlisting a dude that attacks us
 /mob/living/critter/flock/drone/proc/harmedBy(var/atom/enemy)
+	if (!enemy)
+		return
 	if(isflock(enemy))
 		return
 	if(!isdead(src) && src.is_npc && src.flock)
@@ -608,10 +624,12 @@
 /mob/living/critter/flock/drone/bullet_act(var/obj/projectile/P)
 	if(floorrunning)
 		return FALSE
-	if (..())
-		var/attacker = P.shooter
-		if(attacker)
-			src.harmedBy(attacker)
+	if (!..())
+		return
+	var/attacker = P.shooter
+	if(!(ismob(attacker) || iscritter(attacker) || isvehicle(attacker)))
+		attacker = P.mob_shooter //shooter is updated on reflection, so we fall back to mob_shooter if it turns out to be a wall or something
+	src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
 	. = ..()

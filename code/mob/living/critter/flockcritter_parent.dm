@@ -92,6 +92,7 @@
 /mob/living/critter/flock/proc/dormantize()
 	src.dormant = TRUE
 	src.ai?.die()
+	actions.stop_all(src)
 
 	if (!src.flock)
 		return
@@ -105,6 +106,7 @@
 		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
 		return FALSE
 	..()
+	return TRUE
 
 //compute - override if behaviour is weird
 /mob/living/critter/flock/proc/compute_provided()
@@ -171,24 +173,16 @@
 /mob/living/critter/flock/proc/update_health_icon()
 	if (!src.flock)
 		return
-	var/image/I
-	if (src in src.flock.annotations_health)
-		I = src.flock.annotations_health[src]
-		src.flock.annotations_health -= src
-		src.flock.removeClientImage(I)
 
 	if (isdead(src) || src.dormant || src.disposed)
+		src.flock.removeAnnotation(src, FLOCK_ANNOTATION_HEALTH)
 		return
 
-	I = image('icons/misc/featherzone.dmi', src, "hp-[round(src.get_health_percentage() * 10) * 10]")
-	I.blend_mode = BLEND_ADD
-	I.pixel_x = 10
-	I.pixel_y = 16
-	I.plane = PLANE_ABOVE_LIGHTING
-	I.appearance_flags = RESET_COLOR | RESET_ALPHA | RESET_TRANSFORM
-	src.flock.annotations_health[src] = I
-	src.flock.addClientImage(I)
-	src.client?.images -= I
+	var/list/annotations = flock.getAnnotations(src)
+	if (!annotations[FLOCK_ANNOTATION_HEALTH])
+		src.flock.addAnnotation(src, FLOCK_ANNOTATION_HEALTH)
+	var/image/annotation = annotations[FLOCK_ANNOTATION_HEALTH]
+	annotation.icon_state = "hp-[round(src.get_health_percentage() * 10) * 10]"
 
 // all flock bots should have the ability to rally somewhere (it's applicable to anything with flock AI)
 /mob/living/critter/flock/proc/rally(atom/movable/target)
