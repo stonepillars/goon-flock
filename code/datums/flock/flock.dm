@@ -523,7 +523,7 @@
 /datum/flock/proc/unreserveTurf(var/name)
 	var/turf/simulated/T = src.busy_tiles[name]
 	src.busy_tiles -= name
-	removeAnnotation(T, "reserve")
+	removeAnnotation(T, FLOCK_ANNOTATION_RESERVED)
 
 /datum/flock/proc/claimTurf(var/turf/simulated/T)
 	src.all_owned_tiles |= T
