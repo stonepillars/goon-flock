@@ -7,7 +7,6 @@
 	desc = "The collective machine consciousness of a bunch of glass peacock things."
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "flockmind"
-	control_icon = "flockmind_face"
 
 	var/started = FALSE
 	var/last_time // when i say per second I MEAN PER SECOND DAMMIT
@@ -25,7 +24,6 @@
 	src.name = src.real_name
 	src.update_name_tag()
 	src.flock.registerFlockmind(src)
-	src.flock.showAnnotations(src)
 	if (!F)
 		src.addAbility(/datum/targetable/flockmindAbility/spawnEgg)
 		src.addAbility(/datum/targetable/flockmindAbility/ping)

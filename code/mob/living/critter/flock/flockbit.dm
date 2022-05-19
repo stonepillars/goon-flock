@@ -22,6 +22,7 @@
 	src.name = "[pick_string("flockmind.txt", "flockbit_name_adj")] [pick_string("flockmind.txt", "flockbit_name_noun")]"
 	src.real_name = "[pick(consonants_upper)].[rand(10,99)].[rand(10,99)]"
 	src.update_name_tag()
+
 	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection)
 
@@ -39,7 +40,7 @@
 /mob/living/critter/flock/bit/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return TRUE
-	if (!src.dormant && src.z != Z_LEVEL_STATION)
+	if (!src.dormant && src.z != Z_LEVEL_STATION && src.z != Z_LEVEL_NULL)
 		src.dormantize()
 
 /mob/living/critter/flock/bit/MouseDrop_T(mob/living/target, mob/user)
