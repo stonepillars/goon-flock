@@ -19,6 +19,8 @@
 	// HEALTHS
 	var/health_brute = 1
 	var/health_burn = 1
+	// no medicine for radio birds
+	metabolizes = FALSE
 	//base compute provided
 	var/compute = 0
 	// if we're extinguishing ourselves don't extinguish ourselves repeatedly
@@ -67,6 +69,8 @@
 		if(!isnull(src.flock))
 			src.flock.registerUnit(src)
 
+	src.update_health_icon()
+
 /mob/living/critter/flock/proc/describe_state()
 	var/list/state = list()
 	state["update"] = "flockcritter"
@@ -81,13 +85,19 @@
 		state["area"] = "???"
 	return state
 
+/mob/living/critter/flock/TakeDamage(zone, brute, burn, tox, damage_type, disallow_limb_loss)
+	..()
+	src.update_health_icon()
+
 /mob/living/critter/flock/proc/dormantize()
 	src.dormant = TRUE
 	src.ai?.die()
+	actions.stop_all(src)
 
 	if (!src.flock)
 		return
 
+	src.update_health_icon()
 	src.flock.removeDrone(src)
 	src.flock = null
 
@@ -96,6 +106,7 @@
 		src.visible_message("<span class='notice'>[src] harmlessly absorbs [P].</span>")
 		return FALSE
 	..()
+	return TRUE
 
 //compute - override if behaviour is weird
 /mob/living/critter/flock/proc/compute_provided()
@@ -159,6 +170,20 @@
 			sleep(2 SECONDS)
 			src.extinguishing = 0
 
+/mob/living/critter/flock/proc/update_health_icon()
+	if (!src.flock)
+		return
+
+	if (isdead(src) || src.dormant || src.disposed)
+		src.flock.removeAnnotation(src, FLOCK_ANNOTATION_HEALTH)
+		return
+
+	var/list/annotations = flock.getAnnotations(src)
+	if (!annotations[FLOCK_ANNOTATION_HEALTH])
+		src.flock.addAnnotation(src, FLOCK_ANNOTATION_HEALTH)
+	var/image/annotation = annotations[FLOCK_ANNOTATION_HEALTH]
+	annotation.icon_state = "hp-[round(src.get_health_percentage() * 10) * 10]"
+
 // all flock bots should have the ability to rally somewhere (it's applicable to anything with flock AI)
 /mob/living/critter/flock/proc/rally(atom/movable/target)
 	if(src.is_npc)
@@ -174,11 +199,13 @@
 	..()
 	src.ai.die()
 	walk(src, 0)
+	src.update_health_icon()
 	src.flock?.removeDrone(src)
 	playsound(src, "sound/impact_sounds/Glass_Shatter_3.ogg", 50, 1)
 
 /mob/living/critter/flock/disposing()
 	if (src.flock)
+		src.update_health_icon()
 		src.flock.removeDrone(src)
 	..()
 
