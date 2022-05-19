@@ -105,7 +105,7 @@
 		// okay now you may have a shuttle
 		emergency_shuttle.disabled = FALSE
 		emergency_shuttle.incall()
-		emergency_shuttle.can_recall = 0 // yeah centcom's coming no matter what
+		emergency_shuttle.can_recall = FALSE // yeah centcom's coming no matter what
 		emergency_shuttle.settimeleft(180) // cut the time down to keep some sense of urgency
 		boutput(world, "<span class='notice'><B>Alert: The emergency shuttle has been called.</B></span>")
 		boutput(world, "<span class='notice'>- - - <b>Reason:</b> Hostile transmission intercepted. Sending rapid response emergency shuttle.</span>")
