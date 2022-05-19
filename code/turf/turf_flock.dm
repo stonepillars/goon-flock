@@ -302,13 +302,13 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	src.AddComponent(/datum/component/flock_protection)
 
 /turf/simulated/wall/auto/feather/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Nanite Block
-    <br><span class='bold'>System Integrity:</span> [round((src.health/src.max_health)*100)]%
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Nanite Block
+		<br><span class='bold'>System Integrity:</span> [round((src.health/src.max_health)*100)]%
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 /turf/simulated/wall/auto/feather/attack_hand(mob/user)
 	if (user.a_intent == INTENT_HARM)
