@@ -49,6 +49,14 @@ capture
 butcher
 	-weight 3
 
+deconstruct
+	-weight 8
+	-precondition: none
+
+stare
+	-weight 1
+	-precondition: cooldown
+
 */
 
 /datum/aiTask/prioritizer/flock
@@ -1004,9 +1012,9 @@ butcher
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-// DECONTSTRUCT GOAL
+// DECONSTRUCT GOAL
 // targets: flock deconstruction targets
-// precondition: 10 resources
+// precondition: none
 /datum/aiTask/sequence/goalbased/deconstruct
 	name = "deconstructing"
 	weight = 8
