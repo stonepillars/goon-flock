@@ -157,7 +157,7 @@ stare
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // NEST + REPLICATION GOAL
 // targets: valid nesting sites
-// precondition: 120 resources, no flocktiles in view
+// precondition: FLOCK_CONVERT_COST + FLOCK_LAY_EGG_COST resources, no flocktiles in view
 /datum/aiTask/sequence/goalbased/nest
 	name = "nesting"
 	weight = 6
@@ -171,7 +171,7 @@ stare
 /datum/aiTask/sequence/goalbased/nest/precondition()
 	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F?.can_afford(120))
+	if(F?.can_afford(FLOCK_CONVERT_COST + FLOCK_LAY_EGG_COST))
 		. = TRUE //we can afford
 		for(var/turf/simulated/floor/feather/T in view(max_dist, holder.owner))
 			return FALSE //but there's a flocktile in view
