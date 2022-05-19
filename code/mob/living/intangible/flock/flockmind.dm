@@ -9,7 +9,7 @@
 	icon_state = "flockmind"
 
 	var/started = FALSE
-	var/last_time // when i say per second I MEAN PER SECOND DAMMIT
+	var/last_time
 
 
 /mob/living/intangible/flock/flockmind/New(turf/newLoc, datum/flock/F = null)
@@ -42,9 +42,9 @@
 		<br><span class='bold'>Cognition:</span> COMPUTATIONAL NEXUS
 		<br>###=-</span></span>"}
 	else
-		return null // give the standard description
+		return null
 
-// TEMPORARY, I FUCKING HATE STAT PANELS
+// todo: use something better?
 /mob/living/intangible/flock/flockmind/Stat()
 	..()
 	stat(null, " ")
@@ -128,7 +128,7 @@
 	O.icon = src.icon
 	O.icon_state = "flockmind-ghost"
 	O.pixel_y = initial(O.pixel_y) // WHY DO I NEED TO DO THIS TOO I DON'T EVEN ANIMATE THE PIXEL_Y
-	animate_bumble(O) // bob up and down
+	animate_bumble(O)
 	O.alpha = 160
 	return O
 

@@ -1,10 +1,11 @@
-// flockdrone stuff, ask cirr or do a search for "flockdrone"
-
 /////////////////////////////
 // FLOCK DATUM
 /////////////////////////////
-// used to manage and share information between members of a flock/nest
+
+/// associative list of flock names to their flock
 /var/list/flocks = list()
+
+/// manages and holds information for a flock
 /datum/flock
 	var/name
 	var/list/all_owned_tiles = list()
@@ -42,7 +43,6 @@
 		annotation_imgs = build_annotation_imgs()
 
 /datum/flock/ui_status(mob/user)
-	// only flockminds and admins allowed
 	return istype(user, /mob/living/intangible/flock/flockmind) || tgui_admin_state.can_use_topic(src, user)
 
 /datum/flock/ui_data(mob/user)
@@ -56,7 +56,7 @@
 
 /datum/flock/ui_act(action, list/params, datum/tgui/ui)
 	var/mob/user = ui.user;
-	if (!istype(user, /mob/living/intangible/flock/flockmind)) //no humans allowed
+	if (!istype(user, /mob/living/intangible/flock/flockmind))
 		return
 	switch(action)
 		if("jump_to")
@@ -64,13 +64,12 @@
 			if(origin)
 				var/turf/T = get_turf(origin)
 				if(T.z != Z_LEVEL_STATION)
-					// make sure they're not trying to spoof data and jump into a z-level they ought not to go
 					boutput(user, "<span class='alert'>They seem to be beyond your capacity to reach.</span>")
 				else
 					user.set_loc(T)
 		if("rally")
 			var/mob/living/critter/flock/C = locate(params["origin"])
-			if(C?.flock == src) // no ordering other flocks' drones around
+			if(C?.flock == src)
 				C.rally(get_turf(user))
 		if("remove_enemy")
 			var/mob/living/E = locate(params["origin"])
@@ -81,18 +80,15 @@
 			if(T)
 				var/mob/living/critter/flock/drone/host = T.loc
 				if(istype(host))
-					// kick them out of the drone
 					boutput(host, "<span class='flocksay'><b>\[SYSTEM: The flockmind has removed you from your previous corporeal shell.\]</b></span>")
 					host.release_control()
 		if("delete_trace")
 			var/mob/living/intangible/flock/trace/T = locate(params["origin"])
 			if(T)
 				if(tgui_alert(user, "This will destroy the Flocktrace. Are you sure you want to do this?", "Confirmation", list("Yes", "No")) == "Yes")
-					// if they're in a drone, kick them out
 					var/mob/living/critter/flock/drone/host = T.loc
 					if(istype(host))
 						host.release_control()
-					// DELETE
 					flock_speak(null, "Partition [T.real_name] has been reintegrated into flock background processes.", src)
 					boutput(T, "<span class='flocksay'><b>\[SYSTEM: Your higher cognition has been forcibly reintegrated into the collective will of the flock.\]</b></span>")
 					T.death()
@@ -135,7 +131,6 @@
 			enemy["ref"] = "\ref[M]"
 			enemylist += list(enemy)
 		else
-			// enemy no longer exists, let's do something about that
 			src.enemies -= name
 	state["enemies"] = enemylist
 
@@ -257,7 +252,6 @@
 		boutput(F, "<span class='[class]'><a href='?src=\ref[F];origin=\ref[target];ping=[TRUE]'>[prefix]: Interrupt request, target: [target] in [get_area(target)].</a></span>")
 	playsound_global(src.traces + src.flockmind, "sound/misc/flockmind/ping.ogg", 50, 0.5)
 
-//is this a weird use case for components? probably, but it's kinda neat
 /datum/component/flock_ping
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 
@@ -315,7 +309,7 @@
 			animate(time = duration/9, alpha = 100)
 // ANNOTATIONS
 
-///Init some annotation images to copy
+///Init annotation images to copy
 /datum/flock/proc/build_annotation_imgs()
 	. = list()
 
@@ -398,7 +392,6 @@
 		active -= annotation
 		qdel(image)
 
-// currently both flockmind and player units get the same annotations: what tiles are marked for conversion, and who is shitlisted
 /datum/flock/proc/showAnnotations(var/mob/M)
 	get_image_group(src).add_mob(M)
 
@@ -462,7 +455,7 @@
 	if(!M)
 		return
 	if (isvehicle(M))
-		for (var/mob/occupant in M) //yes we are blaming the passenger
+		for (var/mob/occupant in M)
 			src.updateEnemy(occupant)
 	//vehicles can be enemies but drones will only attack them if they are occupied
 	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
@@ -470,7 +463,6 @@
 	var/enemy_name = M
 	var/list/enemy_deets
 	if(!(enemy_name in src.enemies))
-		// add new
 		var/area/enemy_area = get_area(M)
 		enemy_deets = list()
 		enemy_deets["mob"] = M
@@ -482,7 +474,6 @@
 		enemy_deets["last_seen"] = get_area(M)
 
 /datum/flock/proc/removeEnemy(atom/M)
-	// call off all drones attacking this guy
 	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
 		return
 	src.enemies -= M
@@ -496,7 +487,6 @@
 // DEATH
 
 /datum/flock/proc/perish()
-	//cleanup as necessary
 	if(src.flockmind)
 		hideAnnotations(src.flockmind)
 	for(var/mob/M in src.units)
@@ -540,7 +530,7 @@
 			src.registerStructure(structure)
 	removeAnnotation(T, FLOCK_ANNOTATION_PRIORITY)
 
-/datum/flock/proc/isTurfFree(var/turf/simulated/T, var/queryName) // provide the drone's name here: if they own the turf it's free _to them_
+/datum/flock/proc/isTurfFree(var/turf/simulated/T, var/queryName)
 	for(var/name in src.busy_tiles)
 		if(name == queryName)
 			continue
@@ -559,7 +549,7 @@
 	if(!requester)
 		return
 	if(src.busy_tiles[requester.name])
-		return src.busy_tiles[requester.name] // work on your claimed tile first you JERK
+		return src.busy_tiles[requester.name]
 	if(length(priority_tiles))
 		var/list/available_tiles = priority_tiles
 		for(var/owner in src.busy_tiles)
@@ -570,10 +560,9 @@
 
 /datum/flock/proc/process()
 	var/list/floors_no_longer_existing = list()
-	// check all active floors
+
 	for(var/turf/simulated/floor/feather/T in src.all_owned_tiles)
 		if(!T || T.loc == null || T.broken)
-			// tile got killed, remove it
 			floors_no_longer_existing |= T
 			continue
 
@@ -684,7 +673,7 @@
 	if(istype(T, /turf/space))
 		var/obj/lattice/flock/FL = locate(/obj/lattice/flock) in T
 		if(!FL)
-			FL = new /obj/lattice/flock(T) //may as well reuse the var
+			FL = new /obj/lattice/flock(T)
 	else // don't do this stuff if the turf is space, it fucks it up more
 		T.RL_Cleanup()
 		T.RL_LumR = RL_LumR
@@ -730,11 +719,10 @@
 	return T
 
 /proc/mass_flock_convert_turf(var/turf/T, datum/flock/F)
-	// a terrible idea
 	if(!T)
 		T = get_turf(usr)
 	if(!T)
-		return // not sure if this can happen, so it will
+		return
 
 	flock_spiral_conversion(T, F)
 
@@ -756,7 +744,7 @@
 		radius++
 		sleep(radius * 10)
 		if(isnull(source))
-			return // our source is gone, stop the process
+			return
 
 
 /proc/flock_spiral_conversion(var/turf/T, datum/flock/F)
@@ -773,7 +761,6 @@
 
 	while(isturf(T))
 		if(istype(T, /turf/simulated) && !isfeathertile(T))
-			// do stuff to turf
 			if (F)
 				F.claimTurf(flock_convert_turf(T))
 			else

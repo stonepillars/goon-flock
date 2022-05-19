@@ -1,4 +1,6 @@
-/// # Collector structure
+/////////////////////////////////////////////////////////////////////////////////
+// COLLECTOR
+/////////////////////////////////////////////////////////////////////////////////
 /obj/flock_structure/collector
 	name = "weird lookin' pulsing thing"
 	desc = "Seems to be pulsing."
@@ -14,8 +16,6 @@
 	/// the tiles its connected to
 	var/list/turf/simulated/floor/feather/connectedto = list()
 
- //needed for passthrough
-	// drones can pass through this, might change this later, as balance point
 	passthrough = TRUE
 
 	usesgroups = TRUE
@@ -52,17 +52,17 @@
 	var/myturf = get_turf(src)
 	var/distance = 0 //how far has it gone already?
 	var/turf/simulated/floor/feather/floor = myturf
-	if(!istype(floor)) return//if it aint a flock floor
+	if(!istype(floor)) return
 
 	if(floor.broken) return
-	connectedto += myturf //add the turf underneath
+	connectedto += myturf
 
-	for(var/d in cardinal)//for every direction in cardinals
+	for(var/d in cardinal)
 		distance = 0
 		floor = src.loc
 		while(true)
 			floor = get_step(floor, d)
-			if(!istype(floor)) break //if its not a flock tile just stop,
+			if(!istype(floor)) break
 			if(floor.broken) break
 			if(distance >= maxrange) break
 			distance++
@@ -70,6 +70,6 @@
 
 	for(var/turf/simulated/floor/feather/flocktile as anything in connectedto)
 		flocktile.connected = TRUE
-		flocktile.on() //make it glo
+		flocktile.on()
 
 

@@ -1,5 +1,4 @@
 // Flock-themed furniture!
-// because why the fuck not
 //
 // CONTENTS:
 // Table (and table parts)
@@ -32,7 +31,7 @@
     <br><span class='bold'>ID:</span> Storage Surface
     <br><span class='bold'>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
 /obj/table/flock/auto
 	auto = TRUE
@@ -57,7 +56,7 @@
     <br><span class='bold'>Instructions:</span> Activate within grip tool to deploy.
     <br><span class='bold'>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
 ///////////////////////////
 // CHAIR & PARTS
@@ -87,7 +86,7 @@
     <br><span class='bold'>ID:</span> Resting Chamber
     <br><span class='bold'>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
 /obj/item/furniture_parts/flock_chair
 	name = "pulsing orb"
@@ -114,7 +113,7 @@
     <br><span class='bold'>Instructions:</span> Activate within grip tool to deploy.
     <br><span class='bold'>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
 
 ///////////////////////////
@@ -211,7 +210,7 @@
 	<br><span class='bold'>System Integrity:</span> [round((src.health_attack/src.health_max)*100)]%
     <br><span class='bold'>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
 ///////////////////////////
 // LIGHT FITTING
@@ -256,7 +255,7 @@
     <br><span class='bold'>ID:</span> Light Emitter
     <br><span class='bold'>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
 /obj/machinery/light/flock/floor
 	icon_state = "flock_floor1"
@@ -300,7 +299,7 @@
 		<br><span class='bold'>ID:</span> Structural Foundation
 		<br><span class='bold'>###=-</span></span>"}
 	else
-		return null // give the standard description
+		return null
 
 /////////////
 // BARRICADE
@@ -345,7 +344,6 @@
 	src.AddComponent(/datum/component/flock_protection)
 
 
-// flockdrones can always move through
 /obj/grille/flock/Cross(atom/movable/mover)
 	. = ..()
 	var/mob/living/critter/flock/drone/drone = mover
@@ -361,7 +359,7 @@
 		<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
 		<br><span class='bold'>###=-</span></span>"}
 	else
-		return null // give the standard description
+		return null
 
 /obj/grille/flock/attack_hand(mob/user)
 	if (user.a_intent != INTENT_HARM)

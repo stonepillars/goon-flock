@@ -1,8 +1,6 @@
 /////////////////
 // FLOCKTRACE
 /////////////////
-// Unlike the flockmind, when player drones exit their corporeal body to jump into another one,
-// they're tiny little flickers of thought.
 /mob/living/intangible/flock/trace
 	name = "Flocktrace"
 	real_name = "Flocktrace"
@@ -25,7 +23,7 @@
 		src.flock = F
 		src.flock.addTrace(src)
 	else
-		src.death() // f u
+		src.death()
 
 	src.addAbility(/datum/targetable/flockmindAbility/designateEnemy)
 	src.addAbility(/datum/targetable/flockmindAbility/ping)
@@ -55,9 +53,9 @@
     <br><span class='bold'>Cognition:</span> SYNAPTIC PROCESS
     <br>###=-</span></span>"}
   else
-    return null // give the standard description
+    return null
 
-// TEMPORARY, I FUCKING HATE STAT PANELS
+// todo: use something better?
 /mob/living/intangible/flock/trace/Stat()
 	..()
 	stat(null, " ")
@@ -103,7 +101,7 @@
 	aH?.updateCompute()
 	if (src.flock && src.flock.total_compute() < src.flock.used_compute())
 		boutput(src, "<span class='alert'>The Flock has insufficient compute to sustain your consciousness!</span>")
-		src.death() // get rekt
+		src.death()
 
 /mob/living/intangible/flock/trace/death(gibbed)
 	if(src.client)
@@ -125,6 +123,6 @@
 	O.icon = src.icon
 	O.icon_state = "flocktrace-ghost"
 	O.pixel_y = initial(O.pixel_y) // WHY DO I NEED TO DO THIS TOO I DON'T EVEN ANIMATE THE PIXEL_Y
-	animate_bumble(O) // bob up and down
+	animate_bumble(O)
 	O.alpha = 160
 	return O

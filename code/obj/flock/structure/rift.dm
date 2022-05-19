@@ -1,6 +1,6 @@
-//
-// rift thingymabob
-//
+/////////////////////////////////////////////////////////////////////////////////
+// RIFT
+/////////////////////////////////////////////////////////////////////////////////
 /obj/flock_structure/rift
 	icon = 'icons/misc/featherzone.dmi'
 	icon_state = "rift"
@@ -9,7 +9,7 @@
 	desc = "Oh god is that a fucking light grenade?!"
 	flock_id = "Entry Rift"
 	build_time = 10
-	health = 200 // stronk little thing
+	health = 200
 	var/list/eject = list()
 
 /obj/flock_structure/rift/building_specific_info()
@@ -20,7 +20,7 @@
 	var/elapsed = getTimeInSecondsSinceTime(src.time_started)
 	if(elapsed >= build_time)
 		src.visible_message("<span class='text-blue'>Multiple shapes exit out of [src]!</span>")
-		for(var/i in 1 to pick(3, 4)) //here im using the flockdronegibs proc to handle throwing things out randomly. in these for loops im just creating the objects (resource caches and flockdrone eggs) and adding them to the list (eject) which will get thrown about
+		for(var/i in 1 to pick(3, 4))
 			var/obj/item/flockcache/x = new(src.contents)
 			x.resources = rand(40, 50)
 			eject += x
@@ -39,7 +39,7 @@
 					src.flock.claimTurf(flock_convert_turf(S))
 					candidate_turfs -= S
 					break
-		flockdronegibs(src.loc, null, eject)//here they are actually ejected
+		flockdronegibs(src.loc, null, eject) //ejectables ejected here
 		qdel(src)
 	else
 		var/severity = round(((build_time - elapsed)/build_time) * 5)

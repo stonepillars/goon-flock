@@ -265,12 +265,10 @@
 		if(A.canAIControl())
 			targets += A
 	if(length(targets))
-		// do casty stuff here
 		playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
 		boutput(holder.owner, "<span class='notice'>You force open all the doors around you.</span>")
 		sleep(1.5 SECONDS)
 		for(var/obj/machinery/door/airlock/A in targets)
-			// open the door
 			SPAWN(1 DECI SECOND)
 				A.open()
 	else
@@ -292,13 +290,11 @@
 	var/list/targets = list()
 	for(var/mob/living/M in range(10, holder.owner))
 		if(isflock(M))
-			continue // don't affect us or our flockdrones, yeesh
+			continue
 		if(M.ear_disability)
-			// skip this one
 			continue
 		var/obj/item/device/radio/R = M.ears
 		if(istype(R) && R.listening)
-			// your headset's on, you're fair game!!
 			targets += M
 	if(length(targets))
 		playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)
@@ -326,7 +322,6 @@
 	var/message
 	if(ismob(target))
 		var/mob/living/M = target
-		// RADIO CHECK
 		if(istype(M.ears, /obj/item/device/radio))
 			R = M.ears
 		else

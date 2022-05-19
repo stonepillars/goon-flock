@@ -68,7 +68,7 @@ stare
 /datum/aiTask/prioritizer/flock/on_tick()
 	if(isdead(holder.owner))
 		holder.enabled = FALSE
-		walk(holder.owner, 0) // STOP RUNNING AROUND YOU'RE SUPPOSED TO BE DEAD
+		walk(holder.owner, 0)
 
 /datum/aiTask/prioritizer/flock/on_reset()
 	..()
@@ -120,7 +120,6 @@ stare
 	for(var/turf/simulated/floor/feather/F in view(max_dist, holder.owner))
 		// let's not spam eggs all the time
 		if(isnull(locate(/obj/flock_structure/egg) in F))
-			// if we can get a valid path to the target, include it for consideration
 			. += F
 	. = get_path_to(holder.owner, ., max_dist*2, can_be_adjacent_to_target)
 
@@ -172,20 +171,19 @@ stare
 	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(F?.can_afford(FLOCK_CONVERT_COST + FLOCK_LAY_EGG_COST))
-		. = TRUE //we can afford
+		. = TRUE
 		for(var/turf/simulated/floor/feather/T in view(max_dist, holder.owner))
-			return FALSE //but there's a flocktile in view
+			return FALSE
 
 
 /datum/aiTask/sequence/goalbased/nest/get_targets()
 	. = list()
 	var/mob/living/critter/flock/F = holder.owner
-	// grab a nearby unconverted tile
+
 	for(var/turf/simulated/floor/T in view(max_dist, holder.owner))
 		if(!isfeathertile(T))
 			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
-				continue // this tile's been claimed by someone else
-			// if we can get a valid path to the target, include it for consideration
+				continue
 			. += T
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -242,7 +240,7 @@ stare
 		var/list/priority_turfs = F.flock.getPriorityTurfs(F)
 		if(length(priority_turfs))
 			. = get_path_to(holder.owner, priority_turfs, max_dist, 1)
-			if(length(.)) //if we got a valid path
+			if(length(.))
 				return
 
 	. = list()
@@ -250,7 +248,6 @@ stare
 	for(var/turf/simulated/T in view(max_dist, holder.owner))
 		if (!valid_target(T))
 			continue // this tile's been claimed by someone else
-		// if we can get a valid path to the target, include it for consideration
 		. += T
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -269,7 +266,7 @@ stare
 		return TRUE
 	if(!F.can_afford(FLOCK_CONVERT_COST))
 		return TRUE
-	if(F.flock && !F.flock.isTurfFree(build_target, F.real_name)) // oh no, someone else claimed this tile before we got to it
+	if(F.flock && !F.flock.isTurfFree(build_target, F.real_name)) // someone else claimed this tile before we got to it
 		return TRUE
 
 /datum/aiTask/succeedable/build/succeeded()
@@ -334,8 +331,7 @@ stare
 			locate(/obj/machinery/door/airlock) in T || \
 			locate(/obj/storage) in T))
 			if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
-				continue // this tile's been claimed by someone else
-			// if we can get a valid path to the target, include it for consideration
+				continue
 			. += T
 
 	// if there are absolutely no walls/doors/closets in view, and no reserved tiles, then fine, you can have a floor tile
@@ -343,8 +339,7 @@ stare
 		for(var/turf/simulated/T in view(max_dist, holder.owner))
 			if(!isfeathertile(T))
 				if(F?.flock && !F.flock.isTurfFree(T, F.real_name))
-					continue // this tile's been claimed by someone else
-				// if we can get a valid path to the target, include it for consideration
+					continue
 				. += T
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -382,8 +377,7 @@ stare
 	for(var/mob/living/critter/flock/drone/F in view(max_dist, holder.owner))
 		if(F == holder.owner)
 			continue
-		if(FH.flock == F.flock && F.get_health_percentage() < 0.66 && !isdead(F))//yeesh dont try to repair something which is dead
-			// if we can get a valid path to the target, include it for consideration
+		if(FH.flock == F.flock && F.get_health_percentage() < 0.66 && !isdead(F))
 			. += F
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -450,7 +444,6 @@ stare
 	. = list()
 	for(var/obj/flock_structure/ghost/S in view(max_dist, F))
 		if(S.flock == F.flock && S.goal > S.currentmats)
-			// if we can get a valid path to the target, include it for consideration
 			. += S
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -506,7 +499,6 @@ stare
 	. = list()
 	for(var/obj/storage/S in view(max_dist, holder.owner))
 		if(!S.open && !S.welded && !S.locked)
-			// if we can get a valid path to the target, include it for consideration
 			. += S
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -557,13 +549,12 @@ stare
 
 /datum/aiTask/sequence/goalbased/rummage/precondition()
 	var/mob/living/critter/flock/drone/F = holder.owner
-	return !(F?.absorber?.item) //only go rummaging if you ain't got stuff to eat
+	return !(F?.absorber?.item)
 
 /datum/aiTask/sequence/goalbased/rummage/get_targets()
 	. = list()
 	for(var/obj/item/storage/I in view(max_dist, holder.owner))
 		if(length(I.contents) && I.loc != holder.owner && I.does_not_open_in_pocket)
-			// if we can get a valid path to the target, include it for consideration
 			. += I
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -594,22 +585,19 @@ stare
 		var/mob/living/critter/flock/drone/F = holder.owner
 		usr = F // don't ask, please, don't
 		if(F?.set_hand(1)) // grip tool
-			if(!F.is_in_hands(container_target)) //if it's not in any of our hands, pick it up
-				F.drop_item() // drop whatever we're holding
+			if(!F.is_in_hands(container_target))
+				F.drop_item()
 				F.set_dir(get_dir(F, container_target))
 				F.hand_attack(container_target) //try and pick it up
-			if(F.is_in_hands(container_target)) //did we do it?
+			if(F.is_in_hands(container_target))
 				if(F.absorber.item != container_target) //if it's in our manipulating hand
-					// we've picked up a container, just eat it, dump it onto the floor
 					container_target.MouseDrop(get_turf(F)) //this will do nothing on a locked secure storage
-					// might as well eat the container now
-					F.absorber.equip(container_target) //eating the container drops the contents anyway
+					F.absorber.equip(container_target) //eating the container also drops its contents
 				return
 			else
-				// we've opened a HUD, do a fake HUD click, because i am dedicated to this whole puppetry schtick
+				// we've opened a HUD, do a fake HUD click
 				container_target.hud.relay_click("boxes", F, dummy_params)
 				if(isitem(F.equipped()))
-					// we got an item from the thing, drop it for our friends to munch on
 					F.drop_item()
 					return
 				else
@@ -650,8 +638,7 @@ stare
 	for(var/obj/item/I in view(max_dist, holder.owner))
 		if(!I.anchored && I.loc != holder.owner)
 			if(istype(I, /obj/item/game_kit))
-				continue // fuck the game kit
-			// if we can get a valid path to the target, include it for consideration
+				continue
 			. += I
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -676,12 +663,10 @@ stare
 		if(F?.set_hand(1)) // grip tool
 			var/obj/item/already_held = F.get_active_hand().item
 			if(already_held)
-				// we're already holding a thing to eat
 				harvest_target = already_held
 			else
 				F.empty_hand(1) // drop whatever we might be holding just in case
-				// grab the item
-				F.set_dir(get_dir(F, harvest_target)) //look at it
+				F.set_dir(get_dir(F, harvest_target))
 				//special item type handling
 				if(istype(harvest_target,/obj/item/card_group))
 					if(harvest_target.loc == holder.owner) //checks hand for card to allow taking from pockets/storage
@@ -698,9 +683,8 @@ stare
 						F.hand_attack(harvest_target) //else grab some paper
 				else
 					F.hand_attack(harvest_target)
-			// if we have the item, equip it into our horrifying death chamber
 			if(F.is_in_hands(harvest_target))
-				F.absorber.equip(harvest_target) // hooray!
+				F.absorber.equip(harvest_target)
 	// tick up a fail counter so we don't try to get something we can't forever
 	fails++
 
@@ -709,7 +693,6 @@ stare
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE-SPECIFIC SHOOT TASK
-// ho boy
 // so within this timed task, look through valid targets in holder.owner.flock
 // pick a target within range and shoot at them if they're not already stunned
 /datum/aiTask/timed/targeted/flockdrone_shoot
@@ -723,7 +706,6 @@ stare
 	var/list/dummy_params = list("icon-x" = 16, "icon-y" = 16)
 
 /datum/aiTask/timed/targeted/flockdrone_shoot/proc/precondition()
-	//if we know there are enemies, and gun is charged and ready
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(length(F.flock?.enemies))
 		var/datum/handHolder/HH = F.hands[3]
@@ -770,10 +752,10 @@ stare
 			owncritter.hand_range_attack(holder.target, dummy_params)
 			if(dist < run_range)
 				if(prob(20))
-					// RUN
+					// run
 					holder.move_away(holder.target,4)
 			else if(prob(30))
-				// ROBUST DODGE
+				// dodge
 				walk(owncritter, 0)
 				walk_rand(owncritter, 1, 2)
 
@@ -785,7 +767,7 @@ stare
 		return
 
 	for(var/atom/T in F.flock.enemies)
-		if(istype(T.loc, /obj/flock_structure/cage)) //already got the bastard, don't need to do anything else
+		if(istype(T.loc, /obj/flock_structure/cage))
 			continue
 		if (isvehicle(T.loc))
 			if(T.loc in view(holder.owner, target_range))
@@ -816,7 +798,7 @@ stare
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/precondition()
 	var/mob/living/critter/flock/F = holder.owner
-	return F?.can_afford(FLOCK_CAGE_COST) && (length(F.flock?.enemies)) //gotta have enemies if we're gonna cage em
+	return F?.can_afford(FLOCK_CAGE_COST) && (length(F.flock?.enemies))
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/evaluate()
 	. = precondition() * weight * score_target(get_best_target(get_targets()))
@@ -828,15 +810,12 @@ stare
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/valid_target(atom/target)
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(!F.flock.isEnemy(target))
-		return FALSE
-	if (!ismob(target) && !iscritter(target)) //no caging vehicles
+	if(!F.flock.isEnemy(target) || isvehicle(target))
 		return FALSE
 	if(istype(target,/mob/living))
 		var/mob/living/mob = target
 		if(!is_incapacitated(mob))
 			return FALSE
-	// mob is a valid target, check if they're not already in a cage
 	if(!istype(target.loc, /obj/flock_structure/cage))
 		return TRUE
 
@@ -861,7 +840,7 @@ stare
 		return TRUE
 	if(!F.can_afford(FLOCK_CAGE_COST))
 		return TRUE
-	if(get_dist(F, holder.target) > 1) //moved away before we could finish
+	if(get_dist(F, holder.target) > 1)
 		return TRUE
 
 /datum/aiTask/succeedable/capture/succeeded()
@@ -874,8 +853,7 @@ stare
 			if(isliving(T))
 				var/mob/living/M = T
 				if(!is_incapacitated(M))
-					// target is up, abort
-					holder.interrupt() // re-evaluate task options
+					holder.interrupt()
 					return
 			var/mob/living/critter/flock/drone/owncritter = holder.owner
 			var/dist = get_dist(owncritter, holder.target)
@@ -886,7 +864,7 @@ stare
 				owncritter.set_dir(get_dir(owncritter, holder.target))
 				owncritter.hand_attack(holder.target)
 		else
-			holder.interrupt() //somehow lost target, go do something else
+			holder.interrupt()
 			return
 /datum/aiTask/succeedable/capture/on_reset()
 	var/mob/living/critter/flock/drone/drone = holder.owner
@@ -989,7 +967,7 @@ stare
 		return TRUE
 	if(!F.can_afford(FLOCK_BARRICADE_COST))
 		return TRUE
-	if(get_dist(F, holder.target) > 1) //moved away before we could finish
+	if(get_dist(F, holder.target) > 1)
 		return TRUE
 
 /datum/aiTask/succeedable/barricade/succeeded()
@@ -1044,7 +1022,6 @@ stare
 	. = list()
 	for(var/atom/S in F?.flock?.deconstruct_targets)
 		if(IN_RANGE(S,holder.owner,max_dist))
-			// if we can get a valid path to the target, include it for consideration
 			. += S
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
 
@@ -1082,11 +1059,11 @@ stare
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // STARE AT BIRDS
-// targets: any bird critters
+// targets: any bird critters (not obj/critter)
 // precondition: cooldown
 /datum/aiTask/sequence/goalbased/stare
 	name = "observing"
-	weight = 1 //same as wander
+	weight = 1
 
 /datum/aiTask/sequence/goalbased/stare/evaluate()
 	. = src.precondition() && length(src.get_targets()) ? 1 : 0  // it'd require every other task returning very small values for this to get selected
@@ -1102,7 +1079,7 @@ stare
 
 /datum/aiTask/sequence/goalbased/stare/get_targets()
 	. = list()
-	for(var/mob/living/critter/C in view(max_dist, holder.owner)) //I'm not handling obj/critter birds. i'm just not. deal with it.
+	for(var/mob/living/critter/C in view(max_dist, holder.owner))
 		if(istype(C,/mob/living/critter/small_animal/bird) || istype(C,/mob/living/critter/small_animal/ranch_base/chicken))
 			. += C
 	. = get_path_to(holder.owner, ., max_dist*2, 1)
@@ -1208,7 +1185,6 @@ stare
 			var/mob/living/mob = target
 			if(!is_incapacitated(mob))
 				return FALSE
-		// mob is a valid target, check if they're not already in a cage
 		if(!istype(target.loc, /obj/flock_structure/cage))
 			return TRUE
 

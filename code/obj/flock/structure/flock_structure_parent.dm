@@ -13,10 +13,10 @@
 	/// when did we get created?
 	var/time_started = 0
 	var/build_time = 6 // in seconds
-	var/health = 30 // fragile little thing
+	var/health = 30
 	var/health_max = 30
 	var/bruteVuln = 1.2
-	/// very flame-retardant
+
 	var/fireVuln = 0.2
 	var/datum/flock/flock = null
 	//base compute provided
@@ -25,11 +25,11 @@
 	var/resourcecost = 50
 	/// can flockdrones pass through this akin to a grille? need to set USE_CANPASS to make this work however
 	var/passthrough = FALSE
-	/// not everything needs a group so dont check for everysingle god damn structure
+
 	var/usesgroups = FALSE
 	/// what group are we connected to?
 	var/datum/flock_tile_group/group = null
-	/// the tile which its "connected to" and handles the group
+	/// the tile which its "connected to" and that handles the group
 	var/turf/simulated/floor/feather/grouptile = null
 
 /obj/flock_structure/New(var/atom/location, var/datum/flock/F=null)
@@ -84,7 +84,7 @@
 		special_desc += "<br><span class='bold'>###=-</span></span>"
 		return special_desc
 	else
-		return null // give the standard description
+		return null
 
 //override this if compute is conditional or something
 /obj/flock_structure/proc/compute_provided()
@@ -126,16 +126,15 @@
 			var/half = round(amount/2)
 			amount = half * bruteVuln + (amount - half) * fireVuln
 	health -= amount
-	checkhealth() // die if necessary
+	checkhealth()
 
 /obj/flock_structure/proc/checkhealth()
 	if(src.health <= 0)
 		src.gib()
 
 /obj/flock_structure/proc/deconstruct()
-	//you can have half your resources back
 	visible_message("<span class='alert'>[src.name] suddenly dissolves!</span>")
-	var/refund = round((src.health/src.health_max) * 0.5 * src.resourcecost) //this is floor(), depsite the name
+	var/refund = round((src.health/src.health_max) * 0.5 * src.resourcecost)
 	if(refund >= 1)
 		var/obj/item/flockcache/cache = new(get_turf(src))
 		cache.resources = refund
@@ -143,7 +142,6 @@
 
 
 /obj/flock_structure/proc/gib(atom/location)
-	// no parent calling, we're going to completely override this
 	if (!location)
 		location = get_turf(src)
 	visible_message("<span class='alert'>[src.name] violently breaks apart!</span>")
@@ -232,7 +230,7 @@
 
 	src.report_attack()
 
-	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0) // stuns will do nothing
+	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0)
 	var/damage_mult = 1
 	var/damtype = "brute"
 	if (damage < 1)

@@ -4,8 +4,8 @@
 	icon_state = "flockbit"
 	density = FALSE
 	hand_count = 2
-	pays_to_construct = FALSE // free buildings!!
-	health_brute = 5 // fragile, handle with care (one smack will destroy them)
+	pays_to_construct = FALSE
+	health_brute = 5
 	health_burn = 5
 	fits_under_table = TRUE
 	flags = TABLEPASS
@@ -15,7 +15,7 @@
 
 	src.ai = new /datum/aiHolder/flock/bit(src)
 
-	SPAWN(1 SECOND) // aaaaaaa
+	SPAWN(1 SECOND)
 		animate_bumble(src)
 		src.zone_sel.change_hud_style('icons/mob/flock_ui.dmi')
 
@@ -35,7 +35,7 @@
 		<br><span class='bold'>Cognition:</span> [src.dormant ? "ABSENT" : "PREDEFINED"]
 		<br><span class='bold'>###=-</span></span>"}
 	else
-		return null // give the standard description
+		return null
 
 /mob/living/critter/flock/bit/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
@@ -48,10 +48,9 @@
 		return
 	if(target == user)
 		if(istype(user, /mob/living/intangible/flock))
-			// whoops
 			boutput(user, "<span class='flocksay'>Insufficient processing power for partition override.</span>")
 		else
-			..() // do ghost observes, i guess
+			..() // ghost observe
 	else
 		..()
 
@@ -94,7 +93,7 @@
 		src.ghostize()
 	..()
 
-// okay so this might be fun for gimmicks
+// for gimmicks
 /mob/living/critter/flock/bit/Login()
 	..()
 	src.client?.color = null
@@ -110,7 +109,7 @@
 		if ("flip")
 			if (src.emote_check(voluntary, 50) && !src.shrunk)
 				SPAWN(1 SECOND)
-					animate_bumble(src) // start the floaty animation again (stolen from bees of course)
+					animate_bumble(src)
 				return null
 	return null
 
@@ -125,7 +124,7 @@
 		return
 	if (!istype(user))
 		return
-	// CONVERT TURF
+
 	if(!isturf(target))
 		target = get_turf(target)
 

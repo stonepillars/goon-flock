@@ -112,7 +112,6 @@
 
 
 /obj/machinery/door/feather/attack_ai(mob/user as mob)
-	// do nothing, AI and borgs can't interface with the door
 	boutput(user, "<span class='alert'>No response. It doesn't seem compatible with your systems.</span>")
 	return
 
@@ -125,7 +124,7 @@
 	..()
 
 /obj/machinery/door/feather/allowed(mob/M)
-	return isflock(M) // haha fuck you everyone else
+	return isflock(M)
 
 /obj/machinery/door/feather/open()
 	if(..())
@@ -147,9 +146,9 @@
 ////////////////////
 // friendly variant
 ////////////////////
+// everyone allowed to open
 /obj/machinery/door/feather/friendly
-	// whee
-	alien = FALSE //non flock are allowed
+	alien = FALSE
 
 /obj/machinery/door/feather/friendly/allowed(mob/M)
-	return TRUE // everyone welcome
+	return TRUE

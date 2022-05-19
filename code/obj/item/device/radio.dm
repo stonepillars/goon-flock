@@ -362,7 +362,6 @@ var/list/headset_channel_lookup
 			if(z.client)
 				receive += z
 
-	// hi it's me cirr here to shoehorn in another thing
 	// flockdrones and flockmind should hear all channels, but with terrible corruption
 		for(var/F in flocks)
 			var/datum/flock/flock = flocks[F]

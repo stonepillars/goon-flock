@@ -1,8 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////
 // ENERGY CAGE
 /////////////////////////////////////////////////////////////////////////////////
-// it's just an ice cube, but stronger and it looks different
-// and eats people, i guess, too
 /obj/flock_structure/cage
 	name = "weird energy cage"
 	desc = "You can see the person inside being rapidly taken apart by fibrous mechanisms. You ought to do something about that."
@@ -28,7 +26,7 @@
 	New(loc, var/atom/iced, datum/flock/F=null)
 		..(loc,F)
 		if(iced && !isAI(iced) && !isblob(iced) && !iswraith(iced))
-			if(istype(iced.loc, /obj/flock_structure/cage)) //Already in a cube?
+			if(istype(iced.loc, /obj/flock_structure/cage))
 				qdel(src)
 				return
 
@@ -37,11 +35,11 @@
 				return
 			iced:set_loc(src)
 
-			boutput(iced, "<span class='alert'>You are trapped within [src]!</span>") // since this is used in at least two places to trap people in things other than ice cubes
+			boutput(iced, "<span class='alert'>You are trapped within [src]!</span>")
 
 		var/datum/reagents/R = new /datum/reagents(initial_volume)
 		src.reagents = R
-		R.my_atom = src //grumble
+		R.my_atom = src
 		if(iced)
 			if(istype(iced,/mob/living))
 				var/mob/living/M = iced
@@ -221,7 +219,7 @@
 				if(target:health <= 0)
 					if(isliving(target))
 						var/mob/living/M = target
-						M.set_loc(src.loc) //kick it out and gib it
+						M.set_loc(src.loc)
 						M.gib()
 						occupant = null
 						playsound(src, "sound/impact_sounds/Flesh_Tear_2.ogg", 80, 1)
@@ -306,7 +304,7 @@
 			<br><span class='bold'>Needed volume:</span> [src.create_egg_at_fluid]
 			<br><span class='bold'>###=-</span></span>"}
 		else
-			return null // give the standard description
+			return null
 
 
 

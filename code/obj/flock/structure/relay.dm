@@ -16,11 +16,11 @@
 	pixel_y = -64
 	bound_x = -64
 	bound_y = -64
-	layer = EFFECTS_LAYER_BASE //big spooky thing needs to render over everything
+	layer = EFFECTS_LAYER_BASE
 	plane = PLANE_NOSHADOW_ABOVE
 	var/last_time_sound_played_in_seconds = 0
 	var/sound_length_in_seconds = 27
-	var/charge_time_length = 360 // also in seconds
+	var/charge_time_length = 360 // in seconds
 	var/final_charge_time_length = 18
 	var/col_r = 0.1
 	var/col_g = 0.7
@@ -30,12 +30,11 @@
 
 /obj/flock_structure/relay/New()
 	..()
-	// no shuttle for you, either destroy the relay or flee when it unleashes
 	if (emergency_shuttle.online && emergency_shuttle.direction == 1 && emergency_shuttle.location != SHUTTLE_LOC_STATION && emergency_shuttle.location != SHUTTLE_LOC_TRANSIT)
 		emergency_shuttle.recall()
 		command_alert("Emergency shuttle approach aborted due to anomalous radio signal interference. The shuttle has been returned to base as a precaution.")
 	emergency_shuttle.disabled = TRUE
-	// start playing sound
+
 	play_sound()
 	flock_speak(null, "RELAY CONSTRUCTED! DEFEND THE RELAY!!", src.flock)
 	SPAWN(1 SECOND)
@@ -47,7 +46,6 @@
 
 /obj/flock_structure/relay/disposing()
 	..()
-	//crew destroyed it, let them call shuttle
 	emergency_shuttle.disabled = FALSE
 
 /obj/flock_structure/relay/get_desc()
@@ -69,18 +67,16 @@
 	if(elapsed >= charge_time_length/2)
 		if(icon_state == "structure-relay")
 			icon_state = "structure-relay-glow"
-		// halfway point, start playing radio noises at people too
+
 		for(var/mob/M in mobs)
 			if(prob(20))
 				M.playsound_local(M, "sound/effects/radio_sweep[rand(1,5)].ogg", 20, 1)
 				if(prob(50))
 					boutput(M, "<span class='flocksay italic'>... [radioGarbleText("the signal will set you free")] ...</span>")
 	if(elapsed >= charge_time_length)
-		// IT'S TIME, FINISH IT NOW
 		unleash_the_signal()
 
 /obj/flock_structure/relay/proc/play_sound()
-	// reset the sound clock
 	src.last_time_sound_played_in_seconds = getTimeInSecondsSinceTime(src.time_started)
 	var/center_loc = get_turf(src)
 	for(var/mob/M in mobs)
@@ -97,15 +93,14 @@
 	for(var/mob/M in mobs)
 		M.playsound_local(M, "sound/misc/flockmind/flock_broadcast_charge.ogg", 60, 0, 2)
 	sleep(final_charge_time_length * 10)
-	// BOOOOOM
+
 	for(var/mob/M in mobs)
 		M.playsound_local(M, "sound/misc/flockmind/flock_broadcast_kaboom.ogg", 60, 0, 2)
 		M.flash(3 SECONDS)
 	SPAWN(1 SECOND)
-		// okay now you may have a shuttle
 		emergency_shuttle.disabled = FALSE
 		emergency_shuttle.incall()
-		emergency_shuttle.can_recall = FALSE // yeah centcom's coming no matter what
+		emergency_shuttle.can_recall = FALSE
 		emergency_shuttle.settimeleft(180) // cut the time down to keep some sense of urgency
 		boutput(world, "<span class='notice'><B>Alert: The emergency shuttle has been called.</B></span>")
 		boutput(world, "<span class='notice'>- - - <b>Reason:</b> Hostile transmission intercepted. Sending rapid response emergency shuttle.</span>")
@@ -124,7 +119,6 @@
 
 ///Brick every headset noisily
 /obj/flock_structure/relay/proc/destroy_radios()
-	//mid-tier jank, but it's a nice easy way to get the radio network
 	var/obj/item/device/radio/headset/entrypoint = new()
 	var/list/obj/radios = get_radio_connection_by_id(entrypoint, "main").network.analog_devices
 	for (var/obj/item/device/radio/radio in radios)

@@ -19,7 +19,7 @@
 	// HEALTHS
 	var/health_brute = 1
 	var/health_burn = 1
-	// no medicine for radio birds
+
 	metabolizes = FALSE
 	//base compute provided
 	var/compute = 0
@@ -27,16 +27,16 @@
 	var/extinguishing = FALSE
 	// FLOCK-SPECIFIC STUFF
 	var/datum/flock/flock
-	// this body sucks i want a different one
+
 	var/mob/living/intangible/flock/controller = null
 	// do i pay for building?
 	var/pays_to_construct = TRUE
-	// AI STUFF
+
 	is_npc = TRUE
 
-	use_stamina = FALSE //haha, no
+	use_stamina = FALSE
 
-	can_lie = FALSE // no rotate when dead
+	can_lie = FALSE
 	blood_id = "flockdrone_fluid"
 
 /mob/living/critter/flock/setup_healths()
@@ -123,7 +123,7 @@
 
 /mob/living/critter/flock/say(message, involuntary = FALSE)
 	if(isdead(src) && src.is_npc)
-		return // NO ONE CARES
+		return
 	message = trim(copytext(sanitize(message), 1, MAX_MESSAGE_LEN))
 
 	..(message) // caw at the non-drones
@@ -145,9 +145,6 @@
 		return TRUE
 	return FALSE
 
-// common features all flock bots get include automatic fire extinguishers
-// (fire is not their weakness, guys, you just need to hit them really hard)
-// (they're the anti-blob)
 /mob/living/critter/flock/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return TRUE
@@ -187,12 +184,10 @@
 // all flock bots should have the ability to rally somewhere (it's applicable to anything with flock AI)
 /mob/living/critter/flock/proc/rally(atom/movable/target)
 	if(src.is_npc)
-		// tell the npc AI to go after the target
 		if(src.ai)
 			var/datum/aiHolder/flock/flockai = ai
 			flockai.rally(target)
 	else
-		// tell whoever's controlling the critter to come to the flockmind, pronto
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: The flockmind requests your presence immediately.\]</b></span>")
 
 /mob/living/critter/flock/death(var/gibbed)
@@ -247,7 +242,6 @@
 			boutput(owner, "<span class='notice'>You begin spraying nanite strands onto the structure. You need to stay still for this.</span>")
 			playsound(target, "sound/misc/flockmind/flockdrone_convert.ogg", 40, 1)
 
-			// do effect
 			var/flick_anim = "spawn-floor"
 			if(istype(target, /turf/simulated/floor) || istype(target, /turf/space))
 				src.decal = new /obj/decal/flock_build_floor
@@ -281,7 +275,7 @@
 			if(F.flock)
 				F.flock.convert_turf(target, F.real_name)
 			else
-				flock_convert_turf(target) // bypasses any of the ownership logic
+				flock_convert_turf(target)
 			F.pay_resources(FLOCK_CONVERT_COST)
 
 /////////////////////////////////////////////////////////////////////////////////
@@ -324,7 +318,6 @@
 			else
 				playsound(target, "sound/misc/flockmind/flockdrone_build.ogg", 40, 1)
 
-			// do effect
 			var/flick_anim = "spawn-wall"
 			src.decal = new /obj/decal/flock_build_wall
 			if(src.decal)
@@ -513,7 +506,7 @@
 				if(istype(target,/mob/living))
 					var/mob/living/M = target
 					M.was_harmed(F, null, "flock", INTENT_DISARM)
-				// do effect
+
 				src.decal = new /obj/decal/flock_build_wall
 				if(src.decal)
 					src.decal.set_loc(target)
