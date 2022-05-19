@@ -237,7 +237,7 @@
 	onUpdate()
 		..()
 		var/mob/living/critter/flock/F = owner
-		if (target == null || owner == null || !in_interact_range(owner, target) || isfeathertile(target) || !F?.can_afford(20))
+		if (target == null || owner == null || !in_interact_range(owner, target) || isfeathertile(target) || !F?.can_afford(FLOCK_CONVERT_COST))
 			interrupt(INTERRUPT_ALWAYS)
 			return
 
@@ -282,7 +282,7 @@
 				F.flock.convert_turf(target, F.real_name)
 			else
 				flock_convert_turf(target) // bypasses any of the ownership logic
-			F.pay_resources(20)
+			F.pay_resources(FLOCK_CONVERT_COST)
 
 /////////////////////////////////////////////////////////////////////////////////
 // CONSTRUCT ACTION
@@ -297,7 +297,6 @@
 	var/turf/simulated/target
 	var/obj/decal/decal
 	var/obj/structurepath = /obj/grille/flock
-	var/cost = 25
 
 
 	New(var/turf/simulated/ntarg, var/structurepath_i, var/duration_i)
@@ -312,7 +311,7 @@
 	onUpdate()
 		..()
 		var/mob/living/critter/flock/F = owner
-		if (target == null || owner == null || !in_interact_range(owner, target) || !F?.can_afford(src.cost) || locate(structurepath) in target)
+		if (target == null || owner == null || !in_interact_range(owner, target) || !F?.can_afford(FLOCK_BARRICADE_COST) || locate(structurepath) in target)
 			interrupt(INTERRUPT_ALWAYS)
 			return
 
@@ -343,7 +342,7 @@
 			qdel(src.decal)
 		var/mob/living/critter/flock/drone/F = owner
 		if(F)
-			F.pay_resources(cost)
+			F.pay_resources(FLOCK_BARRICADE_COST)
 			var/obj/O = new structurepath(target)
 			animate_flock_convert_complete(O)
 			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 40, 1)
@@ -366,7 +365,7 @@
 	onUpdate()
 		..()
 		var/mob/living/critter/flock/drone/F = owner
-		if (F && !F.can_afford(100))
+		if (F && !F.can_afford(FLOCK_LAY_EGG_COST))
 			interrupt(INTERRUPT_ALWAYS)
 			F.canmove = TRUE
 			return
@@ -388,7 +387,7 @@
 			F.visible_message("<span class='alert'>[owner] deploys some sort of device!</span>", "<span class='notice'>You deploy a second-stage assembler.</span>")
 			new /obj/flock_structure/egg(get_turf(F), F.flock)
 			playsound(F, "sound/impact_sounds/Metal_Clang_1.ogg", 50, 1)
-			F.pay_resources(100)
+			F.pay_resources(FLOCK_LAY_EGG_COST)
 
 /////////////////////////////////////////////////////////////////////////////////
 // REPAIR ACTION
@@ -412,7 +411,7 @@
 	onUpdate()
 		..()
 		var/mob/living/critter/flock/F = owner
-		if (target == null || owner == null || !in_interact_range(owner, target) || !F.can_afford(10))
+		if (target == null || owner == null || !in_interact_range(owner, target) || !F.can_afford(FLOCK_REPAIR_COST))
 			interrupt(INTERRUPT_ALWAYS)
 			return
 
@@ -473,7 +472,7 @@
 					var/obj/storage/closet/flock/closet = target
 					closet.repair()
 		var/mob/living/critter/flock/F = owner
-		F.pay_resources(10)
+		F.pay_resources(FLOCK_REPAIR_COST)
 
 /////////////////////////////////////////////////////////////////////////////////
 // ENTOMB ACTION
@@ -498,7 +497,7 @@
 	onUpdate()
 		..()
 		var/mob/living/critter/flock/F = owner
-		if (target == null || owner == null || !in_interact_range(owner, target) || !F.can_afford(15))
+		if (target == null || owner == null || !in_interact_range(owner, target) || !F.can_afford(FLOCK_CAGE_COST))
 			interrupt(INTERRUPT_ALWAYS)
 			return
 
@@ -534,7 +533,7 @@
 		if(F && target && in_interact_range(owner, target))
 			var/obj/flock_structure/cage/cage = new /obj/flock_structure/cage(target.loc, target, F.flock)
 			cage.visible_message("<span class='alert'>[cage] forms around [target], entombing them completely!</span>")
-			F.pay_resources(15)
+			F.pay_resources(FLOCK_CAGE_COST)
 			playsound(target, "sound/misc/flockmind/flockdrone_build_complete.ogg", 70, 1)
 
 ///
@@ -644,7 +643,7 @@
 		var/mob/living/critter/flock/drone/F = owner
 		var/amounttopay = 0
 		var/difference = target.goal - target.currentmats
-		amounttopay = min(F.resources, difference, 10)
+		amounttopay = min(F.resources, difference, FLOCK_GHOST_DEPOSIT_AMOUNT)
 		F.pay_resources(amounttopay)
 		target.currentmats += amounttopay
 		if(F.resources)

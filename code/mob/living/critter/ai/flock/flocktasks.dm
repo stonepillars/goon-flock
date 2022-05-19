@@ -5,27 +5,27 @@
 /*
 replicate
 	-weight 7
-	-precondition: can_afford(100)
+	-precondition: can_afford(FLOCK_LAY_EGG_COST)
 
 nest
 	-weight 6
-	-precondition: can_afford(100)
+	-precondition: can_afford(FLOCK_LAY_EGG_COST)
 
 building
 	-weight 5
-	-precondition: can_afford(20)
+	-precondition: can_afford(FLOCK_CONVERT_COST)
 
 building/drone
 	-weight 1
-	-precondition: can_afford(20)
+	-precondition: can_afford(FLOCK_CONVERT_COST)
 
 repair
 	-weight 4
-	-precondition: can_afford(10)
+	-precondition: can_afford(FLOCK_REPAIR_COST)
 
 deposit
 	-weight 8
-	-procondition: can_afford(10)
+	-procondition: can_afford(FLOCK_GHOST_DEPOSIT_AMOUNT)
 
 open_container
 	-weight 3
@@ -44,7 +44,7 @@ shooting
 
 capture
 	-weight 15
-	-precondition: can_afford(15)
+	-precondition: can_afford(FLOCK_CAGE_COST)
 
 butcher
 	-weight 3
@@ -99,7 +99,7 @@ stare
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // REPLICATION GOAL
 // targets: valid nesting sites
-// precondition: 100 resources
+// precondition: FLOCK_LAY_EGG_COST resources
 /datum/aiTask/sequence/goalbased/replicate
 	name = "replicating"
 	weight = 7
@@ -112,7 +112,7 @@ stare
 /datum/aiTask/sequence/goalbased/replicate/precondition()
 	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F?.can_afford(100))
+	if(F?.can_afford(FLOCK_LAY_EGG_COST))
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/replicate/get_targets()
@@ -134,7 +134,7 @@ stare
 	var/mob/living/critter/flock/drone/F = holder.owner
 	if(!F)
 		return TRUE
-	if(F && !F.can_afford(100))
+	if(F && !F.can_afford(FLOCK_LAY_EGG_COST))
 		return TRUE
 	var/turf/simulated/floor/feather/N = get_turf(holder.owner)
 	if(!N)
@@ -195,7 +195,7 @@ stare
 // BUILDING GOAL
 // targets: priority tiles, fetched from holder.owner.flock (with casting)
 //			or, if they're not available, whatever's available nearby
-// precondition: 20 resources
+// precondition: FLOCK_CONVERT_COST resources
 /datum/aiTask/sequence/goalbased/build
 	name = "building"
 	weight = 10
@@ -207,7 +207,7 @@ stare
 
 /datum/aiTask/sequence/goalbased/build/precondition()
 	var/mob/living/critter/flock/F = holder.owner
-	return F?.can_afford(20)
+	return F?.can_afford(FLOCK_CONVERT_COST)
 
 /datum/aiTask/sequence/goalbased/build/on_tick()
 	var/had_target = holder.target
@@ -267,7 +267,7 @@ stare
 	var/mob/living/critter/flock/F = holder.owner
 	if(!F)
 		return TRUE
-	if(!F.can_afford(20))
+	if(!F.can_afford(FLOCK_CONVERT_COST))
 		return TRUE
 	if(F.flock && !F.flock.isTurfFree(build_target, F.real_name)) // oh no, someone else claimed this tile before we got to it
 		return TRUE
@@ -294,7 +294,7 @@ stare
 // targets: priority tiles, fetched from holder.owner.flock (with casting)
 //			or, if they're not available, storage closets, walls and doors
 //			failing that, nearest tiles
-// precondition: 20 resources
+// precondition: FLOCK_CONVERT_COST resources
 /datum/aiTask/sequence/goalbased/build/drone
 	name = "building"
 	weight = 1
@@ -302,7 +302,7 @@ stare
 
 /datum/aiTask/sequence/goalbased/build/drone/precondition()
 	var/mob/living/critter/flock/F = holder.owner
-	return F?.can_afford(20)
+	return F?.can_afford(FLOCK_CONVERT_COST)
 
 
 /datum/aiTask/sequence/goalbased/build/drone/get_targets()
@@ -353,7 +353,7 @@ stare
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // REPAIR GOAL
 // targets: other flockdrones in the same flock
-// precondition: 10 resources
+// precondition: FLOCK_REPAIR_COST resources
 /datum/aiTask/sequence/goalbased/repair
 	name = "repairing"
 	weight = 4
@@ -365,7 +365,7 @@ stare
 /datum/aiTask/sequence/goalbased/repair/precondition()
 	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F?.can_afford(10))
+	if(F?.can_afford(FLOCK_REPAIR_COST))
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/repair/on_reset()
@@ -421,7 +421,7 @@ stare
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // DEPOSIT GOAL
 // targets: ghost tealprints in the same flock
-// precondition: 10 resources
+// precondition: FLOCK_GHOST_DEPOSIT_AMOUNT resources
 /datum/aiTask/sequence/goalbased/deposit
 	name = "depositing"
 	weight = 8
@@ -433,7 +433,7 @@ stare
 /datum/aiTask/sequence/goalbased/deposit/precondition()
 	. = FALSE
 	var/mob/living/critter/flock/drone/F = holder.owner
-	if(F?.can_afford(10))
+	if(F?.can_afford(FLOCK_GHOST_DEPOSIT_AMOUNT))
 		. = TRUE
 
 /datum/aiTask/sequence/goalbased/deposit/on_reset()
@@ -816,7 +816,7 @@ stare
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/precondition()
 	var/mob/living/critter/flock/F = holder.owner
-	return F?.can_afford(15) && (length(F.flock?.enemies)) //gotta have enemies if we're gonna cage em
+	return F?.can_afford(FLOCK_CAGE_COST) && (length(F.flock?.enemies)) //gotta have enemies if we're gonna cage em
 
 /datum/aiTask/sequence/goalbased/flockdrone_capture/evaluate()
 	. = precondition() * weight * score_target(get_best_target(get_targets()))
@@ -859,7 +859,7 @@ stare
 	var/mob/living/critter/flock/F = holder.owner
 	if(!F)
 		return TRUE
-	if(!F.can_afford(15))
+	if(!F.can_afford(FLOCK_CAGE_COST))
 		return TRUE
 	if(get_dist(F, holder.target) > 1) //moved away before we could finish
 		return TRUE
@@ -987,7 +987,7 @@ stare
 	var/mob/living/critter/flock/F = holder.owner
 	if(!F)
 		return TRUE
-	if(!F.can_afford(25))
+	if(!F.can_afford(FLOCK_BARRICADE_COST))
 		return TRUE
 	if(get_dist(F, holder.target) > 1) //moved away before we could finish
 		return TRUE

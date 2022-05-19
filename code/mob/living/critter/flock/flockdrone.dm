@@ -814,8 +814,8 @@
 	if(isnull(src.flock))
 		boutput(src, "<span class='alert'>You do not have flockmind authorization to synthesize eggs.</span>")
 		return
-	if(src.resources < 100)
-		boutput(src, "<span class='alert'>Not enough resources (you need 100).</span>")
+	if(src.resources < FLOCK_LAY_EGG_COST)
+		boutput(src, "<span class='alert'>Not enough resources (you need [FLOCK_LAY_EGG_COST]).</span>")
 		return
 	var/turf/simulated/floor/feather/nest = get_turf(src)
 	if(!istype(nest, /turf/simulated/floor/feather))
@@ -911,7 +911,7 @@
 
 /////////////////////////////////////////////////////////////////////////////////
 
-/datum/limb/flock_converter // requires 20 resources to initiate a conversion action, 10 for a repair (give target drone 33% of max health)
+/datum/limb/flock_converter // requires FLOCK_CONVERT_COST resources to initiate a conversion action, FLOCK_REPAIR_COST for a repair (give target drone 33% of max health)
 
 /datum/limb/flock_converter/attack_hand(atom/target, var/mob/living/critter/flock/drone/user, var/reach, params, location, control)
 	if (!holder)
@@ -955,12 +955,12 @@
 					if ((O.density && !isflock(O)) || istype(O, /obj/flock_structure/ghost))
 						boutput(user, "<span class='alert'>This tile has something that blocks barricade construction!</span>")
 						return
-				if (user.resources < 25)
-					boutput(user, "<span class='alert'>Not enough resources to construct a barricade (you need 25).</span>")
+				if (user.resources < FLOCK_BARRICADE_COST)
+					boutput(user, "<span class='alert'>Not enough resources to construct a barricade (you need [FLOCK_BARRICADE_COST]).</span>")
 				else
 					actions.start(new/datum/action/bar/flock_construct(target), user)
-	else if(user.resources < 20 && istype(target, /turf))
-		boutput(user, "<span class='alert'>Not enough resources to convert (you need 20).</span>")
+	else if(user.resources < FLOCK_CONVERT_COST && istype(target, /turf))
+		boutput(user, "<span class='alert'>Not enough resources to convert (you need FLOCK_CONVERT_COST).</span>")
 	else
 		if(istype(target, /turf))
 			if (user.flock)
@@ -1020,8 +1020,8 @@
 		if (!found_target)
 			boutput(user, "<span class='alert'>The target is in perfect condition!</span>")
 		else
-			if(user.resources < 10)
-				boutput(user, "<span class='alert'>Not enough resources to repair (you need 10).</span>")
+			if(user.resources < FLOCK_REPAIR_COST)
+				boutput(user, "<span class='alert'>Not enough resources to repair (you need [FLOCK_REPAIR_COST]).</span>")
 			else
 				actions.start(new /datum/action/bar/flock_repair(target), user)
 
@@ -1035,8 +1035,8 @@
 			return
 		if (isdead(F))
 			return
-		if(user.resources < 10)
-			boutput(user, "<span class='alert'>Not enough resources to repair (you need 10).</span>")
+		if(user.resources < FLOCK_REPAIR_COST)
+			boutput(user, "<span class='alert'>Not enough resources to repair (you need [FLOCK_REPAIR_COST]).</span>")
 		else
 			actions.start(new/datum/action/bar/flock_repair(F), user)
 	else
@@ -1056,8 +1056,8 @@
 	if(isflock(target))
 		boutput(user, "<span class='alert'>The imprisonment matrix doesn't work on flockdrones.</span>")
 		return
-	else if(user.resources < 15)
-		boutput(user, "<span class='alert'>Not enough resources to imprison (you need 15).</span>")
+	else if(user.resources < FLOCK_CAGE_COST)
+		boutput(user, "<span class='alert'>Not enough resources to imprison (you need [FLOCK_CAGE_COST]).</span>")
 	else if(istype(target.loc, /obj/flock_structure/cage))
 		boutput(user, "<span class='alert'>They're already imprisoned, you can't double-imprison them!</span>")
 	else
