@@ -20,18 +20,17 @@
 	var/elapsed = getTimeInSecondsSinceTime(src.time_started)
 	if(elapsed >= build_time)
 		src.visible_message("<span class='text-blue'>Multiple shapes exit out of [src]!</span>")
-		var/j = pick(4, 5)
-		for(var/i=1, i<j, i++) //here im using the flockdronegibs proc to handle throwing things out randomly. in these for loops im just creating the objects (resource caches and flockdrone eggs) and adding them to the list (eject) which will get thrown about
+		for(var/i in 1 to pick(3, 4)) //here im using the flockdronegibs proc to handle throwing things out randomly. in these for loops im just creating the objects (resource caches and flockdrone eggs) and adding them to the list (eject) which will get thrown about
 			var/obj/item/flockcache/x = new(src.contents)
 			x.resources = rand(40, 50)
 			eject += x
-		for(var/i=1, i<5, i++)
+		for(var/i in 1 to 4)
 			var/obj/flock_structure/egg/e = new(src.contents, src.flock)
 			eject += e
 		var/list/candidate_turfs = list()
 		for(var/turf/simulated/floor/S in orange(src, 4))
 			candidate_turfs += S
-		for(var/i=1, i<11, i++)
+		for(var/i in 1 to 10)
 			for(var/S in candidate_turfs)
 				if(istype(S, /turf/simulated/floor/feather))
 					candidate_turfs -= S
