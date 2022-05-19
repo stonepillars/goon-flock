@@ -26,12 +26,12 @@
 	setMaterial(getMaterial("gnesis"))
 
 /obj/table/flock/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Storage Surface
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Storage Surface
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 /obj/table/flock/auto
 	auto = TRUE
@@ -50,13 +50,13 @@
 	setMaterial(getMaterial("gnesis"))
 
 /obj/item/furniture_parts/table/flock/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Storage Surface, Deployable State
-    <br><span class='bold'>Instructions:</span> Activate within grip tool to deploy.
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Storage Surface, Deployable State
+		<br><span class='bold'>Instructions:</span> Activate within grip tool to deploy.
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 ///////////////////////////
 // CHAIR & PARTS
@@ -81,12 +81,12 @@
 	setMaterial(getMaterial("gnesis"))
 
 /obj/stool/chair/comfy/flock/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Resting Chamber
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Resting Chamber
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 /obj/item/furniture_parts/flock_chair
 	name = "pulsing orb"
@@ -107,13 +107,13 @@
 	setMaterial(getMaterial("gnesis"))
 
 /obj/item/furniture_parts/flock_chair/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Resting Chamber, Deployable State
-    <br><span class='bold'>Instructions:</span> Activate within grip tool to deploy.
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Resting Chamber, Deployable State
+		<br><span class='bold'>Instructions:</span> Activate within grip tool to deploy.
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 
 ///////////////////////////
@@ -204,13 +204,13 @@
 		boutput(user, "<span class='alert'>Nothing you can do can persuade this thing to either open or close. Bummer.</span>")
 
 /obj/storage/closet/flock/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Containment Capsule
-	<br><span class='bold'>System Integrity:</span> [round((src.health_attack/src.health_max)*100)]%
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Containment Capsule
+		<br><span class='bold'>System Integrity:</span> [round((src.health_attack/src.health_max)*100)]%
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 ///////////////////////////
 // LIGHT FITTING
@@ -250,12 +250,12 @@
 	qdel(src)
 
 /obj/item/furniture_parts/flock_chair/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Light Emitter
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Light Emitter
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 /obj/machinery/light/flock/floor
 	icon_state = "flock_floor1"

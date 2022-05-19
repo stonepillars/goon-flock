@@ -38,13 +38,13 @@
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE, report_thrown=FALSE, report_proj=FALSE)
 
 /turf/simulated/floor/feather/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Conduit
-    <br><span class='bold'>System Integrity:</span> [round((src.health/50)*100)]%
-    <br><span class='bold'>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Conduit
+		<br><span class='bold'>System Integrity:</span> [round((src.health/50)*100)]%
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 /turf/simulated/floor/feather/attackby(obj/item/C as obj, mob/user as mob, params)
 	// do not call parent, this is not an ordinary floor

@@ -44,16 +44,16 @@
 
 
 /mob/living/intangible/flock/trace/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> [src.real_name]
-    <br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none, somehow"]
-    <br><span class='bold'>Resources:</span> [src.flock.total_resources()]
-    <br><span class='bold'>System Integrity:</span> [round(src.flock.total_health_percentage()*100)]%
-    <br><span class='bold'>Cognition:</span> SYNAPTIC PROCESS
-    <br>###=-</span></span>"}
-  else
-    return null
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> [src.real_name]
+		<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none, somehow"]
+		<br><span class='bold'>Resources:</span> [src.flock.total_resources()]
+		<br><span class='bold'>System Integrity:</span> [round(src.flock.total_health_percentage()*100)]%
+		<br><span class='bold'>Cognition:</span> SYNAPTIC PROCESS
+		<br>###=-</span></span>"}
+	else
+		return null
 
 // todo: use something better?
 /mob/living/intangible/flock/trace/Stat()
