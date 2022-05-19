@@ -296,15 +296,14 @@
 		src.takeDamage("brute",6)
 
 	special_desc(dist, mob/user)
-		if(isflock(user))
-			return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		if (!isflock(user))
+			return
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 			<br><span class='bold'>ID:</span> Matter Reprocessor
 			<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
 			<br><span class='bold'>Volume:</span> [src.reagents.get_reagent_amount(src.target_fluid)]
 			<br><span class='bold'>Needed volume:</span> [src.create_egg_at_fluid]
 			<br><span class='bold'>###=-</span></span>"}
-		else
-			return null
 
 
 

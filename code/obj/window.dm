@@ -1054,17 +1054,12 @@
 	src.AddComponent(/datum/component/flock_protection, FALSE, TRUE, TRUE)
 
 /obj/window/auto/feather/special_desc(dist, mob/user)
-	if(isflock(user))
-		return {"
-		<span class='flocksay'>
-			<span class='bold'>###=-</span> Ident confirmed, data packet received.
-			<br><span class='bold'>ID:</span> Fibrewoven Window
-			<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
-			<br><span class='bold'>###=-</span>
-		</span>
-		"}
-	else
-		return null
+	if (!isflock(user))
+		return
+	return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Fibrewoven Window
+		<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
+		<br><span class='bold'>###=-</span></span>"}
 
 /obj/window/auto/feather/proc/repair()
 	src.health = min(src.health + 10, src.health_max)
@@ -1089,13 +1084,12 @@
 	src.AddComponent(/datum/component/flock_protection)
 
 /obj/window/feather/special_desc(dist, mob/user)
-	if(isflock(user))
-		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+	if (!isflock(user))
+		return
+	return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> Fibrewoven Window
 		<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
 		<br><span class='bold'>###=-</span></span>"}
-	else
-		return null
 
 /obj/window/feather/proc/repair()
 	src.health = min(src.health + 10, src.health_max)

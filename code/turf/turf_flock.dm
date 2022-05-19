@@ -38,13 +38,12 @@
 	src.AddComponent(/datum/component/flock_protection, report_unarmed=FALSE, report_thrown=FALSE, report_proj=FALSE)
 
 /turf/simulated/floor/feather/special_desc(dist, mob/user)
-	if(isflock(user))
-		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+	if (!isflock(user))
+		return
+	return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> Conduit
 		<br><span class='bold'>System Integrity:</span> [round((src.health/50)*100)]%
 		<br><span class='bold'>###=-</span></span>"}
-	else
-		return null
 
 /turf/simulated/floor/feather/attackby(obj/item/C as obj, mob/user as mob, params)
 	// do not call parent, this is not an ordinary floor
@@ -295,13 +294,12 @@ turf/simulated/floor/feather/proc/bfs(turf/start)//breadth first search, made by
 	src.AddComponent(/datum/component/flock_protection)
 
 /turf/simulated/wall/auto/feather/special_desc(dist, mob/user)
-	if(isflock(user))
-		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+	if (!isflock(user))
+		return
+	return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> Nanite Block
 		<br><span class='bold'>System Integrity:</span> [round((src.health/src.max_health)*100)]%
 		<br><span class='bold'>###=-</span></span>"}
-	else
-		return null
 
 /turf/simulated/wall/auto/feather/attack_hand(mob/user)
 	if (user.a_intent == INTENT_HARM)

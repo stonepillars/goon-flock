@@ -25,16 +25,15 @@
 	C?.RemoveComponent()
 
 /obj/machinery/door/feather/special_desc(dist, mob/user)
-	if(isflock(user))
-		var/special_desc = {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+	if (!isflock(user))
+		return
+	var/special_desc = {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> Solid Seal Aperture
 		<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%"}
-		if(broken)
-			special_desc += {"<br><span class='bold'>FUNCTION CRITICALLY IMPAIRED, REPAIRS REQUIRED</span>
+	if(broken)
+		special_desc += {"<br><span class='bold'>FUNCTION CRITICALLY IMPAIRED, REPAIRS REQUIRED</span>
 			<br><span class='bold'>###=-</span></span>"}
-		return special_desc
-	else
-		return null
+	return special_desc
 
 /obj/machinery/door/feather/emag_act(var/mob/user, var/obj/item/card/emag/E)
 	if (src.density)

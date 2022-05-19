@@ -268,22 +268,21 @@
 
 
 /mob/living/critter/flock/drone/special_desc(dist, mob/user)
-	if(isflock(user))
-		var/special_desc = "<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received."
-		if(src.controller)
-			special_desc += "<br><span class='bold'>ID:</span> <b>[src.controller.real_name]</b> (controlling [src.real_name])"
-		else
-			special_desc += "<br><span class='bold'>ID:</span> [src.real_name]"
-		special_desc += {"<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
+	if (!isflock(user))
+		return
+	var/special_desc = "<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received."
+	if(src.controller)
+		special_desc += "<br><span class='bold'>ID:</span> <b>[src.controller.real_name]</b> (controlling [src.real_name])"
+	else
+		special_desc += "<br><span class='bold'>ID:</span> [src.real_name]"
+	special_desc += {"<br><span class='bold'>Flock:</span> [src.flock ? src.flock.name : "none"]
 		<br><span class='bold'>Resources:</span> [src.resources]
 		<br><span class='bold'>System Integrity:</span> [max(0, round(src.get_health_percentage() * 100))]%
 		<br><span class='bold'>Cognition:</span> [isalive(src) && !dormant ? src.is_npc ? "TORPID" : "SAPIENT" : "ABSENT"]"}
-		if (src.is_npc && istype(src.ai.current_task))
-			special_desc += "<br><span class='bold'>Task:</span> [uppertext(src.ai.current_task.name)]"
-		special_desc += "<br><span class='bold'>###=-</span></span>"
-		return special_desc
-	else
-		return null
+	if (src.is_npc && istype(src.ai.current_task))
+		special_desc += "<br><span class='bold'>Task:</span> [uppertext(src.ai.current_task.name)]"
+	special_desc += "<br><span class='bold'>###=-</span></span>"
+	return special_desc
 
 /mob/living/critter/flock/drone/proc/changeFlock(var/flockName)
 	src.flock?.removeDrone(src)
