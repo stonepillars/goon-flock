@@ -1042,8 +1042,8 @@
 		dir = 1
 		default_material = "metal"
 
+// flock windows
 
-// Flockdrone BS goes here - cirr
 /obj/window/auto/feather
 	default_material = "gnesisglass"
 
@@ -1064,7 +1064,7 @@
 		</span>
 		"}
 	else
-		return null // give the standard description
+		return null
 
 /obj/window/auto/feather/proc/repair()
 	src.health = min(src.health + 10, src.health_max)
@@ -1081,7 +1081,7 @@
 	mat_changedesc = FALSE
 	health = 50 // as strong as reinforced glass, but not as strong as plasmaglass
 	health_max = 50
-	density = 1
+	density = TRUE
 
 /obj/window/feather/New()
 	..()
@@ -1089,14 +1089,13 @@
 	src.AddComponent(/datum/component/flock_protection)
 
 /obj/window/feather/special_desc(dist, mob/user)
-  if(isflock(user))
-    return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
-    <br><span class='bold'>ID:</span> Fibrewoven Window
-    <br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
-    <br><span class='bold'>###=-</span></span>"}
-    // todo: damageable walls
-  else
-    return null // give the standard description
+	if(isflock(user))
+		return {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
+		<br><span class='bold'>ID:</span> Fibrewoven Window
+		<br><span class='bold'>System Integrity:</span> [round((src.health/src.health_max)*100)]%
+		<br><span class='bold'>###=-</span></span>"}
+	else
+		return null
 
 /obj/window/feather/proc/repair()
 	src.health = min(src.health + 10, src.health_max)
