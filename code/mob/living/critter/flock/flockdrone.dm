@@ -138,8 +138,10 @@
 	controller = pilot
 	src.client?.color = null // stop being all fucked up and weird aaaagh
 	src.hud?.update_intent()
-	src.update_health_icon()
-	flock.add_control_icon(src, pilot)
+	if (istype(pilot, /mob/living/intangible/flock/flockmind))
+		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+	else
+		flock.addAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 	if (give_alert)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] established.\]</b></span>")
 
@@ -173,7 +175,10 @@
 				controller.mind.key = key
 				controller.mind.current = controller
 				ticker.minds += controller.mind
-		flock.remove_control_icon(src)
+		if (istype(controller, /mob/living/intangible/flock/flockmind))
+			flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+		else
+			flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 		if (give_alerts && src.z == Z_LEVEL_STATION)
 			flock_speak(null, "Control of drone [src.real_name] surrended.", src.flock)
 		// clear refs
@@ -205,6 +210,10 @@
 		controller.mind.current = controller
 		ticker.minds += controller.mind
 	boutput(controller, "<span class='flocksay'><b>\[SYSTEM: Control of drone [src.real_name] ended abruptly.\]</b></span>")
+	if (istype(controller, /mob/living/intangible/flock/flockmind))
+		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKMIND_CONTROL)
+	else
+		flock.removeAnnotation(src, FLOCK_ANNOTATION_FLOCKTRACE_CONTROL)
 	controller = null
 	src.update_health_icon()
 
@@ -298,11 +307,6 @@
 		src.undormantize()
 	if(src.flock)
 		src.flock.showAnnotations(src)
-
-/mob/living/critter/flock/drone/Logout()
-	..()
-	if(src.flock)
-		src.flock.hideAnnotations(src)
 
 /mob/living/critter/flock/drone/is_spacefaring() return 1
 
@@ -602,6 +606,8 @@
 
 // catchall for shitlisting a dude that attacks us
 /mob/living/critter/flock/drone/proc/harmedBy(var/atom/enemy)
+	if (!enemy)
+		return
 	if(isflock(enemy))
 		return
 	if(!isdead(src) && src.is_npc && src.flock)
@@ -618,10 +624,12 @@
 /mob/living/critter/flock/drone/bullet_act(var/obj/projectile/P)
 	if(floorrunning)
 		return FALSE
-	if (..())
-		var/attacker = P.shooter
-		if(attacker)
-			src.harmedBy(attacker)
+	if (!..())
+		return
+	var/attacker = P.shooter
+	if(!(ismob(attacker) || iscritter(attacker) || isvehicle(attacker)))
+		attacker = P.mob_shooter //shooter is updated on reflection, so we fall back to mob_shooter if it turns out to be a wall or something
+	src.harmedBy(attacker)
 
 /mob/living/critter/flock/drone/hitby(atom/movable/AM, datum/thrown_thing/thr)
 	. = ..()
