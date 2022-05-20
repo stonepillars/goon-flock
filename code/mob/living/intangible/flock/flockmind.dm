@@ -43,17 +43,6 @@
 		<br><span class='bold'>Cognition:</span> COMPUTATIONAL NEXUS
 		<br>###=-</span></span>"}
 
-// todo: use something better?
-/mob/living/intangible/flock/flockmind/Stat()
-	..()
-	stat(null, " ")
-	if(src.flock)
-		stat("Flock:", src.flock.name)
-		stat("Drones:", length(src.flock.units))
-	else
-		stat("Flock:", "none")
-		stat("Drones:", 0)
-
 /mob/living/intangible/flock/flockmind/proc/getTraceToPromote()
 	var/eligible_traces = list()
 	for (var/mob/living/intangible/flock/trace/T as anything in src.flock.traces)

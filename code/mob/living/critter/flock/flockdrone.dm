@@ -327,16 +327,6 @@
 		else
 			return ..()
 
-// todo: use something better?
-/mob/living/critter/flock/drone/Stat()
-	..()
-	stat(null, " ")
-	if(src.flock)
-		stat("Flock:", src.flock.name)
-	else
-		stat("Flock:", "none")
-	stat("Resources:", src.resources)
-
 /mob/living/critter/flock/drone/setup_equipment_slots()
 	absorber = new /datum/equipmentHolder/flockAbsorption(src)
 	equipment += absorber

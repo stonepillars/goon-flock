@@ -54,17 +54,6 @@
 		<br><span class='bold'>Cognition:</span> SYNAPTIC PROCESS
 		<br>###=-</span></span>"}
 
-// todo: use something better?
-/mob/living/intangible/flock/trace/Stat()
-	..()
-	stat(null, " ")
-	if(src.flock)
-		stat("Flock:", src.flock.name)
-		stat("Drones:", length(src.flock.units))
-	else
-		stat("Flock:", "none")
-		stat("Drones:", 0)
-
 /mob/living/intangible/flock/trace/proc/promoteToFlockmind(remove_flockmind_from_flock)
 	var/was_in_drone = FALSE
 	var/mob/living/critter/flock/drone/controlled = src.loc
