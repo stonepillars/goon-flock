@@ -429,6 +429,20 @@
 			src.unreserveTurf(D:real_name)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
+
+// TRACES
+
+/datum/flock/proc/getActiveTraces()
+	var/list/active_traces = list()
+	for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
+		if (T.client)
+			active_traces += T
+		else if (istype(T.loc, /mob/living/critter/flock/drone))
+			var/mob/living/critter/flock/drone/flockdrone = T.loc
+			if (flockdrone.client)
+				active_traces += T
+	return active_traces
+
 // STRUCTURES
 
 ///This function only notifies the flock of the unlock, actual unlock logic is handled in the datum
@@ -448,8 +462,10 @@
 
 /datum/flock/proc/removeStructure(var/atom/movable/S)
 	if(isflockstructure(S))
-		src.structures -= S
-		S.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
+		var/obj/flock_structure/structure = S
+		src.structures -= structure
+		structure.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
+		structure.flock = null
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 
@@ -506,6 +522,12 @@
 	for(var/pathkey in src.units)
 		for(var/mob/M in src.units[pathkey])
 			hideAnnotations(M)
+	for(var/mob/living/intangible/flock/trace/T as anything in src.traces)
+		T.death()
+	for(var/mob/living/critter/flock/F as anything in src.units)
+		F.dormantize()
+	for(var/obj/flock_structure/S as anything in src.structures)
+		src.removeStructure(S)
 	qdel(get_image_group(src))
 	annotations = null
 	all_owned_tiles = null
@@ -651,6 +673,7 @@
 	/obj/machinery/computer3 = /obj/flock_structure/compute,
 	/obj/machinery/computer = /obj/flock_structure/compute,
 	/obj/machinery/networked/teleconsole = /obj/flock_structure/compute,
+	/obj/machinery/networked/mainframe = /obj/flock_structure/compute/mainframe,
 	)
 
 /proc/flock_convert_turf(var/turf/T)

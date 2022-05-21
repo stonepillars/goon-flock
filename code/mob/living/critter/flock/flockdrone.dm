@@ -27,7 +27,7 @@
 	butcherable = 1
 
 	var/health_absorb_rate = 2 // how much item health is removed per tick when absorbing
-	var/resources_per_health = 1 // how much resources we get per item health
+	var/resources_per_health = 2 // how much resources we get per item health
 
 	// dormancy means do nothing
 
@@ -56,7 +56,7 @@
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	src.update_name_tag()
 
-	if(src.dormant) // we'be been flagged as dormant in the map editor or something
+	if(!F || src.dormant) // we'be been flagged as dormant in the map editor or something
 		src.dormantize()
 	else
 		src.add_simple_light("drone_light", rgb2num(glow_color))
@@ -473,6 +473,7 @@
 	else
 		boutput(src, "<span class='notice'>You finish converting [I] into resources.</span>")
 	qdel(I)
+	absorber.item = null
 
 
 /mob/living/critter/flock/drone/process_move(keys)
