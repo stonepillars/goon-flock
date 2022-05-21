@@ -187,12 +187,10 @@
 	if (tgui_alert(src, "Are you sure you want to commit suicide?", "Confirm Suicide", list("Yes", "No")) == "Yes")
 		var/mob/living/intangible/flock/C = src.controller
 		src.release_control()
-		if (istype(C, /mob/living/intangible/flock/flockmind))
-			var/mob/living/intangible/flock/flockmind/F = C
-			F.do_suicide(TRUE)
-		else
-			var/mob/living/intangible/flock/trace/T = C
-			T.do_suicide(TRUE)
+		C.do_suicide(TRUE)
+
+/mob/living/intangible/flock/do_suicide(skip_prompt) // override, skip_prompt should be true for suiciding while in a drone
+	return
 
 /mob/living/intangible/flock/flockmind/do_suicide(skip_prompt)
 	if ((locate(/obj/flock_structure/relay) in src.flock.structures) && !length(src.flock.getActiveTraces()))
