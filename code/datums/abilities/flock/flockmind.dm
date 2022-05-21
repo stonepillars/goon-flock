@@ -289,7 +289,7 @@
 		return TRUE
 	var/list/targets = list()
 	for(var/mob/living/M in range(10, holder.owner))
-		if(isflock(M))
+		if(isflock(M)) // doesnt work on flock, but no need to continue
 			continue
 		if(M.ear_disability)
 			continue
