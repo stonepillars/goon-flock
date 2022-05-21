@@ -44,14 +44,7 @@
 		<br>###=-</span></span>"}
 
 /mob/living/intangible/flock/flockmind/proc/getTraceToPromote()
-	var/eligible_traces = list()
-	for (var/mob/living/intangible/flock/trace/T as anything in src.flock.traces)
-		if (T.client)
-			eligible_traces += T
-		else if (istype(T.loc, /mob/living/critter/flock/drone))
-			var/mob/living/critter/flock/drone/flockdrone = T.loc
-			if (flockdrone.client)
-				eligible_traces += T
+	var/list/eligible_traces = src.flock.getActiveTraces()
 	if (length(eligible_traces))
 		return tgui_input_list(src, "Choose Flocktrace to promote to Flockmind", "Promotion", sortList(eligible_traces))
 	else
@@ -96,9 +89,12 @@
 	src.addAbility(/datum/targetable/flockmindAbility/createStructure)
 	src.addAbility(/datum/targetable/flockmindAbility/deconstruct)
 
-/mob/living/intangible/flock/flockmind/death(gibbed)
+/mob/living/intangible/flock/flockmind/death(gibbed, suicide = FALSE)
 	if(src.client)
-		boutput(src, "<span class='alert'>With no drones left in your Flock, nothing is left to compute your consciousness. You abruptly cease to exist.</span>")
+		if (!suicide)
+			boutput(src, "<span class='alert'>With no drones left in your Flock, nothing is left to compute your consciousness. You abruptly cease to exist.</span>")
+		else
+			boutput(src, "<span class='alert'>You deactivate your Flock and abruptly cease to exist.</span>")
 	src.flock?.perish()
 	REMOVE_ATOM_PROPERTY(src, PROP_MOB_INVISIBILITY, src)
 	src.icon_state = "blank"

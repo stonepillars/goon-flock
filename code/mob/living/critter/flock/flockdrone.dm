@@ -51,7 +51,7 @@
 	src.real_name = "[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)].[pick(consonants_lower)][pick(vowels_lower)]"
 	src.update_name_tag()
 
-	if(src.dormant) // we'be been flagged as dormant in the map editor or something
+	if(!F || src.dormant) // we'be been flagged as dormant in the map editor or something
 		src.dormantize()
 	else
 		src.add_simple_light("drone_light", rgb2num(glow_color))
@@ -244,7 +244,7 @@
 
 /mob/living/critter/flock/drone/proc/move_controller_to_station()
 	if (src.flock?.getComplexDroneCount() > 1)
-		for (var/mob/living/critter/flock/drone/F in src.flock.units)
+		for (var/mob/living/critter/flock/drone/F as anything in src.flock.units[/mob/living/critter/flock/drone])
 			if (istype(F) && F != src)
 				src.controller.set_loc(get_turf(F))
 				break

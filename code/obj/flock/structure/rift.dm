@@ -36,7 +36,10 @@
 					candidate_turfs -= S
 					continue
 				if(prob(25))
-					src.flock.claimTurf(flock_convert_turf(S))
+					if (src.flock)
+						src.flock.claimTurf(flock_convert_turf(S))
+					else
+						flock_convert_turf(S)
 					candidate_turfs -= S
 					break
 		flockdronegibs(src.loc, null, eject) //ejectables ejected here
