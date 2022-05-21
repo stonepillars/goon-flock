@@ -291,7 +291,7 @@
 	for(var/mob/living/M in range(10, holder.owner))
 		if(M.ear_disability)
 			continue
-		var/obj/item/device/radio/R = M.ears // wont work on flock
+		var/obj/item/device/radio/R = M.ears // wont work on flock as they have no slot for this
 		if(istype(R) && R.listening) // working and toggled on
 			targets += M
 	if(length(targets))
