@@ -13,7 +13,7 @@ nest
 
 building
 	-weight 5
-	-precondition: can_afford(FLOCK_CONVERT_COST)
+	-precondition: can_afford(FLOCK_CONVERT_COST) and more than 10 drones
 
 building/drone
 	-weight 1
@@ -31,7 +31,7 @@ open_container
 	-weight 3
 	-precondition: none
 
-rumage
+rummage
 	-weight 3
 	precondition: none
 
@@ -41,10 +41,11 @@ harvest
 
 shooting
 	-weight 10
+	precondition: enemies exist and gun is charged and ready
 
 capture
 	-weight 15
-	-precondition: can_afford(FLOCK_CAGE_COST)
+	-precondition: can_afford(FLOCK_CAGE_COST) and enemies exist
 
 butcher
 	-weight 3
@@ -291,7 +292,7 @@ stare
 // targets: priority tiles, fetched from holder.owner.flock (with casting)
 //			or, if they're not available, storage closets, walls and doors
 //			failing that, nearest tiles
-// precondition: FLOCK_CONVERT_COST resources
+// precondition: FLOCK_CONVERT_COST resources and flock has more than 10 drones
 /datum/aiTask/sequence/goalbased/build/drone
 	name = "building"
 	weight = 1
@@ -695,6 +696,7 @@ stare
 // FLOCKDRONE-SPECIFIC SHOOT TASK
 // so within this timed task, look through valid targets in holder.owner.flock
 // pick a target within range and shoot at them if they're not already stunned
+// precondition: enemies exist and gun is charged and ready
 /datum/aiTask/timed/targeted/flockdrone_shoot
 	name = "shooting"
 	minimum_task_ticks = 10
@@ -786,6 +788,7 @@ stare
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 // FLOCKDRONE-SPECIFIC CAPTURE TASK
 // look through valid targets that are in the flock targets AND are stunned
+// precondition: can_afford(FLOCK_CAGE_COST) and enemies exist
 /datum/aiTask/sequence/goalbased/flockdrone_capture
 	name = "capturing"
 	weight = 15
