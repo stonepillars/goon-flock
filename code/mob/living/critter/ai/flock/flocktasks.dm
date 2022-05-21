@@ -299,7 +299,7 @@ stare
 
 /datum/aiTask/sequence/goalbased/build/drone/precondition()
 	var/mob/living/critter/flock/F = holder.owner
-	return F?.can_afford(FLOCK_CONVERT_COST)
+	return F?.can_afford(FLOCK_CONVERT_COST) && (F?.flock?.getComplexDroneCount() > 10) //prioritise egg laying in the early game
 
 
 /datum/aiTask/sequence/goalbased/build/drone/get_targets()
