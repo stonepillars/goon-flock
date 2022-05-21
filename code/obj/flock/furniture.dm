@@ -336,7 +336,7 @@
 	APPLY_ATOM_PROPERTY(src, PROP_ATOM_FLOCK_THING, src)
 	src.AddComponent(/datum/component/flock_protection)
 
-
+// flockdrones can always move through
 /obj/grille/flock/Cross(atom/movable/mover)
 	. = ..()
 	var/mob/living/critter/flock/drone/drone = mover

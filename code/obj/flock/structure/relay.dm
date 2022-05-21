@@ -16,7 +16,7 @@
 	pixel_y = -64
 	bound_x = -64
 	bound_y = -64
-	layer = EFFECTS_LAYER_BASE
+	layer = EFFECTS_LAYER_BASE //big spooky thing needs to render over everything
 	plane = PLANE_NOSHADOW_ABOVE
 	var/last_time_sound_played_in_seconds = 0
 	var/sound_length_in_seconds = 27
@@ -30,6 +30,7 @@
 
 /obj/flock_structure/relay/New()
 	..()
+	// no shuttle for you, either destroy the relay or flee when it unleashes
 	if (emergency_shuttle.online && emergency_shuttle.direction == 1 && emergency_shuttle.location != SHUTTLE_LOC_STATION && emergency_shuttle.location != SHUTTLE_LOC_TRANSIT)
 		emergency_shuttle.recall()
 		command_alert("Emergency shuttle approach aborted due to anomalous radio signal interference. The shuttle has been returned to base as a precaution.")
@@ -64,7 +65,7 @@
 	var/elapsed = getTimeInSecondsSinceTime(src.time_started)
 	if(elapsed >= last_time_sound_played_in_seconds + sound_length_in_seconds)
 		play_sound()
-	if(elapsed >= charge_time_length/2)
+	if(elapsed >= charge_time_length/2) // halfway point, start doing more
 		if(icon_state == "structure-relay")
 			icon_state = "structure-relay-glow"
 
@@ -119,6 +120,7 @@
 
 ///Brick every headset noisily
 /obj/flock_structure/relay/proc/destroy_radios()
+	// mid-tier jank, but it's a nice easy way to get the radio network
 	var/obj/item/device/radio/headset/entrypoint = new()
 	var/list/obj/radios = get_radio_connection_by_id(entrypoint, "main").network.analog_devices
 	for (var/obj/item/device/radio/radio in radios)

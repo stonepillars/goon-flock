@@ -113,6 +113,7 @@
 	if (!O)
 		return null
 
+	// manual ghost icon creation
 	O.icon = src.icon
 	O.icon_state = "flockmind-ghost"
 	O.pixel_y = initial(O.pixel_y) // WHY DO I NEED TO DO THIS TOO I DON'T EVEN ANIMATE THE PIXEL_Y

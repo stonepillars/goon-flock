@@ -68,7 +68,7 @@ stare
 /datum/aiTask/prioritizer/flock/on_tick()
 	if(isdead(holder.owner))
 		holder.enabled = FALSE
-		walk(holder.owner, 0)
+		walk(holder.owner, 0) // to prevent moving when dead
 
 /datum/aiTask/prioritizer/flock/on_reset()
 	..()
@@ -586,12 +586,12 @@ stare
 		usr = F // don't ask, please, don't
 		if(F?.set_hand(1)) // grip tool
 			if(!F.is_in_hands(container_target))
-				F.drop_item()
+				F.drop_item() // possible that there is an item currently held, needs to be dropped first
 				F.set_dir(get_dir(F, container_target))
 				F.hand_attack(container_target) //try and pick it up
-			if(F.is_in_hands(container_target))
+			if(F.is_in_hands(container_target)) // won't work for some cases, such as items that open a ui when clicked
 				if(F.absorber.item != container_target) //if it's in our manipulating hand
-					container_target.MouseDrop(get_turf(F)) //this will do nothing on a locked secure storage
+					container_target.MouseDrop(get_turf(F)) // dump contents, this will do nothing on a locked secure storage
 					F.absorber.equip(container_target) //eating the container also drops its contents
 				return
 			else
@@ -852,7 +852,7 @@ stare
 			var/atom/T = holder.target
 			if(isliving(T))
 				var/mob/living/M = T
-				if(!is_incapacitated(M))
+				if(!is_incapacitated(M)) // only want to cage incapacitated targets (if they stand up, shoot instead)
 					holder.interrupt()
 					return
 			var/mob/living/critter/flock/drone/owncritter = holder.owner
@@ -864,7 +864,7 @@ stare
 				owncritter.set_dir(get_dir(owncritter, holder.target))
 				owncritter.hand_attack(holder.target)
 		else
-			holder.interrupt()
+			holder.interrupt() //somehow lost target, go do something else
 			return
 /datum/aiTask/succeedable/capture/on_reset()
 	var/mob/living/critter/flock/drone/drone = holder.owner
@@ -967,7 +967,7 @@ stare
 		return TRUE
 	if(!F.can_afford(FLOCK_BARRICADE_COST))
 		return TRUE
-	if(get_dist(F, holder.target) > 1)
+	if(get_dist(F, holder.target) > 1) // drone moved away
 		return TRUE
 
 /datum/aiTask/succeedable/barricade/succeeded()

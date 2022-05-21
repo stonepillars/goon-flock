@@ -294,7 +294,7 @@
 		if(M.ear_disability)
 			continue
 		var/obj/item/device/radio/R = M.ears
-		if(istype(R) && R.listening)
+		if(istype(R) && R.listening) // working and toggled on
 			targets += M
 	if(length(targets))
 		playsound(holder.owner, "sound/misc/flockmind/flockmind_cast.ogg", 80, 1)

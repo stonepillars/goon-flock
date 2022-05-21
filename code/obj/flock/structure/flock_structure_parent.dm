@@ -141,6 +141,7 @@
 
 
 /obj/flock_structure/proc/gib(atom/location)
+	// no parent calling, we're going to completely override this
 	if (!location)
 		location = get_turf(src)
 	visible_message("<span class='alert'>[src.name] violently breaks apart!</span>")
@@ -229,7 +230,7 @@
 
 	src.report_attack()
 
-	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0)
+	var/damage = round((P.power*P.proj_data.ks_ratio), 1.0) // stuns will do nothing
 	var/damage_mult = 1
 	var/damtype = "brute"
 	if (damage < 1)

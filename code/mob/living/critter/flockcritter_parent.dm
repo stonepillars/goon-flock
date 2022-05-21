@@ -20,7 +20,7 @@
 	var/health_brute = 1
 	var/health_burn = 1
 
-	metabolizes = FALSE
+	metabolizes = FALSE // under assumption drones dont metabolize chemicals due to gnesis internals
 	//base compute provided
 	var/compute = 0
 	// if we're extinguishing ourselves don't extinguish ourselves repeatedly
@@ -184,6 +184,7 @@
 // all flock bots should have the ability to rally somewhere (it's applicable to anything with flock AI)
 /mob/living/critter/flock/proc/rally(atom/movable/target)
 	if(src.is_npc)
+		// tell the npc AI to go after the target
 		if(src.ai)
 			var/datum/aiHolder/flock/flockai = ai
 			flockai.rally(target)

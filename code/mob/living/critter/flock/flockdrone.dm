@@ -370,7 +370,7 @@
 			if (src.emote_check(voluntary, 50))
 				playsound(src, "sound/misc/flockmind/flockdrone_grump[pick("1","2","3")].ogg", 30, 1)
 				return "<b>[src]</b> beeps grumpily[(param? " at [param]!" : "!")]"
-		if ("fart")
+		if ("fart") // i cannot ignore my heritage any longer
 			if (src.emote_check(voluntary, 50))
 				var/fart_message = pick_string("flockmind.txt", "flockdrone_fart")
 				playsound(src, "sound/misc/flockmind/flockdrone_fart.ogg", 60, 1, channel=VOLUME_CHANNEL_EMOTE)
@@ -474,7 +474,7 @@
 		if(!src.floorrunning && isfeathertile(src.loc))
 			if (length(src.grabbed_by))
 				for(var/obj/item/grab/g in src.grabbed_by)
-					if (!(g.state == GRAB_PASSIVE || g.state == GRAB_PIN))
+					if (!(g.state == GRAB_PASSIVE || g.state == GRAB_PIN)) // in the rare case you do pin a flockdrone
 						src.can_floorrun = FALSE
 						return ..()
 			src.can_floorrun = TRUE
@@ -583,6 +583,7 @@
 		// do normal movement
 		return ..(NewLoc, direct)
 
+// catchall for marking people who attack flockdrones as enemies
 /mob/living/critter/flock/drone/proc/harmedBy(var/atom/enemy)
 	if (!enemy)
 		return
@@ -620,6 +621,7 @@
 		for(var/reagent_id in reagent_list)
 			var/datum/reagent/current_reagent = reagent_list[reagent_id]
 
+			// currently only checking for combustible and harmful reagents
 			if(istype(current_reagent, /datum/reagent/combustible) || istype(current_reagent, /datum/reagent/harmful))
 				has_harmful_chemicals = TRUE
 				break
@@ -641,7 +643,7 @@
 		return
 	var/prev_damaged = src.damaged
 	if(!isdead(src) && src.is_npc)
-		if(prev_damaged != src.damaged && src.damaged > 0)
+		if(prev_damaged != src.damaged && src.damaged > 0) // damaged to a new state
 			src.emote("scream")
 			say("[pick_string("flockmind.txt", "flockdrone_hurt")]")
 			src.ai.interrupt()
@@ -754,6 +756,8 @@
 	src.flock?.removeDrone(src)
 
 	var/turf/T = get_turf(src)
+
+	// get possible turfs to move flockbits, to create a spread out effect
 	var/list/candidate_turfs = getneighbours(src)
 	for(var/turf/n in candidate_turfs)
 		if(flock_is_blocked_turf(n))
@@ -769,6 +773,7 @@
 		SPAWN(0.2 SECONDS)
 			B.set_loc(pick(candidate_turfs))
 
+	// so that drone's resources aren't lost
 	if (src.resources > 0)
 		var/obj/item/flockcache/cache = new(T)
 		cache.resources = src.resources
@@ -799,11 +804,11 @@
 	if(src.organHolder)
 		var/obj/item/organ/brain/B = src.organHolder.get_organ("brain")
 		if(B)
-			. += B
+			. += B // always drop brain
 	// handle our contents, such as whatever item we're trying to eat or what we're holding
 	for(var/atom/movable/O in src.contents)
 		if(istype(O, /atom/movable/screen))
-			continue
+			continue // no UI elements please
 		. += O
 
 /mob/living/critter/flock/drone/message_admin_on_attack()
@@ -892,7 +897,7 @@
 	if (!istype(user))
 		return
 
-	if(istype(target,/obj/critter))
+	if(istype(target,/obj/critter)) //gods how I hate /obj/critter
 		if(user.a_intent == INTENT_DISARM)
 			src.disarm(target,user)
 			return

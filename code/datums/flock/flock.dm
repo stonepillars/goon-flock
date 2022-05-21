@@ -69,7 +69,7 @@
 					user.set_loc(T)
 		if("rally")
 			var/mob/living/critter/flock/C = locate(params["origin"])
-			if(C?.flock == src)
+			if(C?.flock == src) // not sure when it'd apply but in case
 				C.rally(get_turf(user))
 		if("remove_enemy")
 			var/mob/living/E = locate(params["origin"])
@@ -455,7 +455,7 @@
 	if(!M)
 		return
 	if (isvehicle(M))
-		for (var/mob/occupant in M)
+		for (var/mob/occupant in M) // making assumption flock knows who everyone in the pod is
 			src.updateEnemy(occupant)
 	//vehicles can be enemies but drones will only attack them if they are occupied
 	if(!isliving(M) && !iscritter(M) && !isvehicle(M))
@@ -530,6 +530,7 @@
 			src.registerStructure(structure)
 	removeAnnotation(T, FLOCK_ANNOTATION_PRIORITY)
 
+// whether the turf is reserved/being converted or not, will still count as free to provided drone name if they have reserved/are converting it
 /datum/flock/proc/isTurfFree(var/turf/simulated/T, var/queryName)
 	for(var/name in src.busy_tiles)
 		if(name == queryName)
