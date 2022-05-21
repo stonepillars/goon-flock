@@ -756,7 +756,7 @@
 	var/turf/T = get_turf(src)
 	var/list/candidate_turfs = getneighbours(src)
 	for(var/turf/n in candidate_turfs)
-		if(is_blocked_turf(n))
+		if(flock_is_blocked_turf(n))
 			candidate_turfs -= n
 	candidate_turfs += T //ensure there's always at least the turf we're stood on
 
@@ -764,7 +764,7 @@
 
 	var/mob/living/critter/flock/bit/B
 	for(var/i=1 to num_bits)
-		B = new(get_turf(src), F = src.flock)
+		B = new(T, src.flock)
 		src.flock?.registerUnit(B)
 		SPAWN(0.2 SECONDS)
 			B.set_loc(pick(candidate_turfs))
