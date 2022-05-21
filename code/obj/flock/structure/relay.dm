@@ -41,7 +41,7 @@
 	play_sound()
 	flock_speak(null, "RELAY CONSTRUCTED! DEFEND THE RELAY!!", src.flock)
 	SPAWN(1 SECOND)
-		radial_flock_conversion(src, 20)
+		radial_flock_conversion(src, src.flock, 20)
 	SPAWN(10 SECONDS)
 		var/msg = "Overwhelming anomalous power signatures detected on station. This is an existential threat to the station. All personnel must contain this event."
 		msg = radioGarbleText(msg, 7)
@@ -119,7 +119,8 @@
 	explosion_new(src, location, 2000)
 	gib(location)
 	var/datum/game_mode/flock/gamemode = ticker.mode
-	gamemode.signal_unleashed = TRUE
+	if(istype(gamemode))
+		gamemode.signal_unleashed = TRUE
 	sleep(2 SECONDS) //allow them to hear the explosion before their headsets scream and die
 	destroy_radios()
 
