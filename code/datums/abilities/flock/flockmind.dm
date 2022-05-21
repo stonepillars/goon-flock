@@ -289,11 +289,9 @@
 		return TRUE
 	var/list/targets = list()
 	for(var/mob/living/M in range(10, holder.owner))
-		if(isflock(M)) // doesnt work on flock, but no need to continue
-			continue
 		if(M.ear_disability)
 			continue
-		var/obj/item/device/radio/R = M.ears
+		var/obj/item/device/radio/R = M.ears // wont work on flock
 		if(istype(R) && R.listening) // working and toggled on
 			targets += M
 	if(length(targets))
