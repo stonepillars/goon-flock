@@ -168,7 +168,7 @@
 
 /datum/flock/proc/total_resources()
 	. = 0
-	for(var/mob/living/critter/flock/F as anything in src.units[/mob/living/critter/flock/drone])
+	for(var/mob/living/critter/flock/drone/F as anything in src.units[/mob/living/critter/flock/drone])
 		. += F.resources
 
 
