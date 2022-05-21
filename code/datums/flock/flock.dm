@@ -16,6 +16,7 @@
 	var/list/trace_minds = list()
 	/// Store the mind of the current flockmind
 	var/datum/mind/flockmind_mind = null
+	/// Stores associative lists of type => list(units) - do not edit directly, use removeDrone() and registerUnit()
 	var/list/units = list()
 	/// associative list of used names (for traces, drones, and bits) to true values
 	var/list/active_names = list()
@@ -42,6 +43,7 @@
 		src.unlockableStructures += new DT(src)
 	if (!annotation_imgs)
 		annotation_imgs = build_annotation_imgs()
+	src.units[/mob/living/critter/flock/drone] = list() //this one needs initialising
 
 /datum/flock/ui_status(mob/user)
 	// only flockminds and admins allowed
@@ -115,7 +117,7 @@
 
 	// DESCRIBE DRONES
 	var/list/dronelist = list()
-	for(var/mob/living/critter/flock/drone/F in src.units)
+	for(var/mob/living/critter/flock/drone/F as anything in src.units[/mob/living/critter/flock/drone])
 		dronelist += list(F.describe_state())
 	state["drones"] = dronelist
 
@@ -156,10 +158,11 @@
 /datum/flock/proc/total_health_percentage()
 	var/hp = 0
 	var/max_hp = 0
-	for(var/mob/living/critter/flock/F as anything in src.units)
-		F.count_healths()
-		hp += F.health
-		max_hp += F.max_health
+	for(var/pathkey in src.units)
+		for(var/mob/living/critter/flock/F as anything in src.units[pathkey])
+			F.count_healths()
+			hp += F.health
+			max_hp += F.max_health
 	if(max_hp != 0)
 		return hp/max_hp
 	else
@@ -167,7 +170,7 @@
 
 /datum/flock/proc/total_resources()
 	. = 0
-	for(var/mob/living/critter/flock/F as anything in src.units)
+	for(var/mob/living/critter/flock/drone/F as anything in src.units[/mob/living/critter/flock/drone])
 		. += F.resources
 
 
@@ -176,10 +179,11 @@
 	var/comp_provided = 0
 	if (src.hasAchieved("infinite_compute"))
 		return 1000000
-	for(var/mob/living/critter/flock/F as anything in src.units)
-		comp_provided = F.compute_provided()
-		if(comp_provided>0)
-			. += comp_provided
+	for(var/pathkey in src.units)
+		for(var/mob/living/critter/flock/F as anything in src.units[pathkey])
+			comp_provided = F.compute_provided()
+			if(comp_provided>0)
+				. += comp_provided
 
 	for(var/obj/flock_structure/S as anything in src.structures)
 		comp_provided = S.compute_provided()
@@ -190,10 +194,11 @@
 /datum/flock/proc/used_compute()
 	. = 0
 	var/comp_provided = 0
-	for(var/mob/living/critter/flock/F as anything in src.units)
-		comp_provided = F.compute_provided()
-		if(comp_provided<0)
-			. += abs(comp_provided)
+	for(var/pathkey in src.units)
+		for(var/mob/living/critter/flock/F as anything in src.units[pathkey])
+			comp_provided = F.compute_provided()
+			if(comp_provided<0)
+				. += abs(comp_provided)
 
 	for(var/obj/flock_structure/S as anything in src.structures)
 		comp_provided = S.compute_provided()
@@ -442,7 +447,9 @@
 
 /datum/flock/proc/registerUnit(var/mob/living/critter/flock/D, check_name_uniqueness = FALSE)
 	if(isflock(D))
-		src.units |= D
+		if(!src.units[D.type])
+			src.units[D.type] = list()
+		src.units[D.type] |= D
 		if (check_name_uniqueness && src.active_names[D.real_name])
 			D.real_name = istype(D, /mob/living/critter/flock/drone) ? src.pick_name("flockdrone") : src.pick_name("flockbit")
 	D.AddComponent(/datum/component/flock_interest, src)
@@ -451,13 +458,27 @@
 
 /datum/flock/proc/removeDrone(var/mob/living/critter/flock/D)
 	if(isflock(D))
-		src.units -= D
+		src.units[D.type] -= D
 		src.active_names -= D.real_name
 		D.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
 		if(D.real_name && busy_tiles[D.real_name])
 			src.unreserveTurf(D.real_name)
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
+
+// TRACES
+
+/datum/flock/proc/getActiveTraces()
+	var/list/active_traces = list()
+	for (var/mob/living/intangible/flock/trace/T as anything in src.traces)
+		if (T.client)
+			active_traces += T
+		else if (istype(T.loc, /mob/living/critter/flock/drone))
+			var/mob/living/critter/flock/drone/flockdrone = T.loc
+			if (flockdrone.client)
+				active_traces += T
+	return active_traces
+
 // STRUCTURES
 
 ///This function only notifies the flock of the unlock, actual unlock logic is handled in the datum
@@ -477,16 +498,15 @@
 
 /datum/flock/proc/removeStructure(var/atom/movable/S)
 	if(isflockstructure(S))
-		src.structures -= S
-		S.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
+		var/obj/flock_structure/structure = S
+		src.structures -= structure
+		structure.GetComponent(/datum/component/flock_interest)?.RemoveComponent(/datum/component/flock_interest)
+		structure.flock = null
 		var/datum/abilityHolder/flockmind/aH = src.flockmind.abilityHolder
 		aH.updateCompute()
 
 /datum/flock/proc/getComplexDroneCount()
-	var/count = 0
-	for(var/mob/living/critter/flock/drone/D in src.units)
-		count++
-	return count
+	return length(src.units[/mob/living/critter/flock/drone/])
 
 /datum/flock/proc/toggleDeconstructionFlag(var/atom/target)
 	toggleAnnotation(target, FLOCK_ANNOTATION_DECONSTRUCT)
@@ -535,8 +555,13 @@
 	//cleanup as necessary
 	if(src.flockmind)
 		hideAnnotations(src.flockmind)
-	for(var/mob/M in src.units)
-		hideAnnotations(M)
+	for(var/mob/living/intangible/flock/trace/T as anything in src.traces)
+		T.death()
+	for(var/pathkey in src.units)
+		for(var/mob/living/critter/flock/F as anything in src.units[pathkey])
+			F.dormantize()
+	for(var/obj/flock_structure/S as anything in src.structures)
+		src.removeStructure(S)
 	qdel(get_image_group(src))
 	annotations = null
 	all_owned_tiles = null
@@ -683,6 +708,7 @@
 	/obj/machinery/computer3 = /obj/flock_structure/compute,
 	/obj/machinery/computer = /obj/flock_structure/compute,
 	/obj/machinery/networked/teleconsole = /obj/flock_structure/compute,
+	/obj/machinery/networked/mainframe = /obj/flock_structure/compute/mainframe,
 	)
 
 /proc/flock_convert_turf(var/turf/T)
