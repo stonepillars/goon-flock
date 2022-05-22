@@ -132,7 +132,7 @@
 	for(var/name in src.enemies)
 		var/list/enemy_stats = src.enemies[name]
 		var/atom/M = enemy_stats["mob"]
-		if(M && !QDELETED(M))
+		if(!QDELETED(M))
 			var/list/enemy = list()
 			enemy["name"] = M.name
 			enemy["area"] = enemy_stats["last_seen"]
