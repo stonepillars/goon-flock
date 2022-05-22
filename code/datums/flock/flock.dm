@@ -123,6 +123,7 @@
 		"structures" = length(src.structures),
 		"enemies" = length(src.enemies),
 	)
+	state["category"] = category
 	//we only return data needed by the current tab, cursed but faster
 	switch (category)
 		if ("traces")
