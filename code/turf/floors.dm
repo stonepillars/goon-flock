@@ -1623,6 +1623,9 @@ DEFINE_FLOORS(solidcolor/black/fullbright,
 	if(!force_break)
 		if(src.reinforced) return
 	if(!intact) return
+	if (src.flock_plating_under)
+		src.ReplaceWith("FeatherPlating", FALSE)
+		return
 	if (!icon_old)
 		icon_old = icon_state
 	if (!name_old)
@@ -1816,10 +1819,15 @@ DEFINE_FLOORS(solidcolor/black/fullbright,
 		// Don't replace with an [else]! If a prying tool is found above [intact] might become 0 and this runs too, which is how floor swapping works now! - BatElite
 		if (!intact)
 			if(T.change_stack_amount(-1))
-				restore_tile()
-				src.plate_mat = src.material
-				if(C.material)
-					src.setMaterial(C.material)
+				if (istype(src, /turf/simulated/floor/plating/feather_plating))
+					var/turf/simulated/floor/plating/feather_plating/plating = src
+					plating.restore_tile(C.material)
+				else
+					restore_tile()
+					src.plate_mat = src.material
+					if(C.material)
+						src.setMaterial(C.material)
+
 				playsound(src, "sound/impact_sounds/Generic_Stab_1.ogg", 50, 1)
 
 				if(!istype(src.material, /datum/material/metal/steel))
