@@ -65,7 +65,7 @@
 	switch(action)
 		if("jump_to")
 			var/atom/movable/origin = locate(params["origin"])
-			if(origin && !QDELETED(origin))
+			if(!QDELETED(origin))
 				var/turf/T = get_turf(origin)
 				if(T.z != Z_LEVEL_STATION)
 					// make sure they're not trying to spoof data and jump into a z-level they ought not to go
