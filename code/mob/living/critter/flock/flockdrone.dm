@@ -537,6 +537,9 @@
 				wall.off()
 	animate_flock_floorrun_end(src)
 
+/mob/living/critter/flock/drone/restrained()
+	return ..() || src.floorrunning
+
 /mob/living/critter/flock/drone/movement_delay()
 	if(floorrunning)
 		return 0.6
