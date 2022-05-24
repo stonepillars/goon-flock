@@ -411,7 +411,7 @@
 	if (!structurewanted)
 		return TRUE
 	var/datum/unlockable_flock_structure/ufs = friendlyNames[structurewanted]
-	var/obj/flock_structure/structurewantedtype = ufs.structType
+	var/obj/flock_structure/structurewantedtype = ufs.structType //this is a mildly cursed abuse of type paths, where you can cast a type path to a typed var to get access to its members
 
 	if(structurewantedtype)
 		return F.createstructure(structurewantedtype, initial(structurewantedtype.resourcecost))
