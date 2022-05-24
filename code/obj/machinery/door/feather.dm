@@ -124,7 +124,7 @@
 /obj/machinery/door/feather/allowed(mob/M)
 	return isflock(M)
 
-/obj/machinery/door/feather/check_access() //no access works here
+/obj/machinery/door/feather/check_access()
 	return FALSE
 
 /obj/machinery/door/feather/open()
