@@ -49,9 +49,8 @@
 	// do not call parent, this is not an ordinary floor
 	if(!C || !user)
 		return
-	if (istype(C, /obj/item/grab/))
-		var/obj/item/grab/G = C
-		grab_smash(G, user)
+	if (istype(C, /obj/item/grab))
+		grab_smash(C, user)
 		return
 	if(ispryingtool(C) && src.broken)
 		playsound(src, "sound/items/Crowbar.ogg", 80, 1)
