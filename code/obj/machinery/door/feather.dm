@@ -25,7 +25,7 @@
 	C?.RemoveComponent()
 
 /obj/machinery/door/feather/special_desc(dist, mob/user)
-	if (!isflock(user))
+	if (!isflockmob(user))
 		return
 	var/special_desc = {"<span class='flocksay'><span class='bold'>###=-</span> Ident confirmed, data packet received.
 		<br><span class='bold'>ID:</span> Solid Seal Aperture
@@ -123,7 +123,7 @@
 	..()
 
 /obj/machinery/door/feather/allowed(mob/M)
-	return isflock(M)
+	return isflockmob(M)
 
 /obj/machinery/door/feather/open()
 	if(..())
