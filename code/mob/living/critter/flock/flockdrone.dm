@@ -33,7 +33,7 @@
 
 	// antigrab powers
 	var/antigrab_counter = 0
-	var/antigrab_fires_at = 3
+	var/antigrab_fires_at = 2
 
 	var/glow_color = "#26ffe6a2"
 
@@ -386,6 +386,25 @@
 			return 2
 	return ..()
 
+///Runs the drone's inbuilt anti-grab measures, shocking the grabber after a while
+/mob/living/critter/flock/drone/proc/do_antigrab()
+	//if the only grab is a block then ignore it
+	if (!length(src.grabbed_by) || (length(src.grabbed_by) == 1 && src.find_type_in_hand(/obj/item/grab/block)))
+		src.antigrab_counter = 0
+		return
+
+	antigrab_counter++
+	if (antigrab_counter >= src.antigrab_fires_at)
+		playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
+		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
+		for(var/obj/item/grab/G in src.grabbed_by)
+			if (istype(G, /obj/item/grab/block)) //do not shock ourselves
+				continue
+			var/mob/living/L = G.assailant
+			L.shock(src, 5000)
+			qdel(G) //in case they don't fall over from our shock
+		src.antigrab_counter = 0
+
 /mob/living/critter/flock/drone/Life(datum/controller/process/mobs/parent)
 	if (..(parent))
 		return TRUE
@@ -399,20 +418,7 @@
 	if (src.dormant)
 		return
 
-	if(length(src.grabbed_by))
-		if (length(src.grabbed_by) == 1 && src.find_type_in_hand(/obj/item/grab/block))
-			src.antigrab_counter = 0
-		else
-			++src.antigrab_counter
-			if(src.antigrab_counter >= src.antigrab_fires_at)
-				playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
-				boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
-				for(var/obj/item/grab/G in src.grabbed_by)
-					var/mob/living/L = G.assailant
-					L.shock(src, 5000)
-				src.antigrab_counter = 0
-	else
-		src.antigrab_counter = 0
+	src.do_antigrab()
 
 	var/obj/item/I = absorber.item
 
