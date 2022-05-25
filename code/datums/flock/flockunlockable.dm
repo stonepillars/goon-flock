@@ -29,13 +29,13 @@ ABSTRACT_TYPE(/datum/unlockable_flock_structure)
 
 	///Returns true when unlock condition is met, false when it isn't.
 	proc/check_unlocked()
-		return FALSE
+		return src.my_flock.hasAchieved(FLOCK_ACHIEVEMENT_CHEAT_STRUCTURES)
 
 /datum/unlockable_flock_structure/relay
 	structType = /obj/flock_structure/relay
 
 	check_unlocked()
-		return src.my_flock.total_compute() > 1000 || src.my_flock.hasAchieved(FLOCK_ACHIEVEMENT_CHEAT_STRUCTURES)
+		return ..() || src.my_flock.total_compute() > 1000
 
 /datum/unlockable_flock_structure/collector
 	structType = /obj/flock_structure/collector
@@ -59,5 +59,5 @@ ABSTRACT_TYPE(/datum/unlockable_flock_structure)
 	structType = /obj/flock_structure/gnesisturret
 
 	check_unlocked()
-		return src.my_flock.hasAchieved(FLOCK_ACHIEVEMENT_CAGE_HUMAN) || src.my_flock.hasAchieved(FLOCK_ACHIEVEMENT_CHEAT_STRUCTURES)
+		return ..() || src.my_flock.hasAchieved(FLOCK_ACHIEVEMENT_CAGE_HUMAN)
 
