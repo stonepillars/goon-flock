@@ -52,9 +52,6 @@ ABSTRACT_TYPE(/datum/unlockable_flock_structure)
 /datum/unlockable_flock_structure/compute
 	structType = /obj/flock_structure/compute
 
-	check_unlocked()
-		return src.my_flock.hasAchieved(FLOCK_ACHIEVEMENT_CHEAT_STRUCTURES)
-
 /datum/unlockable_flock_structure/gnesisturret
 	structType = /obj/flock_structure/gnesisturret
 
