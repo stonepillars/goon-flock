@@ -393,8 +393,8 @@
 		src.antigrab_counter = 0
 		return
 
-	antigrab_counter++
-	if (antigrab_counter >= src.antigrab_fires_at)
+	src.antigrab_counter++
+	if (src.antigrab_counter >= src.antigrab_fires_at)
 		playsound(src, "sound/effects/electric_shock.ogg", 40, 1, -3)
 		boutput(src, "<span class='flocksay'><b>\[SYSTEM: Anti-grapple countermeasures deployed.\]</b></span>")
 		for(var/obj/item/grab/G in src.grabbed_by)
