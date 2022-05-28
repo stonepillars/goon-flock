@@ -26,7 +26,8 @@
 	butcherable = TRUE
 
 	var/health_absorb_rate = 2 // how much item health is removed per tick when absorbing
-	var/resources_per_health = 2 // how much resources we get per item health
+	var/resources_per_health = 3 // how much resources we get per item health
+	var/absorb_completion = 5 // how much resources we get after the item is totally eaten
 
 	var/floorrunning = FALSE
 	var/can_floorrun = TRUE
@@ -460,6 +461,7 @@
 			boutput(src, "<span class='notice'>You assimilate [F]'s resource cache, adding <span class='bold'>[F.resources]</span> resource[F.resources > 1 ? "s" : null] to your own.</span>")
 	else
 		boutput(src, "<span class='notice'>You finish converting [I] into resources.</span>")
+	src.resources += absorb_completion
 	qdel(I)
 	absorber.item = null
 
