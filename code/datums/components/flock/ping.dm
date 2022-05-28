@@ -1,3 +1,4 @@
+///Ping component, for highlighting something to the flock
 /datum/component/flock_ping
 	dupe_mode = COMPONENT_DUPE_UNIQUE
 
@@ -54,5 +55,6 @@
 			animate(time = duration/9, alpha = 255)
 			animate(time = duration/9, alpha = 100)
 
+///Used to mark objects blocking the construction of a flock tealprint
 /datum/component/flock_ping/obstruction
 	outline_color = "#910707"
