@@ -2315,8 +2315,6 @@ proc/get_mobs_trackable_by_AI()
 			continue
 		if (M == usr)
 			continue
-		if (isflockmob(M))
-			continue
 
 		var/turf/T = get_turf(M)
 		if(!T.cameras || !length(T.cameras))
