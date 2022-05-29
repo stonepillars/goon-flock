@@ -269,7 +269,7 @@
 	relaymove(mob/user as mob)
 		if (user.stat)
 			return
-		if(ON_COOLDOWN(src,"move_damage",1 SECONDS))
+		if(ON_COOLDOWN(src,"move_damage",1 SECOND))
 			return
 		if(prob(75))
 			takeDamage("brute",1)
