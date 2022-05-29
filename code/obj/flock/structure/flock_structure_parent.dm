@@ -202,7 +202,12 @@ ABSTRACT_TYPE(/obj/flock_structure)
 		damtype = "fire"
 
 	takeDamage(damtype, W.force)
-	playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 50, 1)
+	hit_twitch(src)
+	if (W.force < 5)
+		playsound(src.loc, "sound/impact_sounds/Crystal_Hit_1.ogg", 50, 1)
+	else
+		playsound(src.loc, "sound/impact_sounds/Glass_Shards_Hit_1.ogg", 50, 1)
+
 
 /obj/flock_structure/proc/report_attack()
 	if (!ON_COOLDOWN(src, "attack_alert", 10 SECONDS))
