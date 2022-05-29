@@ -10,7 +10,7 @@
 	autoclose = TRUE
 	var/broken = FALSE
 	health = 200
-	health_max = 200 //half of a standard door
+	health_max = 200
 
 /obj/machinery/door/feather/New()
 	..()
